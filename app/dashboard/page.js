@@ -2739,8 +2739,23 @@ export default function Dashboard() {
               <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.6 }}>
                 <strong>Comment obtenir tes cles API ?</strong><br/>
                 1. Va sur <span style={{ color: '#FF6B35', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.boxtal.com', '_blank') }}>boxtal.com</span> et cree un compte gratuit<br/>
-                2. Dans ton espace Boxtal : Mon compte &gt; API &gt; Copie ton <strong>Identifiant</strong> et ton <strong>Mot de passe API</strong><br/>
-                3. Colle-les ci-dessous et clique Sauvegarder
+                2. Tes identifiants API = <strong>ton email de connexion</strong> + <strong>ton mot de passe</strong> Boxtal<br/>
+                3. Colle-les ci-dessous et clique Sauvegarder<br/><br/>
+                <strong>Pour tester sans payer :</strong><br/>
+                1. Cree un compte TEST sur <span style={{ color: '#FF6B35', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://test.envoimoinscher.com', '_blank') }}>test.envoimoinscher.com</span><br/>
+                2. Utilise les identifiants de ce compte TEST ci-dessous<br/>
+                3. Active le Mode test ci-dessous
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '12px 16px', background: boxtalConfig.testMode ? '#FFF7ED' : '#F0FDF4', borderRadius: 12, border: boxtalConfig.testMode ? '1px solid #FED7AA' : '1px solid #BBF7D0' }}>
+                <button onClick={function() { setBoxtalConfig(Object.assign({}, boxtalConfig, { testMode: !boxtalConfig.testMode })) }}
+                  style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', position: 'relative', background: boxtalConfig.testMode ? '#F97316' : '#10B981', transition: 'background .2s', flexShrink: 0 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: 9, background: '#FFF', position: 'absolute', top: 3, left: boxtalConfig.testMode ? 23 : 3, transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.2)' }} />
+                </button>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: boxtalConfig.testMode ? '#C2410C' : '#166534' }}>{boxtalConfig.testMode ? 'Mode TEST active' : 'Mode PRODUCTION'}</div>
+                  <div style={{ fontSize: 11, color: '#999' }}>{boxtalConfig.testMode ? 'Les commandes ne sont pas facturees (compte test.envoimoinscher.com)' : 'Les commandes seront facturees (compte boxtal.com)'}</div>
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
