@@ -290,12 +290,14 @@ export default function Dashboard() {
 
     const ticket = w.document.createElement('div')
     ticket.className = 'ticket'
-    ticket.innerHTML = \`
-      <div class="ticket-num">#\${order.orderNum}</div>
-      <div class="ticket-user">@\${order.user}</div>
-      <div class="ticket-text">\${order.text}</div>
-      <div class="ticket-time">\${order.time}</div>
-    \`
+    var h = ''
+    h += '<div class="ticket-shop">' + ((shop && shop.name) || 'MA BOUTIQUE').toUpperCase() + '</div>'
+    h += '<div class="ticket-num">#' + order.orderNum + '</div>'
+    h += '<div class="ticket-user">@' + order.user + '</div>'
+    h += '<div class="ticket-text">' + order.text + '</div>'
+    h += '<div class="ticket-time">' + order.time + '</div>'
+    h += '<div class="ticket-platform">Live ' + (livePlatform === 'tiktok' ? 'TikTok' : 'Instagram') + '</div>'
+    ticket.innerHTML = h
     container.appendChild(ticket)
 
     // Scroll en bas
