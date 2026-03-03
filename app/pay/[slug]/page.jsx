@@ -873,13 +873,13 @@ export default function PayPage() {
         <Header />
         <div style={{ maxWidth: 600, margin: "0 auto", padding: "60px 20px 40px", textAlign: "center" }}>
           {shopData?.logo_url ? (
-            <img src={shopData.logo_url} alt={shopData?.name || ''} style={{ maxHeight: 360, maxWidth: 420, objectFit: "contain", margin: "0 auto 24px", display: "block" }} />
+            <img src={shopData.logo_url} alt={shopData?.name || ''} style={{ maxHeight: 280, maxWidth: 360, objectFit: "contain", margin: "0 auto 8px", display: "block" }} />
           ) : (
-            <div style={{ width: 80, height: 80, background: "#1A1A1A", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+            <div style={{ width: 80, height: 80, background: "#1A1A1A", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
               <span style={{ color: "#FFF", fontFamily: sf, fontSize: 28, fontWeight: 700 }}>{shopData ? shopData.name.substring(0,2).toUpperCase() : 'LS'}</span>
             </div>
           )}
-          <h1 style={{ fontFamily: ss, fontSize: 40, fontWeight: 300, lineHeight: 1.2, marginBottom: 16, color: "#1A1A1A" }}>{shopData?.name || t.heroTitle}</h1>
+          <h1 style={{ fontFamily: ss, fontSize: 40, fontWeight: 300, lineHeight: 1.2, marginTop: 0, marginBottom: 16, color: "#1A1A1A" }}>{shopData?.name || t.heroTitle}</h1>
           <p style={{ fontFamily: sf, fontSize: 15, color: "#999", lineHeight: 1.7, marginBottom: 36 }}>{t.heroSub}</p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 60 }}>
             <button onClick={() => { setPage("payment"); setPayStep("ref"); setPaid(false); }} style={{ padding: "16px 36px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t.ctaPay}</button>
