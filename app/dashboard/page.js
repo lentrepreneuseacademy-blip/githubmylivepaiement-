@@ -8,27 +8,12 @@ const ss = "'Cormorant Garamond', Georgia, serif"
 
 // ═══ DEFAULT KEYWORDS ═══
 const DEFAULT_KEYWORDS = [
-  // Intentions d'achat
-  'je prends', 'j\'achète', 'je veux', 'pour moi', 'j\'en veux',
-  'je le prends', 'je la prends', 'j\'en prends', 'je le veux', 'je la veux',
-  'je commande', 'commande', 'ajoutez', 'ajoute', 'moi',
-  // Abréviations courantes
-  'jp', 'jpp', 'j achete', 'je prend',
-  // Tailles
-  'taille s', 'taille m', 'taille l', 'taille xl', 'taille xs',
-  'en s', 'en m', 'en l', 'en xl',
-  // Couleurs
-  'en noir', 'en blanc', 'en rouge', 'en bleu', 'en rose', 'en vert',
-  'en beige', 'en gris', 'en marron', 'en violet', 'en orange',
-  'le noir', 'le blanc', 'le rouge', 'le bleu', 'le rose',
-  'la noire', 'la blanche', 'la rouge', 'la bleue', 'la rose',
-  // Numéros d'article
-  'le 1', 'le 2', 'le 3', 'le 4', 'le 5', 'le 6', 'le 7', 'le 8', 'le 9', 'le 10',
-  'le n°1', 'le n°2', 'le n°3', 'le n°4', 'le n°5',
-  'numéro 1', 'numéro 2', 'numéro 3', 'numéro 4', 'numéro 5',
-  'article 1', 'article 2', 'article 3', 'article 4', 'article 5',
-  // Quantités
-  'j\'en prends 2', 'j\'en prends 3', 'j\'en veux 2',
+  'je prends', 'jp', 'je prend', 'j achete',
+  'je le prends', 'je la prends', 'je les prends',
+  'je le veux', 'je la veux', 'je les veux',
+  'pour moi', 'ajoutez', 'ajoute',
+  'je commande', 'je reserve',
+  'j en veux', 'j en prends',
 ]
 
 // ═══ SOUND NOTIFICATION ═══
@@ -106,6 +91,17 @@ export default function Dashboard() {
   const [showNewOrder, setShowNewOrder] = useState(false)
   const [newOrder, setNewOrder] = useState({ reference: '', amount: '', description: '' })
 
+  // Statistics
+  const [statsData, setStatsData] = useState({ daily: [], monthly: [], topProducts: [], conversionRate: 0, avgOrderValue: 0, totalRevenue7d: 0, totalOrders7d: 0 })
+  const [statsPeriod, setStatsPeriod] = useState('7d')
+
+  // AI Assistant
+  const [aiMessages, setAiMessages] = useState([{ role: 'assistant', content: 'Bonjour ! Je suis ton assistante IA. Je peux t\'aider avec le dashboard, le Live Monitor, Stripe, la logistique, et des conseils pour developper ton business live. Que puis-je faire pour toi ?' }])
+  const [aiInput, setAiInput] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const aiScrollRef = useRef(null)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   // ═══ AUTH CHECK ═══
   useEffect(() => {
     async function checkAuth() {
@@ -153,6 +149,54 @@ export default function Dashboard() {
       orderCount: paid.length,
       clientCount: clientData?.length || 0,
       pendingShip: pending.length,
+    })
+
+    // Compute stats data for charts
+    loadStatsData(orderData || [])
+  }
+
+  function loadStatsData(orderList) {
+    var now = new Date()
+    var paid = orderList.filter(function(o) { return o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered' })
+    var dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+    var monthNames = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    // Daily stats (last 7 days)
+    var daily = []
+    for (var d = 6; d >= 0; d--) {
+      var date = new Date(now)
+      date.setDate(date.getDate() - d)
+      var dayStr = date.toISOString().slice(0, 10)
+      var dayOrders = paid.filter(function(o) { return o.created_at && o.created_at.slice(0, 10) === dayStr })
+      var dayRev = dayOrders.reduce(function(s, o) { return s + (o.total || o.amount || 0) }, 0)
+      daily.push({ name: dayNames[date.getDay()], revenue: dayRev, orders: dayOrders.length })
+    }
+
+    // Monthly stats (last 6 months)
+    var monthly = []
+    for (var m = 5; m >= 0; m--) {
+      var mDate = new Date(now.getFullYear(), now.getMonth() - m, 1)
+      var mKey = mDate.getFullYear() + '-' + String(mDate.getMonth() + 1).padStart(2, '0')
+      var mOrders = paid.filter(function(o) { return o.created_at && o.created_at.slice(0, 7) === mKey })
+      var mRev = mOrders.reduce(function(s, o) { return s + (o.total || o.amount || 0) }, 0)
+      monthly.push({ name: monthNames[mDate.getMonth()], revenue: mRev, orders: mOrders.length })
+    }
+
+    // KPIs
+    var rev7d = daily.reduce(function(s, d) { return s + d.revenue }, 0)
+    var ord7d = daily.reduce(function(s, d) { return s + d.orders }, 0)
+    var avgOrder = paid.length > 0 ? paid.reduce(function(s, o) { return s + (o.total || o.amount || 0) }, 0) / paid.length : 0
+    var totalComments = orderList.length
+    var convRate = totalComments > 0 ? Math.round((paid.length / totalComments) * 100) : 0
+
+    setStatsData({
+      daily: daily,
+      monthly: monthly,
+      topProducts: [],
+      conversionRate: convRate,
+      avgOrderValue: avgOrder,
+      totalRevenue7d: rev7d,
+      totalOrders7d: ord7d,
     })
   }
 
@@ -671,6 +715,243 @@ export default function Dashboard() {
     }
   }, [allComments, autoScroll])
 
+  // ═══ COMPUTE STATISTICS ═══
+  useEffect(() => {
+    if (orders.length === 0) return
+    var now = new Date()
+    var d7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    var d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    
+    // Daily revenue for last 7 days
+    var daily = []
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
+      var dayStr = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })
+      var dayOrders = orders.filter(function(o) {
+        var od = new Date(o.created_at)
+        return od.toDateString() === d.toDateString()
+      })
+      var rev = dayOrders.reduce(function(sum, o) { return sum + (o.total_amount || o.total || o.amount || 0) }, 0)
+      daily.push({ name: dayStr, revenue: Math.round(rev * 100) / 100, orders: dayOrders.length })
+    }
+    
+    // Monthly data
+    var monthly = []
+    for (var m = 5; m >= 0; m--) {
+      var md = new Date(now.getFullYear(), now.getMonth() - m, 1)
+      var monthStr = md.toLocaleDateString('fr-FR', { month: 'short' })
+      var mOrders = orders.filter(function(o) {
+        var od = new Date(o.created_at)
+        return od.getMonth() === md.getMonth() && od.getFullYear() === md.getFullYear()
+      })
+      var mRev = mOrders.reduce(function(sum, o) { return sum + (o.total_amount || o.total || o.amount || 0) }, 0)
+      monthly.push({ name: monthStr, revenue: Math.round(mRev * 100) / 100, orders: mOrders.length })
+    }
+    
+    var recent = orders.filter(function(o) { return new Date(o.created_at) >= d7 })
+    var rev7 = recent.reduce(function(sum, o) { return sum + (o.total_amount || o.total || o.amount || 0) }, 0)
+    var avg = recent.length > 0 ? rev7 / recent.length : 0
+    var paid = orders.filter(function(o) { return o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered' }).length
+    var conv = orders.length > 0 ? Math.round((paid / orders.length) * 100) : 0
+    
+    setStatsData({ daily: daily, monthly: monthly, topProducts: [], conversionRate: conv, avgOrderValue: Math.round(avg * 100) / 100, totalRevenue7d: Math.round(rev7 * 100) / 100, totalOrders7d: recent.length })
+  }, [orders])
+
+  // ═══ AI ASSISTANT (LOCAL) ═══
+  function sendAiMessage() {
+    if (!aiInput.trim() || aiLoading) return
+    var userMsg = aiInput.trim()
+    setAiInput('')
+    setAiMessages(function(prev) { return prev.concat([{ role: 'user', content: userMsg }]) })
+    setAiLoading(true)
+    setTimeout(function() {
+      var reply = getAiReply(userMsg)
+      setAiMessages(function(prev) { return prev.concat([{ role: 'assistant', content: reply }]) })
+      setAiLoading(false)
+    }, 500)
+  }
+
+  function getAiReply(msg) {
+    var q = msg.toLowerCase()
+    var sn = shop ? shop.name : 'ta boutique'
+    var rev = stats.revenue || 0
+    var oc = stats.orderCount || 0
+    var cc = stats.clientCount || 0
+    var pe = stats.pendingShip || 0
+    var avg = oc > 0 ? (rev / oc) : 0
+    var r7 = statsData.totalRevenue7d || 0
+    var o7 = statsData.totalOrders7d || 0
+
+    if (q.match(/tableau|dashboard|vue d.ensemble|accueil/)) {
+      return '\u{1F4CA} Le Tableau de bord — ta page d\'accueil !\n\n' +
+        '\u{2022} Chiffre d\'affaires : ' + rev.toFixed(0) + '\u20ac\n' +
+        '\u{2022} Commandes : ' + oc + '\n' +
+        '\u{2022} Clients : ' + cc + '\n' +
+        '\u{2022} A expedier : ' + pe + '\n\n' +
+        'Astuce : regarde cette page tous les matins pour suivre ton activite !'
+    }
+
+    if (q.match(/live|monitor|tiktok|instagram|connexion|lancer/)) {
+      return '\u{1F4E1} Le Live Monitor capte les commandes automatiquement !\n\n' +
+        'Comment l\'utiliser :\n' +
+        '1. Va dans l\'onglet Live Monitor\n' +
+        '2. Choisis TikTok ou Instagram\n' +
+        '3. Entre ton pseudo\n' +
+        '4. Lance la connexion\n\n' +
+        'Mode Demo : teste sans etre en live !\n\n' +
+        'Quand un viewer ecrit "je prends" ou "jp", ca cree un ticket automatiquement.\n' +
+        'Active l\'impression auto pour imprimer chaque ticket en temps reel.'
+    }
+
+    if (q.match(/mot.cl[eE]|detection|keyword|detect/)) {
+      return '\u{1F3AF} Les mots-cles de detection\n\n' +
+        'Le Live Monitor detecte les commandes quand un viewer ecrit un mot-cle.\n\n' +
+        'Pour configurer :\n' +
+        '1. Dans Live Monitor, clique sur "Mots-cles"\n' +
+        '2. Ajoute ou supprime des mots-cles\n' +
+        '3. Le systeme detecte les phrases entieres (pas les morceaux)\n\n' +
+        'Astuce : garde des mots-cles precis comme "jp", "je prends", "pour moi". Evite les mots trop courts.'
+    }
+
+    if (q.match(/imprim|ticket|etiquette|thermique|print/)) {
+      return '\u{1F5A8} Impression des tickets (50.8mm x 50.8mm)\n\n' +
+        '2 modes :\n' +
+        '1. Impression auto : chaque ticket s\'imprime des qu\'il arrive\n' +
+        '2. Imprimer tout : tous les tickets d\'un coup a la fin\n\n' +
+        'Clique sur "Tickets" pour ouvrir la fenetre, puis active "Impression auto" si tu veux du temps reel.\n\n' +
+        'Astuce : fais un test en mode Demo avant ton vrai live !'
+    }
+
+    if (q.match(/stat|graphique|chiffre|performance|analyse|resultat/)) {
+      var r = '\u{1F4C8} Tes statistiques ' + sn + ' :\n\n'
+      r += 'Sur 7 jours : ' + r7.toFixed(0) + '\u20ac de CA, ' + o7 + ' commandes\n'
+      r += 'Au total : ' + rev.toFixed(0) + '\u20ac de CA, ' + oc + ' commandes, ' + cc + ' clients\n'
+      r += 'Panier moyen : ' + avg.toFixed(0) + '\u20ac\n\n'
+      if (oc === 0) r += 'Lance ton premier live et les stats se rempliront !'
+      else if (avg < 25) r += 'Conseil : ton panier moyen est de ' + avg.toFixed(0) + '\u20ac. Propose des lots ou offres "2 articles" pour l\'augmenter !'
+      else if (avg < 50) r += 'Bon panier moyen ! Essaie les ventes flash avec compte a rebours pour aller plus haut.'
+      else r += 'Excellent panier moyen de ' + avg.toFixed(0) + '\u20ac ! Fidelise tes meilleures clientes avec des avant-premieres.'
+      return r
+    }
+
+    if (q.match(/commande|order|gestion|suivi/)) {
+      var r = '\u{1F4CB} Tu as ' + oc + ' commandes'
+      if (pe > 0) r += ' dont ' + pe + ' a expedier !\n\n' + 'N\'oublie pas d\'expedier ! Va dans Livraison.\n\n'
+      else r += ' et tout est a jour !\n\n'
+      r += 'Les statuts :\n'
+      r += '\u{2022} En attente = pas encore paye\n'
+      r += '\u{2022} Payee = pret a expedier\n'
+      r += '\u{2022} Expediee = colis envoye\n'
+      r += '\u{2022} Livree = colis recu\n\n'
+      r += 'Astuce : envoie le lien de paiement dans les 30min apres le live !'
+      return r
+    }
+
+    if (q.match(/stripe|paiement|payer|argent|carte|bancaire|connect/)) {
+      return '\u{1F4B3} Stripe — le systeme de paiement\n\n' +
+        '1. Va dans Parametres > Stripe Connect\n' +
+        '2. Connecte ou cree ton compte Stripe\n' +
+        '3. Tes clientes paient par carte via ton lien\n' +
+        '4. L\'argent arrive sous 2-7 jours\n\n' +
+        'Astuce : envoie le lien dans les 30min apres le live, c\'est la que le taux de conversion est le plus haut !'
+    }
+
+    if (q.match(/livr|expedi|colis|boxtal|mondial|colissimo|point relais|envoi/)) {
+      var r = '\u{1F4E6} Expedition des commandes\n\n'
+      r += 'Options :\n'
+      r += '\u{2022} Mondial Relay (point relais) — le moins cher\n'
+      r += '\u{2022} Colissimo (domicile) — plus rapide\n'
+      r += '\u{2022} Boxtal — compare les prix\n\n'
+      r += 'Conseils : emballe bien, ajoute un petit mot manuscrit, envoie le numero de suivi.\n\n'
+      if (pe > 0) r += 'Tu as ' + pe + ' commande(s) a expedier !'
+      else r += 'Tout est a jour, bravo !'
+      return r
+    }
+
+    if (q.match(/abonnement|prix|tarif|forfait|27|mensuel/)) {
+      return '\u{1F48E} Abonnement MY LIVE PAIEMENT\n\n' +
+        '27\u20ac/mois — 0% commission — sans engagement\n\n' +
+        'Inclus : Dashboard, Live Monitor, Impression tickets, Stats, Assistant, Gestion commandes, Stripe\n\n' +
+        'A 27\u20ac/mois sans commission, quelques ventes suffisent pour rentabiliser !'
+    }
+
+    if (q.match(/boost|vente|strateg|augment|conseil|astuce|evoluer|developper|croissance|grandir/)) {
+      if (oc < 10) {
+        return '\u{1F680} Tu debutes — voici les bases :\n\n' +
+          '1. Regularite : 2-3 lives/semaine a heures fixes\n' +
+          '2. Titre accrocheur : "ARRIVAGE NEUF -50%" attire plus que "Live vente"\n' +
+          '3. Interaction : reponds a CHAQUE commentaire\n' +
+          '4. Urgence : "Il en reste 3 !" pousse a l\'achat\n' +
+          '5. Packaging : montre comment tu emballes en live'
+      } else if (oc < 50) {
+        return '\u{1F680} ' + oc + ' commandes, bravo ! Pour accelerer :\n\n' +
+          '1. Lots/bundles : "2 articles = -20%" (panier moyen actuel : ' + avg.toFixed(0) + '\u20ac)\n' +
+          '2. Teasing : stories 2h avant le live\n' +
+          '3. Groupe WhatsApp VIP pour tes meilleures clientes\n' +
+          '4. Cross-selling : "Ce top va bien avec le pantalon"\n' +
+          '5. Teste les horaires : 20h-22h est souvent optimal'
+      } else {
+        return '\u{1F680} ' + oc + ' commandes ! Tu es une pro — pour scaler :\n\n' +
+          '1. Recrute pour emballer pendant tes lives\n' +
+          '2. Multi-plateforme TikTok + Instagram\n' +
+          '3. Produits exclusifs live uniquement\n' +
+          '4. Programme VIP (' + cc + ' clients a fideliser)\n' +
+          '5. Collabs avec d\'autres vendeuses'
+      }
+    }
+
+    if (q.match(/client|fideli|acheteu|audience/)) {
+      var r = '\u{1F465} Tu as ' + cc + ' clients !\n\n'
+      r += 'Conseils fidelisation :\n'
+      r += '\u{2022} Message perso apres chaque achat\n'
+      r += '\u{2022} Reduction pour le 2e achat\n'
+      r += '\u{2022} Groupe prive meilleures clientes\n'
+      r += '\u{2022} Note les preferences (taille, style)\n'
+      r += '\u{2022} Avant-premieres nouveaux arrivages'
+      return r
+    }
+
+    if (q.match(/^(bonjour|salut|hello|coucou|hey|bjr)/)) {
+      return 'Coucou ! Je suis ton assistante MY LIVE PAIEMENT !\n\n' +
+        'Je peux t\'aider avec :\n' +
+        '\u{1F4CA} Dashboard et stats\n' +
+        '\u{1F4E1} Live Monitor\n' +
+        '\u{1F4B3} Paiements Stripe\n' +
+        '\u{1F4E6} Expeditions\n' +
+        '\u{1F680} Conseils business\n\n' +
+        'Qu\'est-ce que je peux faire pour toi ?'
+    }
+
+    if (q.match(/merci|parfait|super|genial|top/)) {
+      return 'Avec plaisir ! N\'hesite pas si tu as d\'autres questions. Je suis la pour t\'aider a developper ' + sn + ' !'
+    }
+
+    if (q.match(/param|config|reglage|modifier/)) {
+      return 'Dans Parametres tu peux :\n' +
+        '\u{2022} Voir infos boutique (nom, slug, email)\n' +
+        '\u{2022} Verifier le serveur Live Monitor\n' +
+        '\u{2022} Gerer ton abonnement\n' +
+        '\u{2022} Connecter Stripe'
+    }
+
+    return 'Je peux t\'aider sur :\n\n' +
+      '\u{1F4CA} Dashboard — dis "tableau de bord"\n' +
+      '\u{1F4E1} Live Monitor — dis "live" ou "tiktok"\n' +
+      '\u{1F4C8} Statistiques — dis "stats"\n' +
+      '\u{1F4CB} Commandes — dis "commandes"\n' +
+      '\u{1F4B3} Paiements — dis "stripe"\n' +
+      '\u{1F4E6} Livraison — dis "expedition"\n' +
+      '\u{1F680} Booster ventes — dis "conseils"\n' +
+      '\u{1F3AF} Mots-cles — dis "mots-cles"\n' +
+      '\u{1F5A8} Impression — dis "tickets"'
+  }
+
+
+  // Auto-scroll AI chat
+  useEffect(function() {
+    if (aiScrollRef.current) aiScrollRef.current.scrollTop = aiScrollRef.current.scrollHeight
+  }, [aiMessages])
+
   const inputStyle = {
     width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.08)',
     borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF',
@@ -735,65 +1016,112 @@ export default function Dashboard() {
     { id: 'overview', icon: '📊', label: 'Tableau de bord' },
     { id: 'live', icon: '📡', label: 'Live Monitor', live: liveConnected },
     { id: 'orders', icon: '📋', label: 'Commandes' },
+    { id: 'stats', icon: '📈', label: 'Statistiques' },
     { id: 'clients', icon: '👥', label: 'Clients' },
     { id: 'shipping', icon: '🚚', label: 'Livraison' },
+    { id: 'assistant', icon: '🤖', label: 'IA Assistant' },
     { id: 'settings', icon: '⚙️', label: 'Paramètres' },
   ]
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: sf }}>
-      {/* ═══ SIDEBAR ═══ */}
-      <aside style={{ width: 220, background: '#1A1A1A', padding: '24px 16px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ marginBottom: 32, padding: '0 8px' }}>
-          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: '#FFF', opacity: .5, marginBottom: 3 }}>MY LIVE</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#FFF', letterSpacing: 1 }}>PAIEMENT</div>
+      <style dangerouslySetInnerHTML={{ __html: 'button{transition:all .2s ease!important}button:hover{transform:translateY(-1px)!important;filter:brightness(1.08)!important}button:active{transform:translateY(0) scale(.98)!important}input:focus{border-color:#E94560!important;box-shadow:0 0 0 3px rgba(233,69,96,.1)!important}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}.card-hover:hover{box-shadow:0 8px 30px rgba(0,0,0,.08)!important;transform:translateY(-2px)!important}' }} />
+      {/* ═══ SIDEBAR PRO ═══ */}
+      <aside style={{ width: sidebarCollapsed ? 70 : 240, background: 'linear-gradient(180deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', padding: sidebarCollapsed ? '20px 10px' : '24px 16px', flexShrink: 0, display: 'flex', flexDirection: 'column', transition: 'width .3s ease', position: 'relative', boxShadow: '4px 0 24px rgba(0,0,0,.15)' }}>
+        
+        {/* Collapse button */}
+        <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ position: 'absolute', right: -12, top: 32, width: 24, height: 24, borderRadius: '50%', background: '#FFF', border: '2px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
+          {sidebarCollapsed ? '→' : '←'}
+        </button>
+        
+        {/* Logo */}
+        <div style={{ marginBottom: 32, padding: '0 4px', textAlign: sidebarCollapsed ? 'center' : 'left' }}>
+          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: sidebarCollapsed ? '0 auto' : '0', boxShadow: '0 4px 12px rgba(233,69,96,.3)' }}>
+            <span style={{ color: '#FFF', fontSize: 14, fontWeight: 900, letterSpacing: 1 }}>ML</span>
+          </div>
+          {!sidebarCollapsed && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>MY LIVE</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#FFF', letterSpacing: 1 }}>PAIEMENT</div>
+            </div>
+          )}
         </div>
 
+        {/* Navigation */}
         <nav style={{ flex: 1 }}>
+          {!sidebarCollapsed && <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 8, paddingLeft: 12 }}>MENU</div>}
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, marginBottom: 3,
-                background: activeTab === tab.id ? 'rgba(255,255,255,.1)' : 'transparent',
+                width: '100%', display: 'flex', alignItems: 'center', gap: sidebarCollapsed ? 0 : 12, padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10, marginBottom: 2,
+                background: activeTab === tab.id ? 'rgba(233,69,96,.15)' : 'transparent',
                 border: 'none', cursor: 'pointer', fontFamily: sf, textAlign: 'left',
+                borderLeft: activeTab === tab.id ? '3px solid #E94560' : '3px solid transparent',
+                transition: 'all .2s ease', justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
               }}>
-              <span style={{ fontSize: 15 }}>{tab.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 400, color: '#FFF' }}>{tab.label}</span>
-              {tab.live && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#EF4444', marginLeft: 'auto', animation: 'pulse 1.5s infinite' }} />}
+              <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{tab.icon}</span>
+              {!sidebarCollapsed && <span style={{ fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 400, color: activeTab === tab.id ? '#FFF' : 'rgba(255,255,255,.6)', transition: 'color .2s' }}>{tab.label}</span>}
+              {tab.live && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', marginLeft: 'auto', animation: 'pulse 1.5s infinite', boxShadow: '0 0 8px rgba(239,68,68,.5)' }} />}
             </button>
           ))}
         </nav>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 16, marginTop: 16 }}>
-          <div style={{ fontSize: 13, color: '#FFF', fontWeight: 600 }}>{shop?.name}</div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 2 }}>{user?.email}</div>
-          <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())}
-            style={{ marginTop: 10, fontSize: 11, color: 'rgba(255,255,255,.4)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>
-            Déconnexion
-          </button>
+        {/* User section */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', paddingTop: 16, marginTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ color: '#FFF', fontSize: 13, fontWeight: 700 }}>{(shop?.name || 'M').charAt(0).toUpperCase()}</span>
+            </div>
+            {!sidebarCollapsed && (
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: 13, color: '#FFF', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{shop?.name}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
+              </div>
+            )}
+          </div>
+          {!sidebarCollapsed && (
+            <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())}
+              style={{ marginTop: 12, width: '100%', fontSize: 12, color: 'rgba(255,255,255,.5)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontFamily: sf, transition: 'all .2s' }}>
+              Déconnexion
+            </button>
+          )}
         </div>
       </aside>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main style={{ flex: 1, padding: '28px 32px', background: '#FAFAF8', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: '28px 36px', background: '#F8F9FC', overflowY: 'auto' }}>
 
         {/* ─── OVERVIEW ─── */}
         {activeTab === 'overview' && (
           <div>
-            <h1 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, marginBottom: 4 }}>Bonjour !</h1>
-            <p style={{ fontSize: 13, color: '#999', marginBottom: 24 }}>Voici le résumé de ton activité</p>
+            {/* Welcome banner */}
+            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', borderRadius: 20, padding: '28px 32px', marginBottom: 28, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -20, top: -20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(233,69,96,.15)' }} />
+              <div style={{ position: 'absolute', right: 40, bottom: -30, width: 100, height: 100, borderRadius: '50%', background: 'rgba(102,126,234,.1)' }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <h1 style={{ fontFamily: sf, fontSize: 26, fontWeight: 800, marginBottom: 4 }}>Bonjour, {shop?.name} !</h1>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)' }}>Voici le résumé de ton activité</p>
+              </div>
+            </div>
 
-            {/* Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+            {/* Stats Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
-                { l: "Chiffre d'affaires", v: `${stats.revenue.toFixed(0)}€` },
-                { l: 'Commandes', v: stats.orderCount },
-                { l: 'À expédier', v: stats.pendingShip, color: stats.pendingShip > 0 ? '#F59E0B' : undefined },
-                { l: 'Clients', v: stats.clientCount },
+                { l: "Chiffre d'affaires", v: stats.revenue.toFixed(0) + '\u20ac', icon: '💰', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', shadow: 'rgba(102,126,234,.2)' },
+                { l: 'Commandes', v: stats.orderCount, icon: '📦', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', shadow: 'rgba(245,87,108,.2)' },
+                { l: 'A expedier', v: stats.pendingShip, icon: '🚚', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', shadow: 'rgba(79,172,254,.2)', alert: stats.pendingShip > 0 },
+                { l: 'Clients', v: stats.clientCount, icon: '👥', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', shadow: 'rgba(67,233,123,.2)' },
               ].map((s, i) => (
-                <div key={i} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: '16px 14px' }}>
-                  <div style={{ fontSize: 10, color: '#BBB', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>{s.l}</div>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: s.color || '#1A1A1A' }}>{s.v}</div>
+                <div key={i} className="card-hover" style={{ background: '#FFF', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', cursor: 'default', transition: 'all .3s ease', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', right: -8, top: -8, width: 56, height: 56, borderRadius: '50%', background: s.gradient, opacity: 0.1 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: s.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px ' + s.shadow }}>
+                      <span style={{ fontSize: 18 }}>{s.icon}</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A2E', marginBottom: 2 }}>{s.v}</div>
+                  <div style={{ fontSize: 11, color: '#999', letterSpacing: 0.5, fontWeight: 500 }}>{s.l}</div>
+                  {s.alert && <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 8px rgba(245,158,11,.5)' }} />}
                 </div>
               ))}
             </div>
@@ -922,7 +1250,7 @@ export default function Dashboard() {
             {/* ── STEP 2: Enter username ── */}
             {livePlatform && !liveConnected && !liveConnecting && !liveEnded && (
               <div style={{ maxWidth: 440, margin: '40px auto', textAlign: 'center' }}>
-                <h2 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, marginBottom: 6 }}>
+                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 6 }}>
                   {liveMode === 'demo' ? 'Mode Démo' : `Connecte-toi à ${livePlatform === 'tiktok' ? 'TikTok' : 'Instagram'}`}
                 </h2>
 
@@ -1096,7 +1424,7 @@ export default function Dashboard() {
                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F5F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <span style={{ fontSize: 28 }}>📡</span>
                 </div>
-                <h2 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, marginBottom: 8 }}>Live terminé</h2>
+                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Live terminé</h2>
                 <p style={{ fontSize: 14, color: '#999', marginBottom: 24 }}>{liveEnded.reason}</p>
 
                 {/* Session stats */}
@@ -1119,7 +1447,7 @@ export default function Dashboard() {
 
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                   <button onClick={resetLive}
-                    style={{ padding: '12px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                    style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
                     Nouveau live
                   </button>
                   {liveOrders.length > 0 && (
@@ -1275,11 +1603,120 @@ export default function Dashboard() {
           </div>
         )}
 
+
+        {/* ─── STATISTICS ─── */}
+        {activeTab === 'stats' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+              <div>
+                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Statistiques</h1>
+                <p style={{ fontSize: 13, color: '#999' }}>Analyse de tes performances</p>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['7d', '30d', '6m'].map(function(p) {
+                  return (
+                    <button key={p} onClick={function() { setStatsPeriod(p) }}
+                      style={{ padding: '8px 16px', borderRadius: 10, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: statsPeriod === p ? '#1A1A2E' : '#F5F4F2', color: statsPeriod === p ? '#FFF' : '#999', transition: 'all .2s' }}>
+                      {p === '7d' ? '7 jours' : p === '30d' ? '30 jours' : '6 mois'}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+              {[
+                { l: 'CA 7 jours', v: statsData.totalRevenue7d.toFixed(0) + '\u20ac', icon: '💰', color: '#667eea' },
+                { l: 'Commandes 7j', v: statsData.totalOrders7d, icon: '📦', color: '#f5576c' },
+                { l: 'Panier moyen', v: statsData.avgOrderValue.toFixed(0) + '\u20ac', icon: '🛒', color: '#4facfe' },
+                { l: 'Taux conversion', v: statsData.conversionRate + '%', icon: '📊', color: '#43e97b' },
+              ].map(function(s, i) {
+                return (
+                  <div key={i} style={{ background: '#FFF', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <span style={{ fontSize: 20 }}>{s.icon}</span>
+                      <span style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>{s.l}</span>
+                    </div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A2E' }}>{s.v}</div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Revenue Chart */}
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Chiffre d'affaires</div>
+              <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>{statsPeriod === '6m' ? '6 derniers mois' : statsPeriod === '30d' ? '30 derniers jours' : '7 derniers jours'}</div>
+              <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 180, padding: '0 4px' }}>
+                {(statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(d, i) {
+                  var maxRev = Math.max.apply(null, (statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(x) { return x.revenue }))
+                  var h = maxRev > 0 ? Math.max((d.revenue / maxRev) * 150, 4) : 4
+                  return (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '\u20ac' : ''}</div>
+                      <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)', transition: 'height .5s ease' }} />
+                      <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Orders Chart */}
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Commandes</div>
+              <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>Nombre de commandes par periode</div>
+              <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 140, padding: '0 4px' }}>
+                {(statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(d, i) {
+                  var maxOrd = Math.max.apply(null, (statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(x) { return x.orders }))
+                  var h = maxOrd > 0 ? Math.max((d.orders / maxOrd) * 110, 4) : 4
+                  return (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.orders > 0 ? d.orders : ''}</div>
+                      <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #f093fb 0%, #f5576c 100%)', transition: 'height .5s ease' }} />
+                      <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Status distribution */}
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 16 }}>Repartition des commandes</div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {[
+                  { label: 'En attente', count: orders.filter(function(o) { return o.status === 'pending_payment' }).length, color: '#94A3B8', bg: '#F1F5F9' },
+                  { label: 'Payees', count: orders.filter(function(o) { return o.status === 'paid' }).length, color: '#F59E0B', bg: '#FFFBEB' },
+                  { label: 'Expediees', count: orders.filter(function(o) { return o.status === 'shipped' }).length, color: '#8B5CF6', bg: '#F5F3FF' },
+                  { label: 'Livrees', count: orders.filter(function(o) { return o.status === 'delivered' }).length, color: '#10B981', bg: '#ECFDF5' },
+                ].map(function(s, i) {
+                  return (
+                    <div key={i} style={{ flex: 1, textAlign: 'center', padding: 16, borderRadius: 12, background: s.bg }}>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.count}</div>
+                      <div style={{ fontSize: 11, color: s.color, fontWeight: 600, marginTop: 4 }}>{s.label}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {orders.length === 0 && (
+              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📈</div>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Pas encore de donnees</p>
+                <p style={{ fontSize: 13, marginTop: 4, color: '#BBB' }}>Les statistiques apparaitront des ta premiere commande</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ─── ORDERS ─── */}
         {activeTab === 'orders' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h1 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400 }}>Commandes</h1>
+              <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes</h1>
               <button onClick={() => setShowNewOrder(!showNewOrder)} style={{ padding: '10px 18px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>+ Nouvelle</button>
             </div>
 
@@ -1295,7 +1732,7 @@ export default function Dashboard() {
             )}
 
             {orders.map(o => (
-              <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 12, marginBottom: 6, background: '#FFF', border: '1px solid rgba(0,0,0,.04)' }}>
+              <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: '#FFF', border: '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', transition: 'all .2s' }}>
                 <div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
@@ -1330,9 +1767,9 @@ export default function Dashboard() {
         {/* ─── CLIENTS ─── */}
         {activeTab === 'clients' && (
           <div>
-            <h1 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, marginBottom: 24 }}>Clients ({clients.length})</h1>
+            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Clients ({clients.length})</h1>
             {clients.map(c => (
-              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 12, marginBottom: 6, background: '#FFF', border: '1px solid rgba(0,0,0,.04)' }}>
+              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: '#FFF', border: '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', transition: 'all .2s' }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700 }}>{c.first_name} {c.last_name}</div>
                   <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{c.email} · {c.phone || '—'}</div>
@@ -1356,7 +1793,7 @@ export default function Dashboard() {
         {/* ─── SHIPPING ─── */}
         {activeTab === 'shipping' && (
           <div>
-            <h1 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, marginBottom: 24 }}>Livraison</h1>
+            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Livraison</h1>
             <p style={{ fontSize: 13, color: '#999', marginBottom: 20 }}>Commandes payées en attente d'expédition</p>
             {orders.filter(o => o.status === 'paid').map(o => (
               <div key={o.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: 18, marginBottom: 10 }}>
@@ -1389,12 +1826,86 @@ export default function Dashboard() {
           </div>
         )}
 
+
+        {/* ─── AI ASSISTANT ─── */}
+        {activeTab === 'assistant' && (
+          <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)' }}>
+            <div style={{ marginBottom: 20 }}>
+              <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>IA Assistant</h1>
+              <p style={{ fontSize: 13, color: '#999' }}>Ton assistante pour le business, le dashboard, Stripe et la logistique</p>
+            </div>
+
+            {/* Quick actions */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+              {[
+                { icon: '📊', label: 'Comment lire mes stats ?', q: 'Comment lire et comprendre mes statistiques de vente dans le dashboard ?' },
+                { icon: '📡', label: 'Aide Live Monitor', q: 'Comment configurer et utiliser le Live Monitor pour capter les commandes pendant mon live TikTok ?' },
+                { icon: '💳', label: 'Configurer Stripe', q: 'Comment configurer Stripe Connect pour recevoir les paiements de mes clientes ?' },
+                { icon: '📦', label: 'Expedier commandes', q: 'Comment expedier mes commandes avec Boxtal, Mondial Relay ou Colissimo ?' },
+                { icon: '🚀', label: 'Booster mes ventes', q: 'Donne-moi 5 strategies concretes pour augmenter mes ventes en live TikTok' },
+                { icon: '🎯', label: 'Mots-cles detection', q: 'Comment configurer les mots-cles de detection pour que le Live Monitor detecte mieux les commandes ?' },
+              ].map(function(a, i) {
+                return (
+                  <button key={i} onClick={function() { setAiInput(a.q); }}
+                    style={{ padding: '8px 14px', background: '#FFF', border: '1px solid rgba(0,0,0,.06)', borderRadius: 10, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: sf, color: '#555', display: 'flex', alignItems: 'center', gap: 6, transition: 'all .2s' }}>
+                    <span>{a.icon}</span> {a.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Chat messages */}
+            <div ref={aiScrollRef} style={{ flex: 1, overflowY: 'auto', background: '#FFF', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 16 }}>
+              {aiMessages.map(function(msg, i) {
+                var isUser = msg.role === 'user'
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', marginBottom: 12, animation: 'fadeSlide .3s ease-out' }}>
+                    <div style={{ display: 'flex', gap: 10, maxWidth: '80%', flexDirection: isUser ? 'row-reverse' : 'row' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: isUser ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ color: '#FFF', fontSize: 14 }}>{isUser ? '👤' : '🤖'}</span>
+                      </div>
+                      <div style={{ padding: '12px 16px', borderRadius: 14, background: isUser ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#F8F9FA', color: isUser ? '#FFF' : '#333', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+              {aiLoading && (
+                <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 14 }}>🤖</span>
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRadius: 14, background: '#F8F9FA', fontSize: 13, color: '#999' }}>
+                    <span style={{ display: 'inline-block', animation: 'pulse 1s infinite' }}>Reflexion en cours...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <input
+                value={aiInput}
+                onChange={function(e) { setAiInput(e.target.value) }}
+                onKeyDown={function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiMessage() } }}
+                placeholder="Pose ta question..."
+                style={{ flex: 1, padding: '14px 18px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', transition: 'border-color .2s' }}
+              />
+              <button onClick={sendAiMessage} disabled={aiLoading || !aiInput.trim()}
+                style={{ padding: '14px 24px', background: aiLoading || !aiInput.trim() ? '#DDD' : 'linear-gradient(135deg, #E94560 0%, #533483 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: aiLoading || !aiInput.trim() ? 'none' : '0 4px 14px rgba(233,69,96,.25)', transition: 'all .2s' }}>
+                Envoyer
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ─── SETTINGS ─── */}
         {activeTab === 'settings' && (
           <div>
-            <h1 style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, marginBottom: 24 }}>Paramètres</h1>
+            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Paramètres</h1>
 
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Boutique</h3>
               <div style={{ fontSize: 14, marginBottom: 6 }}><strong>Nom :</strong> {shop?.name}</div>
               <div style={{ fontSize: 14, marginBottom: 6 }}><strong>Slug :</strong> {shop?.slug}</div>
@@ -1403,7 +1914,7 @@ export default function Dashboard() {
             </div>
 
             {/* Live Server Status */}
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>📡 Live Monitor</h3>
               <div style={{ fontSize: 14, marginBottom: 6 }}>
                 <strong>Serveur Live :</strong>{' '}
@@ -1418,7 +1929,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Abonnement</h3>
               <div style={{ fontSize: 14, marginBottom: 10 }}>
                 <strong>Statut :</strong>{' '}
@@ -1438,13 +1949,13 @@ export default function Dashboard() {
                     const data = await res.json()
                     if (data.url) window.location.href = data.url
                   }}
-                  style={{ padding: '12px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                  style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
                   S'abonner — 27€/mois
                 </button>
               )}
             </div>
 
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: 20 }}>
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Stripe Connect</h3>
               <p style={{ fontSize: 13, color: '#999', marginBottom: 12 }}>Connecte ton compte Stripe pour recevoir les paiements de tes clientes directement sur ton compte bancaire.</p>
               {shop?.stripe_account_id ? (
@@ -1452,7 +1963,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#10B981' }}>✓ Stripe connecté</span>
                 </div>
               ) : (
-                <button style={{ padding: '12px 24px', background: '#635BFF', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                <button style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
                   Connecter Stripe
                 </button>
               )}
