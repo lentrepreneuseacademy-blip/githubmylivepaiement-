@@ -873,7 +873,7 @@ export default function PayPage() {
         <Header />
         <div style={{ maxWidth: 600, margin: "0 auto", padding: "60px 20px 40px", textAlign: "center" }}>
           {shopData?.logo_url ? (
-            <img src={shopData.logo_url} alt={shopData?.name || ''} style={{ maxHeight: 120, maxWidth: 280, objectFit: "contain", margin: "0 auto 24px", display: "block" }} />
+            <img src={shopData.logo_url} alt={shopData?.name || ''} style={{ maxHeight: 360, maxWidth: 420, objectFit: "contain", margin: "0 auto 24px", display: "block" }} />
           ) : (
             <div style={{ width: 80, height: 80, background: "#1A1A1A", borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
               <span style={{ color: "#FFF", fontFamily: sf, fontSize: 28, fontWeight: 700 }}>{shopData ? shopData.name.substring(0,2).toUpperCase() : 'LS'}</span>
