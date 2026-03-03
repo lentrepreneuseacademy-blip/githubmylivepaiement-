@@ -86,6 +86,7 @@ export default function Dashboard() {
   const [showKeywordConfig, setShowKeywordConfig] = useState(false)
   const [autoPrintEnabled, setAutoPrintEnabled] = useState(false)
   const receiptWindowRef = useRef(null)
+  const [showPaymentTracking, setShowPaymentTracking] = useState(false)
 
   // New order form
   const [showNewOrder, setShowNewOrder] = useState(false)
@@ -96,10 +97,11 @@ export default function Dashboard() {
   const [statsPeriod, setStatsPeriod] = useState('7d')
 
   // AI Assistant
-  const [aiMessages, setAiMessages] = useState([{ role: 'assistant', content: 'Bonjour ! Je suis ton assistante IA. Je peux t\'aider avec le dashboard, le Live Monitor, Stripe, la logistique, et des conseils pour developper ton business live. Que puis-je faire pour toi ?' }])
+  const [aiMessages, setAiMessages] = useState([{ role: 'assistant', content: 'Bonjour ! Je suis ton assistante MY LIVE PAIEMENT. Pose-moi une question sur le dashboard, le Live Monitor, les paiements, la livraison, ou demande-moi des conseils pour booster tes ventes !' }])
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const aiScrollRef = useRef(null)
+  const [aiLastTopic, setAiLastTopic] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   // ═══ AUTH CHECK ═══
@@ -757,7 +759,7 @@ export default function Dashboard() {
     setStatsData({ daily: daily, monthly: monthly, topProducts: [], conversionRate: conv, avgOrderValue: Math.round(avg * 100) / 100, totalRevenue7d: Math.round(rev7 * 100) / 100, totalOrders7d: recent.length })
   }, [orders])
 
-  // ═══ AI ASSISTANT (LOCAL) ═══
+  // ═══ AI ASSISTANT (LOCAL + CONTEXT) ═══
   function sendAiMessage() {
     if (!aiInput.trim() || aiLoading) return
     var userMsg = aiInput.trim()
@@ -765,13 +767,14 @@ export default function Dashboard() {
     setAiMessages(function(prev) { return prev.concat([{ role: 'user', content: userMsg }]) })
     setAiLoading(true)
     setTimeout(function() {
-      var reply = getAiReply(userMsg)
-      setAiMessages(function(prev) { return prev.concat([{ role: 'assistant', content: reply }]) })
+      var result = getAiReply(userMsg, aiLastTopic)
+      if (result.topic) setAiLastTopic(result.topic)
+      setAiMessages(function(prev) { return prev.concat([{ role: 'assistant', content: result.text }]) })
       setAiLoading(false)
     }, 500)
   }
 
-  function getAiReply(msg) {
+  function getAiReply(msg, lastTopic) {
     var q = msg.toLowerCase()
     var sn = shop ? shop.name : 'ta boutique'
     var rev = stats.revenue || 0
@@ -782,170 +785,313 @@ export default function Dashboard() {
     var r7 = statsData.totalRevenue7d || 0
     var o7 = statsData.totalOrders7d || 0
 
+    // ═══ FOLLOW-UP : quand la pro dit qu'elle n'y arrive pas ═══
+    var isStuck = q.match(/j.?y arrive pas|je comprends pas|ca marche pas|pas compris|aide.moi|comment faire|c.?est quoi|explique|plus d.?info|detail|etape par etape|pas clair|bloque|perdu|help/)
+    var isYes = q.match(/^(oui|ok|d.?accord|vas.?y|go|continue|dis.moi|je veux|montre)/)
+    var isNo = q.match(/^(non|pas|merci|c.?est bon|ok merci|compris)/)
+
+    if (isNo) return { text: 'Parfait ! N\'hesite pas si tu as d\'autres questions. Je suis la !', topic: null }
+
+    if ((isStuck || isYes) && lastTopic) {
+      if (lastTopic === 'live') {
+        return { topic: 'live', text:
+          'Pas de panique, voici etape par etape :\n\n' +
+          '\u{1F534} ETAPE 1 : Clique sur "Live Monitor" dans le menu a gauche\n\n' +
+          '\u{1F534} ETAPE 2 : Tu vois 2 icones : TikTok et Instagram. Clique sur celui que tu utilises.\n\n' +
+          '\u{1F534} ETAPE 3 : En bas tu as 2 boutons :\n' +
+          '   - "Mode Demo" (violet) = pour tester sans etre en live\n' +
+          '   - "Mode Reel" = pour ton vrai live\n\n' +
+          '\u{1F534} ETAPE 4 : Si mode reel, entre ton pseudo TikTok SANS le @\n' +
+          '   Exemple : si tu es @maboutique, ecris juste "maboutique"\n\n' +
+          '\u{1F534} ETAPE 5 : Clique le gros bouton rouge "Connecter au live"\n\n' +
+          'Ca y est ! Les commandes vont apparaitre automatiquement. Essaie d\'abord en mode Demo pour te familiariser !\n\n' +
+          'Tu veux que je t\'explique autre chose sur le live ?' }
+      }
+
+      if (lastTopic === 'stripe') {
+        return { topic: 'stripe', text:
+          'Ok je te guide pas a pas :\n\n' +
+          '\u{1F534} ETAPE 1 : Va dans l\'onglet "Parametres" (icone roue dentee dans le menu)\n\n' +
+          '\u{1F534} ETAPE 2 : Descends jusqu\'a la section "Stripe Connect"\n\n' +
+          '\u{1F534} ETAPE 3 : Clique sur le bouton violet "Connecter Stripe"\n\n' +
+          '\u{1F534} ETAPE 4 : Tu es redirigee vers Stripe. La il faut :\n' +
+          '   - Creer un compte Stripe (gratuit) ou te connecter\n' +
+          '   - Renseigner ton IBAN pour recevoir les virements\n' +
+          '   - Valider ton identite (carte d\'identite)\n\n' +
+          '\u{1F534} ETAPE 5 : Une fois fait, tu reviens sur le dashboard et c\'est connecte !\n\n' +
+          'Apres ca, quand tu envoies ton lien de paiement, l\'argent arrive directement sur ton compte bancaire sous 2-7 jours.\n\n' +
+          'Tu as une question sur une etape en particulier ?' }
+      }
+
+      if (lastTopic === 'impression') {
+        return { topic: 'impression', text:
+          'Je t\'explique en detail :\n\n' +
+          '\u{1F534} D\'abord, il faut etre connecte au live (ou en mode demo)\n\n' +
+          '\u{1F534} En haut de l\'ecran du Live Monitor, tu vois les boutons :\n' +
+          '   - "Tickets" (bleu) : ouvre la fenetre des tickets\n' +
+          '   - "Impression auto" : quand c\'est rouge = actif\n\n' +
+          '\u{1F534} Pour configurer ton imprimante MUNBYN :\n' +
+          '   1. Branche l\'imprimante en USB\n' +
+          '   2. Installe le driver MUNBYN si pas deja fait\n' +
+          '   3. Dans les reglages imprimante de ton PC :\n' +
+          '      - Taille papier : 50.8mm x 50.8mm (ou 2x2 pouces)\n' +
+          '      - Orientation : portrait\n\n' +
+          '\u{1F534} Pour tester : lance le mode Demo, attends qu\'un ticket arrive, clique "Imprimer"\n\n' +
+          'Si ca imprime trop grand ou trop petit, verifie la taille du papier dans les parametres de l\'imprimante.' }
+      }
+
+      if (lastTopic === 'expedition') {
+        return { topic: 'expedition', text:
+          'Voici comment expedier concretement :\n\n' +
+          '\u{1F534} ETAPE 1 : Va dans l\'onglet "Livraison"\n\n' +
+          '\u{1F534} ETAPE 2 : Tu vois la liste des commandes payees a expedier\n\n' +
+          '\u{1F534} ETAPE 3 : Pour chaque commande :\n' +
+          '   - Choisis le transporteur (Mondial Relay, Colissimo...)\n' +
+          '   - L\'etiquette se genere automatiquement\n' +
+          '   - Imprime-la et colle-la sur le colis\n\n' +
+          '\u{1F534} ETAPE 4 : Depose le colis au point relais ou en bureau de poste\n\n' +
+          'Conseils pro :\n' +
+          '\u{2022} Emballe le soir meme du live\n' +
+          '\u{2022} Ajoute un petit mot manuscrit (les clientes adorent)\n' +
+          '\u{2022} Prends une photo du colis et envoie-la a ta cliente\n' +
+          '\u{2022} Envoie le numero de suivi par message' }
+      }
+
+      if (lastTopic === 'commandes') {
+        return { topic: 'commandes', text:
+          'Je te montre comment gerer tes commandes :\n\n' +
+          '\u{1F534} VOIR LES COMMANDES :\n' +
+          'Va dans l\'onglet "Commandes". Tu vois la liste avec reference, montant et statut.\n\n' +
+          '\u{1F534} COMPRENDRE LES STATUTS :\n' +
+          '\u{2022} Gris "En attente" = le lien de paiement a ete envoye mais la cliente n\'a pas encore paye\n' +
+          '\u{2022} Orange "Payee" = paiement recu ! Il faut expedier\n' +
+          '\u{2022} Violet "Expediee" = colis envoye, en cours de livraison\n' +
+          '\u{2022} Vert "Livree" = la cliente a recu son colis\n\n' +
+          '\u{1F534} ASTUCE :\n' +
+          'Apres chaque live, va dans le suivi des paiements pour voir qui n\'a pas encore paye et relance-les !' }
+      }
+
+      if (lastTopic === 'stats') {
+        return { topic: 'stats', text:
+          'Voici comment lire tes statistiques :\n\n' +
+          '\u{1F534} VA DANS l\'onglet "Statistiques"\n\n' +
+          '\u{1F534} EN HAUT : 4 chiffres cles\n' +
+          '\u{2022} CA 7 jours = ton chiffre d\'affaires de la semaine\n' +
+          '\u{2022} Commandes 7j = combien de ventes cette semaine\n' +
+          '\u{2022} Panier moyen = combien depense chaque cliente en moyenne\n' +
+          '\u{2022} Taux conversion = % de commandes payees\n\n' +
+          '\u{1F534} LES GRAPHIQUES :\n' +
+          '\u{2022} Barres violettes = chiffre d\'affaires par jour\n' +
+          '\u{2022} Barres roses = nombre de commandes par jour\n' +
+          '\u{2022} Tu peux changer la periode : 7 jours, 30 jours, 6 mois\n\n' +
+          'Tu as actuellement ' + oc + ' commandes pour ' + rev.toFixed(0) + '\u20ac de CA.' }
+      }
+
+      if (lastTopic === 'motscles') {
+        return { topic: 'motscles', text:
+          'Pas a pas pour les mots-cles :\n\n' +
+          '\u{1F534} ETAPE 1 : Va dans le Live Monitor\n\n' +
+          '\u{1F534} ETAPE 2 : Avant de lancer le live, clique sur le bouton "Mots-cles"\n\n' +
+          '\u{1F534} ETAPE 3 : Tu vois la liste des mots-cles actuels. Pour chaque mot-cle :\n' +
+          '   - Clique sur la croix X pour le supprimer\n' +
+          '   - Tape un nouveau mot et clique "Ajouter" pour en creer un\n\n' +
+          '\u{1F534} BONS MOTS-CLES : "jp", "je prends", "pour moi", "je le veux"\n' +
+          '\u{1F534} MAUVAIS MOTS-CLES : "oui", "moi", "ok" (trop de faux positifs)\n\n' +
+          'Le systeme detecte les mots entiers. "jp" ne sera pas detecte dans "aujourd\'hui" par exemple.' }
+      }
+
+      if (lastTopic === 'booster') {
+        return { topic: 'booster', text:
+          'Voici un plan d\'action concret pour cette semaine :\n\n' +
+          '\u{1F4C5} LUNDI : Prepare tes produits, fais de belles photos pour les stories\n\n' +
+          '\u{1F4C5} MARDI 20h : Live ! Commence par les nouveautes\n' +
+          '   - Titre : "ARRIVAGE + PROMOS \u{1F525}"\n' +
+          '   - Objectif : au moins 30 min de live\n\n' +
+          '\u{1F4C5} MERCREDI : Emballe et expedie les commandes du live\n\n' +
+          '\u{1F4C5} JEUDI 20h : 2eme live de la semaine\n' +
+          '   - Repropose les invendus + nouvelles pieces\n\n' +
+          '\u{1F4C5} VENDREDI : Expeditions + stories "colis du jour"\n\n' +
+          '\u{1F4C5} SAMEDI : Story recap de la semaine + teasing prochain live\n\n' +
+          'La regularite c\'est la CLE. 2 lives/semaine minimum. Tes viewers doivent savoir quand tu es en live !' }
+      }
+
+      return { text: 'Dis-moi exactement sur quoi tu bloques et je te guide etape par etape ! Tu peux me demander :\n' +
+        '\u{2022} "aide live" — pour le Live Monitor\n' +
+        '\u{2022} "aide stripe" — pour les paiements\n' +
+        '\u{2022} "aide impression" — pour les tickets\n' +
+        '\u{2022} "aide expedition" — pour la livraison\n' +
+        '\u{2022} "aide stats" — pour les statistiques', topic: lastTopic }
+    }
+
     if (q.match(/tableau|dashboard|vue d.ensemble|accueil/)) {
-      return '\u{1F4CA} Le Tableau de bord — ta page d\'accueil !\n\n' +
+      return { topic: 'dashboard', text:
+        '\u{1F4CA} Le Tableau de bord — ta page d\'accueil !\n\n' +
         '\u{2022} Chiffre d\'affaires : ' + rev.toFixed(0) + '\u20ac\n' +
         '\u{2022} Commandes : ' + oc + '\n' +
         '\u{2022} Clients : ' + cc + '\n' +
         '\u{2022} A expedier : ' + pe + '\n\n' +
-        'Astuce : regarde cette page tous les matins pour suivre ton activite !'
+        'Regarde cette page tous les matins pour suivre ton activite !\n\n' +
+        'Tu veux que je t\'explique un element en detail ?' }
     }
 
     if (q.match(/live|monitor|tiktok|instagram|connexion|lancer/)) {
-      return '\u{1F4E1} Le Live Monitor capte les commandes automatiquement !\n\n' +
-        'Comment l\'utiliser :\n' +
+      return { topic: 'live', text:
+        '\u{1F4E1} Le Live Monitor capte les commandes automatiquement !\n\n' +
         '1. Va dans l\'onglet Live Monitor\n' +
         '2. Choisis TikTok ou Instagram\n' +
         '3. Entre ton pseudo\n' +
         '4. Lance la connexion\n\n' +
-        'Mode Demo : teste sans etre en live !\n\n' +
-        'Quand un viewer ecrit "je prends" ou "jp", ca cree un ticket automatiquement.\n' +
-        'Active l\'impression auto pour imprimer chaque ticket en temps reel.'
+        'Mode Demo disponible pour tester sans etre en live.\n\n' +
+        'Tu veux que je t\'explique etape par etape ? Dis "oui" !' }
     }
 
     if (q.match(/mot.cl[eE]|detection|keyword|detect/)) {
-      return '\u{1F3AF} Les mots-cles de detection\n\n' +
-        'Le Live Monitor detecte les commandes quand un viewer ecrit un mot-cle.\n\n' +
-        'Pour configurer :\n' +
-        '1. Dans Live Monitor, clique sur "Mots-cles"\n' +
-        '2. Ajoute ou supprime des mots-cles\n' +
-        '3. Le systeme detecte les phrases entieres (pas les morceaux)\n\n' +
-        'Astuce : garde des mots-cles precis comme "jp", "je prends", "pour moi". Evite les mots trop courts.'
+      return { topic: 'motscles', text:
+        '\u{1F3AF} Les mots-cles detectent les commandes dans le chat.\n\n' +
+        'Quand un viewer ecrit "je prends" ou "jp", ca cree un ticket.\n\n' +
+        'Tu peux ajouter/supprimer des mots-cles dans les reglages du Live Monitor.\n\n' +
+        'Tu veux que je t\'explique comment les configurer ?' }
     }
 
     if (q.match(/imprim|ticket|etiquette|thermique|print/)) {
-      return '\u{1F5A8} Impression des tickets (50.8mm x 50.8mm)\n\n' +
-        '2 modes :\n' +
-        '1. Impression auto : chaque ticket s\'imprime des qu\'il arrive\n' +
-        '2. Imprimer tout : tous les tickets d\'un coup a la fin\n\n' +
-        'Clique sur "Tickets" pour ouvrir la fenetre, puis active "Impression auto" si tu veux du temps reel.\n\n' +
-        'Astuce : fais un test en mode Demo avant ton vrai live !'
+      return { topic: 'impression', text:
+        '\u{1F5A8} Impression tickets 50.8mm x 50.8mm\n\n' +
+        '\u{2022} Impression auto : chaque ticket s\'imprime en temps reel\n' +
+        '\u{2022} Imprimer tout : tous les tickets d\'un coup\n\n' +
+        'Clique "Tickets" dans le Live Monitor pour ouvrir la fenetre.\n\n' +
+        'Besoin d\'aide pour configurer l\'imprimante ? Dis "oui" !' }
     }
 
     if (q.match(/stat|graphique|chiffre|performance|analyse|resultat/)) {
-      var r = '\u{1F4C8} Tes statistiques ' + sn + ' :\n\n'
-      r += 'Sur 7 jours : ' + r7.toFixed(0) + '\u20ac de CA, ' + o7 + ' commandes\n'
-      r += 'Au total : ' + rev.toFixed(0) + '\u20ac de CA, ' + oc + ' commandes, ' + cc + ' clients\n'
-      r += 'Panier moyen : ' + avg.toFixed(0) + '\u20ac\n\n'
-      if (oc === 0) r += 'Lance ton premier live et les stats se rempliront !'
-      else if (avg < 25) r += 'Conseil : ton panier moyen est de ' + avg.toFixed(0) + '\u20ac. Propose des lots ou offres "2 articles" pour l\'augmenter !'
-      else if (avg < 50) r += 'Bon panier moyen ! Essaie les ventes flash avec compte a rebours pour aller plus haut.'
-      else r += 'Excellent panier moyen de ' + avg.toFixed(0) + '\u20ac ! Fidelise tes meilleures clientes avec des avant-premieres.'
-      return r
+      var r = '\u{1F4C8} Tes stats ' + sn + ' :\n\n'
+      r += 'CA 7 jours : ' + r7.toFixed(0) + '\u20ac | Commandes 7j : ' + o7 + '\n'
+      r += 'CA total : ' + rev.toFixed(0) + '\u20ac | Panier moyen : ' + avg.toFixed(0) + '\u20ac\n\n'
+      if (oc === 0) r += 'Lance ton premier live pour remplir tes stats !'
+      else if (avg < 25) r += 'Conseil : panier moyen de ' + avg.toFixed(0) + '\u20ac — propose des lots pour l\'augmenter !'
+      else if (avg < 50) r += 'Bon panier moyen ! Ventes flash avec compte a rebours pour aller plus haut.'
+      else r += 'Excellent ! ' + avg.toFixed(0) + '\u20ac de panier moyen. Fidelise tes meilleures clientes.'
+      r += '\n\nTu veux que je t\'explique comment lire les graphiques ?'
+      return { topic: 'stats', text: r }
     }
 
-    if (q.match(/commande|order|gestion|suivi/)) {
-      var r = '\u{1F4CB} Tu as ' + oc + ' commandes'
-      if (pe > 0) r += ' dont ' + pe + ' a expedier !\n\n' + 'N\'oublie pas d\'expedier ! Va dans Livraison.\n\n'
-      else r += ' et tout est a jour !\n\n'
-      r += 'Les statuts :\n'
-      r += '\u{2022} En attente = pas encore paye\n'
-      r += '\u{2022} Payee = pret a expedier\n'
-      r += '\u{2022} Expediee = colis envoye\n'
-      r += '\u{2022} Livree = colis recu\n\n'
-      r += 'Astuce : envoie le lien de paiement dans les 30min apres le live !'
-      return r
+    if (q.match(/commande|order|gestion|suivi|pay[eé]|qui.*pas.*pay|impay|relance/)) {
+      var r = '\u{1F4CB} Commandes : ' + oc + ' au total'
+      if (pe > 0) r += ' dont ' + pe + ' a expedier\n\n'
+      else r += '\n\n'
+      r += 'Statuts : En attente (pas paye) > Payee > Expediee > Livree\n\n'
+      r += '\u{1F4A1} Pour voir qui n\'a pas paye :\n'
+      r += 'Va dans l\'onglet Commandes — les commandes "En attente" sont celles pas encore payees.\n'
+      r += 'Apres un live, va dans le Live Monitor > "Suivi paiements" pour croiser les tickets live avec les paiements recus.\n\n'
+      r += 'Astuce : relance les non-payees dans les 24h !'
+      return { topic: 'commandes', text: r }
     }
 
-    if (q.match(/stripe|paiement|payer|argent|carte|bancaire|connect/)) {
-      return '\u{1F4B3} Stripe — le systeme de paiement\n\n' +
-        '1. Va dans Parametres > Stripe Connect\n' +
-        '2. Connecte ou cree ton compte Stripe\n' +
-        '3. Tes clientes paient par carte via ton lien\n' +
-        '4. L\'argent arrive sous 2-7 jours\n\n' +
-        'Astuce : envoie le lien dans les 30min apres le live, c\'est la que le taux de conversion est le plus haut !'
+    if (q.match(/stripe|paiement|argent|carte|bancaire|connect|virement/)) {
+      return { topic: 'stripe', text:
+        '\u{1F4B3} Stripe — systeme de paiement\n\n' +
+        '1. Parametres > Stripe Connect\n' +
+        '2. Connecte ton compte Stripe\n' +
+        '3. Tes clientes paient par carte\n' +
+        '4. Argent sur ton compte en 2-7 jours\n\n' +
+        'Envoie le lien de paiement dans les 30min apres le live !\n\n' +
+        'Tu veux un guide pas a pas ? Dis "oui" !' }
     }
 
-    if (q.match(/livr|expedi|colis|boxtal|mondial|colissimo|point relais|envoi/)) {
-      var r = '\u{1F4E6} Expedition des commandes\n\n'
-      r += 'Options :\n'
-      r += '\u{2022} Mondial Relay (point relais) — le moins cher\n'
-      r += '\u{2022} Colissimo (domicile) — plus rapide\n'
+    if (q.match(/livr|expedi|colis|boxtal|mondial|colissimo|envoi|relais/)) {
+      var r = '\u{1F4E6} Expedition\n\n'
+      r += '\u{2022} Mondial Relay — le moins cher (point relais)\n'
+      r += '\u{2022} Colissimo — rapide (domicile)\n'
       r += '\u{2022} Boxtal — compare les prix\n\n'
-      r += 'Conseils : emballe bien, ajoute un petit mot manuscrit, envoie le numero de suivi.\n\n'
-      if (pe > 0) r += 'Tu as ' + pe + ' commande(s) a expedier !'
-      else r += 'Tout est a jour, bravo !'
-      return r
+      if (pe > 0) r += '\u{26A0} Tu as ' + pe + ' commande(s) a expedier !\n\n'
+      r += 'Besoin d\'aide pour expedier ? Dis "oui" !'
+      return { topic: 'expedition', text: r }
     }
 
     if (q.match(/abonnement|prix|tarif|forfait|27|mensuel/)) {
-      return '\u{1F48E} Abonnement MY LIVE PAIEMENT\n\n' +
-        '27\u20ac/mois — 0% commission — sans engagement\n\n' +
-        'Inclus : Dashboard, Live Monitor, Impression tickets, Stats, Assistant, Gestion commandes, Stripe\n\n' +
-        'A 27\u20ac/mois sans commission, quelques ventes suffisent pour rentabiliser !'
+      return { topic: null, text:
+        '\u{1F48E} 27\u20ac/mois — 0% commission — sans engagement\n\n' +
+        'Inclus : Dashboard, Live Monitor, Impression, Stats, Assistant, Commandes, Stripe\n\n' +
+        'Quelques ventes suffisent pour rentabiliser !' }
     }
 
-    if (q.match(/boost|vente|strateg|augment|conseil|astuce|evoluer|developper|croissance|grandir/)) {
+    if (q.match(/boost|vente|strateg|augment|conseil|astuce|evoluer|developper|croissance|grandir|ameliorer/)) {
       if (oc < 10) {
-        return '\u{1F680} Tu debutes — voici les bases :\n\n' +
-          '1. Regularite : 2-3 lives/semaine a heures fixes\n' +
-          '2. Titre accrocheur : "ARRIVAGE NEUF -50%" attire plus que "Live vente"\n' +
-          '3. Interaction : reponds a CHAQUE commentaire\n' +
-          '4. Urgence : "Il en reste 3 !" pousse a l\'achat\n' +
-          '5. Packaging : montre comment tu emballes en live'
+        return { topic: 'booster', text:
+          '\u{1F680} Tu debutes — les bases :\n\n' +
+          '1. 2-3 lives/semaine a heures fixes\n' +
+          '2. Titres accrocheurs : "ARRIVAGE -50%"\n' +
+          '3. Reponds a CHAQUE commentaire\n' +
+          '4. Urgence : "Il en reste 3 !"\n' +
+          '5. Montre l\'emballage en live\n\n' +
+          'Tu veux un planning semaine concret ? Dis "oui" !' }
       } else if (oc < 50) {
-        return '\u{1F680} ' + oc + ' commandes, bravo ! Pour accelerer :\n\n' +
-          '1. Lots/bundles : "2 articles = -20%" (panier moyen actuel : ' + avg.toFixed(0) + '\u20ac)\n' +
-          '2. Teasing : stories 2h avant le live\n' +
-          '3. Groupe WhatsApp VIP pour tes meilleures clientes\n' +
-          '4. Cross-selling : "Ce top va bien avec le pantalon"\n' +
-          '5. Teste les horaires : 20h-22h est souvent optimal'
+        return { topic: 'booster', text:
+          '\u{1F680} ' + oc + ' commandes, bravo ! Pour accelerer :\n\n' +
+          '1. Lots : "2 articles = -20%" (panier moyen : ' + avg.toFixed(0) + '\u20ac)\n' +
+          '2. Stories 2h avant le live\n' +
+          '3. Groupe WhatsApp VIP\n' +
+          '4. Cross-selling\n' +
+          '5. Teste 20h-22h\n\n' +
+          'Tu veux un plan d\'action semaine ? Dis "oui" !' }
       } else {
-        return '\u{1F680} ' + oc + ' commandes ! Tu es une pro — pour scaler :\n\n' +
-          '1. Recrute pour emballer pendant tes lives\n' +
+        return { topic: 'booster', text:
+          '\u{1F680} ' + oc + ' commandes, tu es une pro ! Pour scaler :\n\n' +
+          '1. Recrute pour emballer\n' +
           '2. Multi-plateforme TikTok + Instagram\n' +
-          '3. Produits exclusifs live uniquement\n' +
-          '4. Programme VIP (' + cc + ' clients a fideliser)\n' +
-          '5. Collabs avec d\'autres vendeuses'
+          '3. Exclusivites live\n' +
+          '4. Programme VIP (' + cc + ' clients)\n' +
+          '5. Collabs vendeuses\n\n' +
+          'Tu veux un plan semaine ? Dis "oui" !' }
       }
     }
 
     if (q.match(/client|fideli|acheteu|audience/)) {
-      var r = '\u{1F465} Tu as ' + cc + ' clients !\n\n'
-      r += 'Conseils fidelisation :\n'
-      r += '\u{2022} Message perso apres chaque achat\n'
-      r += '\u{2022} Reduction pour le 2e achat\n'
-      r += '\u{2022} Groupe prive meilleures clientes\n'
-      r += '\u{2022} Note les preferences (taille, style)\n'
-      r += '\u{2022} Avant-premieres nouveaux arrivages'
-      return r
+      return { topic: null, text:
+        '\u{1F465} ' + cc + ' clients\n\n' +
+        '\u{2022} Message perso apres chaque achat\n' +
+        '\u{2022} Reduction 2e achat\n' +
+        '\u{2022} Groupe prive meilleures clientes\n' +
+        '\u{2022} Note preferences (taille, style)\n' +
+        '\u{2022} Avant-premieres nouveaux arrivages' }
     }
 
     if (q.match(/^(bonjour|salut|hello|coucou|hey|bjr)/)) {
-      return 'Coucou ! Je suis ton assistante MY LIVE PAIEMENT !\n\n' +
+      return { topic: null, text:
+        'Coucou ! Je suis ton assistante MY LIVE PAIEMENT !\n\n' +
         'Je peux t\'aider avec :\n' +
         '\u{1F4CA} Dashboard et stats\n' +
         '\u{1F4E1} Live Monitor\n' +
         '\u{1F4B3} Paiements Stripe\n' +
         '\u{1F4E6} Expeditions\n' +
         '\u{1F680} Conseils business\n\n' +
-        'Qu\'est-ce que je peux faire pour toi ?'
+        'Qu\'est-ce que je peux faire pour toi ?' }
     }
 
     if (q.match(/merci|parfait|super|genial|top/)) {
-      return 'Avec plaisir ! N\'hesite pas si tu as d\'autres questions. Je suis la pour t\'aider a developper ' + sn + ' !'
+      return { topic: null, text: 'Avec plaisir ! N\'hesite pas, je suis la pour ' + sn + ' !' }
     }
 
     if (q.match(/param|config|reglage|modifier/)) {
-      return 'Dans Parametres tu peux :\n' +
-        '\u{2022} Voir infos boutique (nom, slug, email)\n' +
-        '\u{2022} Verifier le serveur Live Monitor\n' +
-        '\u{2022} Gerer ton abonnement\n' +
-        '\u{2022} Connecter Stripe'
+      return { topic: null, text:
+        'Dans Parametres :\n' +
+        '\u{2022} Infos boutique\n' +
+        '\u{2022} Serveur Live Monitor\n' +
+        '\u{2022} Abonnement\n' +
+        '\u{2022} Stripe Connect' }
     }
 
-    return 'Je peux t\'aider sur :\n\n' +
-      '\u{1F4CA} Dashboard — dis "tableau de bord"\n' +
-      '\u{1F4E1} Live Monitor — dis "live" ou "tiktok"\n' +
+    return { topic: null, text:
+      'Je peux t\'aider sur :\n\n' +
+      '\u{1F4CA} Dashboard — dis "dashboard"\n' +
+      '\u{1F4E1} Live Monitor — dis "live"\n' +
       '\u{1F4C8} Statistiques — dis "stats"\n' +
       '\u{1F4CB} Commandes — dis "commandes"\n' +
       '\u{1F4B3} Paiements — dis "stripe"\n' +
       '\u{1F4E6} Livraison — dis "expedition"\n' +
       '\u{1F680} Booster ventes — dis "conseils"\n' +
       '\u{1F3AF} Mots-cles — dis "mots-cles"\n' +
-      '\u{1F5A8} Impression — dis "tickets"'
+      '\u{1F5A8} Impression — dis "tickets"' }
   }
-
 
   // Auto-scroll AI chat
   useEffect(function() {
@@ -1456,11 +1602,70 @@ export default function Dashboard() {
                       🖨️ Imprimer les commandes
                     </button>
                   )}
+                  {liveOrders.length > 0 && (
+                    <button onClick={function() { setShowPaymentTracking(!showPaymentTracking) }}
+                      style={{ padding: '12px 24px', background: showPaymentTracking ? '#10B981' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, boxShadow: '0 4px 12px rgba(102,126,234,.25)', fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                      💰 Suivi paiements
+                    </button>
+                  )}
                   <button onClick={() => { setActiveTab('orders'); loadData(shop.id); }}
                     style={{ padding: '12px 24px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
                     Voir les commandes
                   </button>
                 </div>
+
+                {/* ═══ PAYMENT TRACKING VIEW ═══ */}
+                {showPaymentTracking && liveOrders.length > 0 && (
+                  <div style={{ marginTop: 24, background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A2E' }}>Suivi des paiements</div>
+                        <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Croise les tickets live avec les commandes payees</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <div style={{ textAlign: 'center', padding: '8px 16px', borderRadius: 10, background: '#ECFDF5' }}>
+                          <div style={{ fontSize: 20, fontWeight: 800, color: '#10B981' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                          <div style={{ fontSize: 10, color: '#10B981', fontWeight: 600 }}>Payees</div>
+                        </div>
+                        <div style={{ textAlign: 'center', padding: '8px 16px', borderRadius: 10, background: '#FEF2F2' }}>
+                          <div style={{ fontSize: 20, fontWeight: 800, color: '#EF4444' }}>{liveOrders.filter(function(lo) { return !orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                          <div style={{ fontSize: 10, color: '#EF4444', fontWeight: 600 }}>Non payees</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {liveOrders.map(function(lo, idx) {
+                        var isPaid = orders.some(function(o) {
+                          return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                        })
+                        var matchedOrder = orders.find(function(o) {
+                          return o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                        })
+                        return (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: isPaid ? '#F0FDF4' : '#FFF7ED', border: isPaid ? '1px solid #BBF7D0' : '1px solid #FED7AA' }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: isPaid ? '#10B981' : '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <span style={{ color: '#FFF', fontSize: 16 }}>{isPaid ? '✓' : '⏳'}</span>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 14, fontWeight: 800 }}>#{lo.orderNum}</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
+                              </div>
+                              <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{lo.text}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: isPaid ? '#10B981' : '#F59E0B', color: '#FFF' }}>
+                                {isPaid ? 'PAYE' : 'NON PAYE'}
+                              </div>
+                              {matchedOrder && <div style={{ fontSize: 10, color: '#999', marginTop: 4 }}>{matchedOrder.reference} — {matchedOrder.status === 'paid' ? 'A expedier' : matchedOrder.status === 'shipped' ? 'Expedie' : matchedOrder.status === 'delivered' ? 'Livre' : 'En attente'}</div>}
+                              {!isPaid && <div style={{ fontSize: 10, color: '#F59E0B', marginTop: 4 }}>Relancer</div>}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1528,6 +1733,7 @@ export default function Dashboard() {
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => setLiveFilter('all')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'all' ? '#1A1A1A' : '#F5F4F2', color: liveFilter === 'all' ? '#FFF' : '#999' }}>Tous ({allComments.length})</button>
                     <button onClick={() => setLiveFilter('orders')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'orders' ? '#F59E0B' : '#F5F4F2', color: liveFilter === 'orders' ? '#FFF' : '#999' }}>🛒 Commandes ({liveOrders.length})</button>
+                    <button onClick={() => setLiveFilter('payments')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'payments' ? '#10B981' : '#F5F4F2', color: liveFilter === 'payments' ? '#FFF' : '#999' }}>💰 Suivi paiements</button>
                   </div>
                   <button onClick={() => setAutoScroll(!autoScroll)}
                     style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 11, cursor: 'pointer', fontFamily: sf, background: autoScroll ? '#ECFDF5' : '#F5F4F2', color: autoScroll ? '#10B981' : '#999' }}>
@@ -1535,7 +1741,62 @@ export default function Dashboard() {
                   </button>
                 </div>
 
+                {/* Payment tracking view */}
+                {liveFilter === 'payments' && (
+                  <div style={{ background: '#FFF', borderRadius: 16, padding: 20, maxHeight: 500, overflowY: 'auto' }}>
+                    {liveOrders.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 40, color: '#CCC' }}>
+                        <div style={{ fontSize: 36, marginBottom: 8 }}>💰</div>
+                        <p style={{ fontSize: 13 }}>Aucune commande live pour le moment</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#ECFDF5' }}>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: '#10B981' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                            <div style={{ fontSize: 10, color: '#10B981', fontWeight: 600 }}>Payees</div>
+                          </div>
+                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#FEF2F2' }}>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: '#EF4444' }}>{liveOrders.filter(function(lo) { return !orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                            <div style={{ fontSize: 10, color: '#EF4444', fontWeight: 600 }}>Non payees</div>
+                          </div>
+                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#F5F3FF' }}>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: '#7C3AED' }}>{liveOrders.length}</div>
+                            <div style={{ fontSize: 10, color: '#7C3AED', fontWeight: 600 }}>Total tickets</div>
+                          </div>
+                        </div>
+                        {liveOrders.map(function(lo, idx) {
+                          var isPaid = orders.some(function(o) {
+                            return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                          })
+                          var matchedOrder = orders.find(function(o) {
+                            return o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                          })
+                          return (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, marginBottom: 4, background: isPaid ? '#F0FDF4' : '#FFFBEB', border: isPaid ? '1px solid #BBF7D0' : '1px solid #FDE68A' }}>
+                              <div style={{ width: 32, height: 32, borderRadius: 8, background: isPaid ? '#10B981' : '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <span style={{ color: '#FFF', fontSize: 13, fontWeight: 800 }}>{isPaid ? '✓' : '!'}</span>
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span style={{ fontSize: 13, fontWeight: 800 }}>#{lo.orderNum}</span>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
+                                </div>
+                                <div style={{ fontSize: 11, color: '#999' }}>{lo.text} — {lo.time}</div>
+                              </div>
+                              <div style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: isPaid ? '#10B981' : '#F59E0B', color: '#FFF' }}>
+                                {isPaid ? 'PAYE' : 'NON PAYE'}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Comments feed */}
+                {liveFilter !== 'payments' && (
                 <div ref={liveScrollRef} style={{ background: '#FFF', borderRadius: 16, padding: 16, maxHeight: 500, overflowY: 'auto' }}>
                   {(liveFilter === 'orders' ? allComments.filter(c => c.isPurchase) : allComments).map(c => (
                     <div key={c.id} style={{
@@ -1573,6 +1834,7 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Orders summary (collapsible) */}
                 {liveOrders.length > 0 && (
