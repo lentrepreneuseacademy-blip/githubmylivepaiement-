@@ -290,11 +290,12 @@ export default function Dashboard() {
 
     const ticket = w.document.createElement('div')
     ticket.className = 'ticket'
-    const numDiv = '<div class="ticket-num">#' + order.orderNum + '</div>'
-    const userDiv = '<div class="ticket-user">@' + order.user + '</div>'
-    const textDiv = '<div class="ticket-text">' + order.text + '</div>'
-    const timeDiv = '<div class="ticket-time">' + order.time + '</div>'
-    ticket.innerHTML = numDiv + userDiv + textDiv + timeDiv
+    ticket.innerHTML = \`
+      <div class="ticket-num">#\${order.orderNum}</div>
+      <div class="ticket-user">@\${order.user}</div>
+      <div class="ticket-text">\${order.text}</div>
+      <div class="ticket-time">\${order.time}</div>
+    \`
     container.appendChild(ticket)
 
     // Scroll en bas
@@ -749,7 +750,7 @@ export default function Dashboard() {
               <input type="email" placeholder="Email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required style={{ ...inputStyle, marginBottom: 10 }} />
               <input type="password" placeholder="Mot de passe" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required style={{ ...inputStyle, marginBottom: 16 }} />
               {loginError && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{loginError}</p>}
-              <button type="submit" style={{ width: '100%', padding: 16, background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>Se connecter</button>
+              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Se connecter</button>
               <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#999' }}>
                 Pas encore de compte ? <button type="button" onClick={() => setIsSignup(true)} style={{ color: '#1A1A1A', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>S'inscrire</button>
               </p>
@@ -765,7 +766,7 @@ export default function Dashboard() {
               <input type="email" placeholder="Email" value={signupData.email} onChange={e => setSignupData({...signupData, email: e.target.value})} required style={{ ...inputStyle, marginBottom: 10 }} />
               <input type="password" placeholder="Mot de passe (min 6 car.)" value={signupData.password} onChange={e => setSignupData({...signupData, password: e.target.value})} required minLength={6} style={{ ...inputStyle, marginBottom: 16 }} />
               {loginError && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{loginError}</p>}
-              <button type="submit" style={{ width: '100%', padding: 16, background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>Créer ma boutique</button>
+              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Créer ma boutique</button>
               <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#999' }}>
                 Déjà un compte ? <button type="button" onClick={() => setIsSignup(false)} style={{ color: '#1A1A1A', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>Se connecter</button>
               </p>
@@ -851,7 +852,7 @@ export default function Dashboard() {
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#92400E' }}>⏳ {stats.pendingShip} commande{stats.pendingShip > 1 ? 's' : ''} en attente d'expédition</div>
                   <div style={{ fontSize: 12, color: '#B45309' }}>Génère les étiquettes pour expédier</div>
                 </div>
-                <button onClick={() => setActiveTab('shipping')} style={{ padding: '8px 16px', background: '#92400E', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Voir</button>
+                <button onClick={() => setActiveTab('shipping')} style={{ padding: '8px 16px', background: '#92400E', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>Voir</button>
               </div>
             )}
 
@@ -863,7 +864,7 @@ export default function Dashboard() {
                   {typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug}
                 </div>
                 <button onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/pay/${shop?.slug}`)}
-                  style={{ padding: '12px 18px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                  style={{ padding: '14px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                   Copier
                 </button>
               </div>
@@ -872,7 +873,7 @@ export default function Dashboard() {
             {/* Quick create order */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: '#CCC' }}>Dernières commandes</div>
-              <button onClick={() => setShowNewOrder(true)} style={{ padding: '8px 16px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+              <button onClick={() => setShowNewOrder(true)} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                 + Nouvelle commande
               </button>
             </div>
@@ -887,7 +888,7 @@ export default function Dashboard() {
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="submit" style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Créer</button>
-                  <button type="button" onClick={() => setShowNewOrder(false)} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#999', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Annuler</button>
+                  <button type="button" onClick={() => setShowNewOrder(false)} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#777', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Annuler</button>
                 </div>
               </form>
             )}
@@ -942,7 +943,7 @@ export default function Dashboard() {
                   ].map(p => (
                     <button key={p.id} onClick={() => { if (p.available) { setLivePlatform(p.id); setLiveMode(LIVE_SERVER_URL ? 'real' : 'demo'); setLiveError(null); } }}
                       style={{
-                        flex: 1, padding: '28px 20px', background: '#FFF', borderRadius: 18, cursor: p.available ? 'pointer' : 'not-allowed', fontFamily: sf,
+                        flex: 1, padding: '32px 24px', background: '#FFF', borderRadius: 20, cursor: p.available ? 'pointer' : 'not-allowed', fontFamily: sf,
                         border: p.available ? '2px solid rgba(0,0,0,.06)' : '2px dashed rgba(0,0,0,.08)',
                         opacity: p.available ? 1 : 0.5,
                         transition: 'border-color .2s, transform .2s',
@@ -1015,7 +1016,7 @@ export default function Dashboard() {
                 {/* ── KEYWORD CONFIG ── */}
                 <div style={{ marginTop: 20 }}>
                   <button onClick={() => setShowKeywordConfig(!showKeywordConfig)}
-                    style={{ fontSize: 13, fontWeight: 600, color: '#555', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>
+                    style={{ fontSize: 13, fontWeight: 600, color: '#555', background: '#F5F4F2', border: '2px solid rgba(0,0,0,.04)', borderRadius: 12, padding: '10px 16px', cursor: 'pointer', fontFamily: sf }}>
                     {showKeywordConfig ? '▾' : '▸'} ⚙️ Mots-clés de détection ({keywords.length})
                   </button>
 
@@ -1106,7 +1107,7 @@ export default function Dashboard() {
                   </button>
                   {LIVE_SERVER_URL && (
                     <button onClick={() => setLiveMode(liveMode === 'demo' ? 'real' : 'demo')}
-                      style={{ fontSize: 13, color: '#635BFF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf, fontWeight: 600 }}>
+                      style={{ fontSize: 13, color: '#FFF', background: '#635BFF', border: 'none', borderRadius: 12, padding: '10px 20px', cursor: 'pointer', fontFamily: sf, fontWeight: 600 }}>
                       {liveMode === 'demo' ? '⚡ Passer en mode réel' : '🎮 Passer en mode démo'}
                     </button>
                   )}
@@ -1170,7 +1171,7 @@ export default function Dashboard() {
                   </button>
                   {liveOrders.length > 0 && (
                     <button onClick={printLiveOrders}
-                      style={{ padding: '12px 24px', background: '#F59E0B', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                      style={{ padding: '12px 24px', background: '#F59E0B', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, boxShadow: '0 4px 12px rgba(245,158,11,.25)', fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
                       🖨️ Imprimer les commandes
                     </button>
                   )}
@@ -1204,18 +1205,18 @@ export default function Dashboard() {
                     </button>
                     {/* Ticket window */}
                     <button onClick={openReceiptWindow}
-                      style={{ padding: '6px 12px', background: '#EFF6FF', border: 'none', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: sf, fontWeight: 600, color: '#3B82F6' }}
+                      style={{ padding: '10px 18px', background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', border: 'none', borderRadius: 12, fontSize: 13, cursor: 'pointer', fontFamily: sf, fontWeight: 700, color: '#FFF', boxShadow: '0 2px 8px rgba(59,130,246,.25)' }}
                       title="Ouvrir la fenêtre des tickets">
                       🖨️ Tickets
                     </button>
                     {/* Auto-print toggle */}
                     <button onClick={() => { if (!autoPrintEnabled) openReceiptWindow(); setAutoPrintEnabled(!autoPrintEnabled) }}
-                      style={{ padding: '6px 12px', background: autoPrintEnabled ? '#FEF2F2' : '#F5F4F2', border: autoPrintEnabled ? '2px solid #EF4444' : 'none', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: sf, fontWeight: 600, color: autoPrintEnabled ? '#DC2626' : '#999' }}
+                      style={{ padding: '10px 18px', background: autoPrintEnabled ? '#EF4444' : '#F5F4F2', border: 'none', borderRadius: 12, fontSize: 13, cursor: 'pointer', fontFamily: sf, fontWeight: 600, color: autoPrintEnabled ? '#FFF' : '#888' }}
                       title={autoPrintEnabled ? 'Impression auto activée' : 'Impression auto désactivée'}>
                       {autoPrintEnabled ? '🔴 Auto-print ON' : 'Auto-print'}
                     </button>
                     <button onClick={() => { stopLive(); resetLive(); }}
-                      style={{ padding: '8px 16px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                      style={{ padding: '8px 16px', background: '#FFF', color: '#DC2626', border: '2px solid #FECACA', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                       Déconnecter
                     </button>
                   </div>
@@ -1298,7 +1299,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                       <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: '#92400E' }}>🛒 RÉCAP COMMANDES DU LIVE ({liveOrders.length})</div>
                       <button onClick={printLiveOrders}
-                        style={{ padding: '6px 14px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: sf, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, display: 'flex', alignItems: 'center', gap: 4 }}>
                         🖨️ Imprimer
                       </button>
                     </div>
