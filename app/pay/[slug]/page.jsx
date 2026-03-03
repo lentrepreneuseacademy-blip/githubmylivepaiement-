@@ -983,7 +983,7 @@ export default function PayPage() {
                   // Save/update order in Supabase
                   const orderPayload = {
                     shop_id: shopData?.id,
-                    reference: (orderData?.reference || orderData?.ref || ref.toUpperCase())erence || (orderData?.reference || orderData?.ref || ref.toUpperCase()) || ref.toUpperCase(),
+                    reference: (orderData?.reference || orderData?.ref || ref.toUpperCase()),
                     total_amount: parsedAmount,
                     shipping_cost: shippingCost,
                     client_first_name: prenom,
@@ -1035,7 +1035,7 @@ export default function PayPage() {
               <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 14 }}>{t.amountSection}</h2>
                 <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.08)", borderRadius: 14, padding: 18, display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ fontFamily: sf, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#CCC" }}>Ref. {((orderData?.reference || orderData?.ref || ref.toUpperCase())erence || (orderData?.reference || orderData?.ref || ref.toUpperCase()) || ref.toUpperCase())}</div>
+                  <div style={{ fontFamily: sf, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#CCC" }}>Ref. {(orderData?.reference || orderData?.ref || ref.toUpperCase())}</div>
                   <div style={{ flex: 1 }} />
                   <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={t.amountPlaceholder} min="0" step="0.01"
                     style={{ width: 120, padding: "12px 14px", border: "2px solid #1A1A1A", borderRadius: 10, fontFamily: sf, fontSize: 22, fontWeight: 700, textAlign: "right", outline: "none", background: "#FFF" }} />
