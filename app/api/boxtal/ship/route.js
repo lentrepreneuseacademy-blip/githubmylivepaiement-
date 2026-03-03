@@ -18,7 +18,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Configure tes identifiants Boxtal dans Parametres.' })
     }
 
-    var baseUrl = 'https://api.envoimoinscher.com'
+    // URL correcte Boxtal / EnvoiMoinsCher
+    var baseUrl = bx.testMode
+      ? 'https://test.envoimoinscher.com'
+      : 'https://www.envoimoinscher.com'
 
     var params = new URLSearchParams()
     // Sender from config
@@ -52,8 +55,6 @@ export async function POST(request) {
     params.append('colis.description', parcel.description || 'Vetements')
     params.append('colis.valeur', String(parcel.value || 0))
     params.append('code_contenu', '40120')
-    params.append('collecte', 'aucun')
-    params.append('type_emballage', 'colis')
     // Carrier
     params.append('operateur', carrier.operator || '')
     params.append('service', carrier.service || '')
@@ -72,13 +73,16 @@ export async function POST(request) {
     })
     var xml = await res.text()
 
+    if (res.status === 401 || res.status === 403) {
+      return NextResponse.json({ error: 'Identifiants Boxtal invalides.' })
+    }
+
     var refMatch = xml.match(/<reference>(.*?)<\/reference>/)
     var labelMatch = xml.match(/<label>(.*?)<\/label>/)
-    var errorMatch = xml.match(/<error>(.*?)<\/error>/s)
 
-    if (errorMatch && !refMatch) {
-      var errMsg = errorMatch[1].match(/<message>(.*?)<\/message>/)
-      return NextResponse.json({ error: errMsg ? errMsg[1] : 'Erreur Boxtal' })
+    if (!refMatch && (xml.includes('<e>') || xml.includes('<errors>'))) {
+      var errMsg = xml.match(/<message>(.*?)<\/message>/s)
+      return NextResponse.json({ error: errMsg ? errMsg[1] : 'Erreur Boxtal lors de la commande.' })
     }
 
     return NextResponse.json({
@@ -88,6 +92,6 @@ export async function POST(request) {
     })
 
   } catch (err) {
-    return NextResponse.json({ error: 'Erreur: ' + (err.message || 'Erreur inconnue') })
+    return NextResponse.json({ error: 'Erreur connexion Boxtal: ' + (err.message || 'Erreur inconnue') })
   }
 }
