@@ -290,12 +290,11 @@ export default function Dashboard() {
 
     const ticket = w.document.createElement('div')
     ticket.className = 'ticket'
-    ticket.innerHTML = \`
-      <div class="ticket-num">#\${order.orderNum}</div>
-      <div class="ticket-user">@\${order.user}</div>
-      <div class="ticket-text">\${order.text}</div>
-      <div class="ticket-time">\${order.time}</div>
-    \`
+    const numDiv = '<div class="ticket-num">#' + order.orderNum + '</div>'
+    const userDiv = '<div class="ticket-user">@' + order.user + '</div>'
+    const textDiv = '<div class="ticket-text">' + order.text + '</div>'
+    const timeDiv = '<div class="ticket-time">' + order.time + '</div>'
+    ticket.innerHTML = numDiv + userDiv + textDiv + timeDiv
     container.appendChild(ticket)
 
     // Scroll en bas
