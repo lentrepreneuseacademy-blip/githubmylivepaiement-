@@ -1,97 +1,84 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '../../../lib/stripe'
-import { createServerSupabase } from '../../../lib/supabase'
 
 export async function POST(request) {
   try {
-    const body = await request.json()
-    const { order_id, shop_id, amount, shipping_method, shipping_cost, client, return_url } = body
+    var body = await request.json()
+    var bx = body.boxtal || {}
+    var recipient = body.recipient || {}
+    var parcel = body.parcel || {}
 
-    const supabase = createServerSupabase()
+    var user = bx.user
+    var pass = bx.pass
 
-    // Get shop info for Stripe Connect
-    const { data: shop } = await supabase
-      .from('shops')
-      .select('stripe_account_id, name')
-      .eq('id', shop_id)
-      .single()
-
-    if (!shop?.stripe_account_id) {
-      return NextResponse.json({ error: 'Boutique non configurée pour les paiements' }, { status: 400 })
+    if (!user || !pass) {
+      return NextResponse.json({ error: 'Configure tes identifiants Boxtal dans Parametres > Boxtal.' })
     }
 
-    // Update order with client info
-    await supabase
-      .from('orders')
-      .update({
-        client_email: client.email,
-        client_phone: client.phone,
-        client_first_name: client.firstName,
-        client_last_name: client.lastName,
-        delivery_address: client.address,
-        delivery_city: client.city,
-        delivery_postal_code: client.zip,
-        delivery_country: client.country || 'FR',
-        shipping_method,
-        shipping_cost,
-        total: amount,
-      })
-      .eq('id', order_id)
+    var baseUrl = 'https://api.envoimoinscher.com'
+    var senderZip = bx.senderZip || '75002'
+    var senderCity = bx.senderCity || 'Paris'
 
-    // Upsert client in clients table
-    await supabase
-      .from('clients')
-      .upsert({
-        shop_id,
-        email: client.email,
-        phone: client.phone,
-        first_name: client.firstName,
-        last_name: client.lastName,
-        address: client.address,
-        city: client.city,
-        postal_code: client.zip,
-        country: client.country || 'FR',
-      }, { onConflict: 'shop_id, email' })
+    var params = new URLSearchParams()
+    params.append('expediteur.pays', 'FR')
+    params.append('expediteur.code_postal', senderZip)
+    params.append('expediteur.ville', senderCity)
+    params.append('expediteur.type', 'entreprise')
+    params.append('destinataire.pays', recipient.country || 'FR')
+    params.append('destinataire.code_postal', recipient.zipcode || '')
+    params.append('destinataire.ville', recipient.city || '')
+    params.append('destinataire.type', 'particulier')
+    params.append('colis_1.poids', String(parcel.weight || 0.5))
+    params.append('colis_1.longueur', String(parcel.length || 30))
+    params.append('colis_1.largeur', String(parcel.width || 20))
+    params.append('colis_1.hauteur', String(parcel.height || 10))
+    params.append('code_contenu', '40120')
+    params.append('collecte', 'aucun')
+    params.append('type_emballage', 'colis')
 
-    // Create Stripe Checkout Session
-    // Amount in cents
-    const amountCents = Math.round(amount * 100)
+    var url = baseUrl + '/api/v1/cotation?' + params.toString()
+    var auth = Buffer.from(user + ':' + pass).toString('base64')
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: `Commande ${shop.name}`,
-            description: `Réf. ${body.reference || order_id}`,
-          },
-          unit_amount: amountCents,
-        },
-        quantity: 1,
-      }],
-      // Send payment to pro's Stripe account
-      payment_intent_data: {
-        transfer_data: {
-          destination: shop.stripe_account_id,
-        },
-        // 0% commission — full amount goes to pro
-        // Only Stripe processing fees apply
-      },
-      customer_email: client.email,
-      metadata: {
-        order_id,
-        shop_id,
-        shipping_method,
-      },
-      success_url: return_url,
-      cancel_url: return_url.replace('success=true', 'cancelled=true'),
+    var res = await fetch(url, {
+      headers: {
+        'Authorization': 'Basic ' + auth,
+        'Accept': 'application/xml',
+      }
     })
+    var xml = await res.text()
 
-    return NextResponse.json({ url: session.url })
-  } catch (error) {
-    console.error('Checkout error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    var quotes = []
+    var offerRegex = /<offer>(.*?)<\/offer>/gs
+    var match
+    while ((match = offerRegex.exec(xml)) !== null) {
+      var block = match[1]
+      var opBlock = block.match(/<operator>(.*?)<\/operator>/s)
+      var svcBlock = block.match(/<service>(.*?)<\/service>/s)
+      var priceBlock = block.match(/<price>(.*?)<\/price>/s)
+      var delivBlock = block.match(/<delivery>(.*?)<\/delivery>/s)
+
+      var getSubTag = function(b, tag) {
+        if (!b) return ''
+        var m = b[1].match(new RegExp('<' + tag + '>(.*?)</' + tag + '>'))
+        return m ? m[1] : ''
+      }
+
+      quotes.push({
+        operator_code: getSubTag(opBlock, 'code'),
+        operator_label: getSubTag(opBlock, 'label'),
+        logo: getSubTag(opBlock, 'logo'),
+        service_code: getSubTag(svcBlock, 'code'),
+        service_label: getSubTag(svcBlock, 'label'),
+        price_ht: getSubTag(priceBlock, 'tax-exclusive'),
+        price_ttc: getSubTag(priceBlock, 'tax-inclusive'),
+        delivery_type: delivBlock ? getSubTag(delivBlock, 'label') : '',
+        delivery_delay: delivBlock ? getSubTag(delivBlock, 'delay') : '',
+      })
+    }
+
+    quotes.sort(function(a, b) { return parseFloat(a.price_ttc || 999) - parseFloat(b.price_ttc || 999) })
+    return NextResponse.json({ quotes: quotes })
+
+  } catch (err) {
+    return NextResponse.json({ error: 'Erreur Boxtal: ' + (err.message || 'Erreur inconnue') })
   }
 }
