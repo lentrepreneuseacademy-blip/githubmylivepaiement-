@@ -92,6 +92,20 @@ export default function Dashboard() {
   const [showNewOrder, setShowNewOrder] = useState(false)
   const [newOrder, setNewOrder] = useState({ reference: '', amount: '', description: '' })
 
+  // Shipping / Boxtal
+  const [shipSelectedOrder, setShipSelectedOrder] = useState(null)
+  const [shipStep, setShipStep] = useState('list') // list | form | quotes | label
+  const [shipForm, setShipForm] = useState({ weight: '0.5', length: '30', width: '20', height: '10', description: 'Vetements' })
+  const [shipQuotes, setShipQuotes] = useState([])
+  const [shipQuoteLoading, setShipQuoteLoading] = useState(false)
+  const [shipSelectedQuote, setShipSelectedQuote] = useState(null)
+  const [shipOrderLoading, setShipOrderLoading] = useState(false)
+  const [shipLabel, setShipLabel] = useState(null)
+  const [shipError, setShipError] = useState(null)
+  const [shipTrackingNumber, setShipTrackingNumber] = useState(null)
+  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '' })
+  const [boxtalSaving, setBoxtalSaving] = useState(false)
+
   // Statistics
   const [statsData, setStatsData] = useState({ daily: [], monthly: [], topProducts: [], conversionRate: 0, avgOrderValue: 0, totalRevenue7d: 0, totalOrders7d: 0 })
   const [statsPeriod, setStatsPeriod] = useState('7d')
@@ -103,6 +117,18 @@ export default function Dashboard() {
   const aiScrollRef = useRef(null)
   const [aiLastTopic, setAiLastTopic] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  // Shop branding & legal
+  const [shopLogo, setShopLogo] = useState(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [legalTexts, setLegalTexts] = useState({ cgv: '', mentions: '', privacy: '' })
+  const [legalSaving, setLegalSaving] = useState(false)
+
+  // Messages
+  const [messages, setMessages] = useState([])
+  const [messageReply, setMessageReply] = useState('')
+  const [messageReplyId, setMessageReplyId] = useState(null)
+  const [messageSending, setMessageSending] = useState(false)
 
   // ═══ AUTH CHECK ═══
   useEffect(() => {
@@ -118,6 +144,15 @@ export default function Dashboard() {
         if (shopData) {
           setShop(shopData)
           loadData(shopData.id)
+          // Load Boxtal config
+          if (shopData.boxtal_config) {
+            try { setBoxtalConfig(JSON.parse(shopData.boxtal_config)) } catch(e) {}
+          }
+          if (shopData.logo_url) setShopLogo(shopData.logo_url)
+          if (shopData.legal_texts) {
+            try { setLegalTexts(JSON.parse(shopData.legal_texts)) } catch(e) {}
+          }
+          loadMessages(shopData.id)
         }
       }
       setLoading(false)
@@ -253,6 +288,166 @@ export default function Dashboard() {
       setShowNewOrder(false)
       setNewOrder({ reference: '', amount: '', description: '' })
     }
+  }
+
+  // ═══════════════════════════════════════════════
+  // BOXTAL SHIPPING
+  // ═══════════════════════════════════════════════
+  async function saveBoxtalConfig() {
+    setBoxtalSaving(true)
+    await supabase.from('shops').update({ boxtal_config: JSON.stringify(boxtalConfig) }).eq('id', shop.id)
+    setBoxtalSaving(false)
+  }
+
+  async function uploadLogo(e) {
+    var file = e.target.files[0]
+    if (!file || !shop) return
+    setLogoUploading(true)
+    var ext = file.name.split('.').pop()
+    var path = shop.id + '/logo.' + ext
+    var { error } = await supabase.storage.from('shop-assets').upload(path, file, { upsert: true })
+    if (!error) {
+      var { data: urlData } = supabase.storage.from('shop-assets').getPublicUrl(path)
+      var url = urlData.publicUrl + '?t=' + Date.now()
+      await supabase.from('shops').update({ logo_url: url }).eq('id', shop.id)
+      setShopLogo(url)
+    }
+    setLogoUploading(false)
+  }
+
+  async function saveLegalTexts() {
+    setLegalSaving(true)
+    await supabase.from('shops').update({ legal_texts: JSON.stringify(legalTexts) }).eq('id', shop.id)
+    setLegalSaving(false)
+  }
+
+  async function loadMessages(shopId) {
+    var { data } = await supabase.from('messages').select('*').eq('shop_id', shopId).order('created_at', { ascending: false })
+    if (data) setMessages(data)
+  }
+
+  async function sendMessageReply(msgId) {
+    if (!messageReply.trim()) return
+    setMessageSending(true)
+    await supabase.from('messages').update({ reply: messageReply, replied_at: new Date().toISOString(), status: 'replied' }).eq('id', msgId)
+    setMessageReply('')
+    setMessageReplyId(null)
+    loadMessages(shop.id)
+    setMessageSending(false)
+  }
+
+  async function getShippingQuotes(order) {
+    if (!boxtalConfig.user || !boxtalConfig.pass) {
+      setShipError('Configure d\'abord tes identifiants Boxtal dans Parametres.')
+      return
+    }
+    setShipQuoteLoading(true)
+    setShipError(null)
+    setShipQuotes([])
+    try {
+      var res = await fetch('/api/boxtal/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          boxtal: boxtalConfig,
+          recipient: {
+            firstname: order.client_first_name || order.description || 'Client',
+            lastname: order.client_last_name || '',
+            address: order.shipping_address || '',
+            zipcode: order.shipping_zipcode || order.shipping_zip || '',
+            city: order.shipping_city || '',
+            country: 'FR',
+            phone: order.client_phone || '',
+            email: order.client_email || '',
+          },
+          parcel: {
+            weight: parseFloat(shipForm.weight) || 0.5,
+            length: parseInt(shipForm.length) || 30,
+            width: parseInt(shipForm.width) || 20,
+            height: parseInt(shipForm.height) || 10,
+            description: shipForm.description || 'Vetements',
+            value: order.total_amount || order.total || order.amount || 0,
+          }
+        })
+      })
+      var data = await res.json()
+      if (data.error) {
+        setShipError(data.error)
+      } else {
+        setShipQuotes(data.quotes || [])
+      }
+    } catch (err) {
+      setShipError('Erreur de connexion au service Boxtal')
+    }
+    setShipQuoteLoading(false)
+  }
+
+  async function createShipment(order, quote) {
+    setShipOrderLoading(true)
+    setShipError(null)
+    try {
+      var res = await fetch('/api/boxtal/ship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          boxtal: boxtalConfig,
+          shopName: shop ? shop.name : 'Ma Boutique',
+          shopEmail: user ? user.email : '',
+          recipient: {
+            firstname: order.client_first_name || order.description || 'Client',
+            lastname: order.client_last_name || '',
+            address: order.shipping_address || '',
+            zipcode: order.shipping_zipcode || order.shipping_zip || '',
+            city: order.shipping_city || '',
+            country: 'FR',
+            phone: order.client_phone || '',
+            email: order.client_email || '',
+          },
+          parcel: {
+            weight: parseFloat(shipForm.weight) || 0.5,
+            length: parseInt(shipForm.length) || 30,
+            width: parseInt(shipForm.width) || 20,
+            height: parseInt(shipForm.height) || 10,
+            description: shipForm.description || 'Vetements',
+            value: order.total_amount || order.total || order.amount || 0,
+          },
+          carrier: {
+            operator: quote.operator_code,
+            service: quote.service_code,
+          },
+          reference: order.reference || order.id,
+        })
+      })
+      var data = await res.json()
+      if (data.error) {
+        setShipError(data.error)
+      } else {
+        setShipLabel(data.label_url || null)
+        setShipTrackingNumber(data.tracking || data.reference || null)
+        await supabase.from('orders').update({
+          status: 'shipped',
+          shipped_at: new Date().toISOString(),
+          tracking_number: data.tracking || data.reference || '',
+          shipping_carrier: quote.operator_label + ' - ' + quote.service_label,
+          shipping_label_url: data.label_url || '',
+        }).eq('id', order.id)
+        loadData(shop.id)
+        setShipStep('label')
+      }
+    } catch (err) {
+      setShipError('Erreur lors de la creation de l\'envoi')
+    }
+    setShipOrderLoading(false)
+  }
+
+  function startShipping(order) {
+    setShipSelectedOrder(order)
+    setShipStep('form')
+    setShipQuotes([])
+    setShipSelectedQuote(null)
+    setShipLabel(null)
+    setShipError(null)
+    setShipTrackingNumber(null)
   }
 
   // ═══════════════════════════════════════════════
@@ -1165,6 +1360,7 @@ export default function Dashboard() {
     { id: 'stats', icon: '📈', label: 'Statistiques' },
     { id: 'clients', icon: '👥', label: 'Clients' },
     { id: 'shipping', icon: '🚚', label: 'Livraison' },
+    { id: 'messages', icon: '💬', label: 'Messages', badge: messages.filter(function(m) { return m.status !== 'replied' }).length },
     { id: 'assistant', icon: '🤖', label: 'IA Assistant' },
     { id: 'settings', icon: '⚙️', label: 'Paramètres' },
   ]
@@ -1208,6 +1404,7 @@ export default function Dashboard() {
               <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{tab.icon}</span>
               {!sidebarCollapsed && <span style={{ fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 400, color: activeTab === tab.id ? '#FFF' : 'rgba(255,255,255,.6)', transition: 'color .2s' }}>{tab.label}</span>}
               {tab.live && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', marginLeft: 'auto', animation: 'pulse 1.5s infinite', boxShadow: '0 0 8px rgba(239,68,68,.5)' }} />}
+              {!sidebarCollapsed && tab.badge > 0 && <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, color: '#FFF', background: '#E94560', borderRadius: 10, padding: '2px 7px', minWidth: 18, textAlign: 'center' }}>{tab.badge}</span>}
             </button>
           ))}
         </nav>
@@ -2052,42 +2249,282 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ─── SHIPPING ─── */}
+        {/* ─── SHIPPING / BOXTAL ─── */}
         {activeTab === 'shipping' && (
           <div>
-            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Livraison</h1>
-            <p style={{ fontSize: 13, color: '#999', marginBottom: 20 }}>Commandes payées en attente d'expédition</p>
-            {orders.filter(o => o.status === 'paid').map(o => (
-              <div key={o.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: 18, marginBottom: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div>
-                    <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
-                    <span style={{ fontSize: 13, color: '#999', marginLeft: 10 }}>{o.client_first_name} {o.client_last_name}</span>
-                  </div>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
-                </div>
-                <div style={{ fontSize: 13, color: '#777', marginBottom: 10 }}>
-                  📍 {o.shipping_address || '—'} · {o.shipping_method === 'mondial_relay' ? 'Mondial Relay' : 'Colissimo'}
-                </div>
-                <button
-                  onClick={async () => {
-                    await supabase.from('orders').update({ status: 'shipped', shipped_at: new Date().toISOString() }).eq('id', o.id)
-                    loadData(shop.id)
-                  }}
-                  style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
-                  🏷️ Générer l'étiquette & marquer expédiée
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div>
+                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Livraison</h1>
+                <p style={{ fontSize: 13, color: '#999' }}>Expedie tes commandes via Boxtal (Mondial Relay, Colissimo, Chronopost...)</p>
               </div>
-            ))}
-            {orders.filter(o => o.status === 'paid').length === 0 && (
-              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
-                <p style={{ fontSize: 15, fontWeight: 600 }}>Tout est expédié !</p>
+              {shipStep !== 'list' && (
+                <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null); setShipError(null) }}
+                  style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                  \u2190 Retour
+                </button>
+              )}
+            </div>
+
+            {shipStep === 'list' && (
+              <div>
+                {(!boxtalConfig.user || !boxtalConfig.pass) && (
+                  <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', border: '1px solid #FED7AA', borderRadius: 14, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#92400E' }}>Connecte Boxtal pour expedier tes colis</div>
+                      <div style={{ fontSize: 12, color: '#B45309', marginTop: 2 }}>Va dans Parametres, entre tes 2 cles API Boxtal et c'est tout !</div>
+                    </div>
+                    <button onClick={function() { setActiveTab('settings') }}
+                      style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, whiteSpace: 'nowrap' }}>
+                      Configurer
+                    </button>
+                  </div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.03)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#F59E0B' }}>{orders.filter(function(o) { return o.status === 'paid' }).length}</div>
+                    <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>A expedier</div>
+                  </div>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.03)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#8B5CF6' }}>{orders.filter(function(o) { return o.status === 'shipped' }).length}</div>
+                    <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>En transit</div>
+                  </div>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.03)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#10B981' }}>{orders.filter(function(o) { return o.status === 'delivered' }).length}</div>
+                    <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>Livrees</div>
+                  </div>
+                </div>
+                {orders.filter(function(o) { return o.status === 'paid' }).map(function(o) {
+                  return (
+                    <div key={o.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 16, padding: '18px 20px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                            <span style={{ fontSize: 15, fontWeight: 800 }}>{o.reference || '#'}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#FFFBEB', color: '#F59E0B' }}>A expedier</span>
+                            <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}\u20ac</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: '#777' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
+                          {o.shipping_address && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
+                        </div>
+                        <button onClick={function() { startShipping(o) }}
+                          style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)', whiteSpace: 'nowrap' }}>
+                          Expedier
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+                {orders.filter(function(o) { return o.status === 'shipped' }).map(function(o) {
+                  return (
+                    <div key={o.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: '14px 18px', marginBottom: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || '#'}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#F5F3FF', color: '#8B5CF6' }}>Expedie</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: '#999' }}>{o.shipping_carrier || ''} {o.tracking_number ? '- Suivi: ' + o.tracking_number : ''}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {o.shipping_label_url && <button onClick={function() { window.open(o.shipping_label_url, '_blank') }} style={{ padding: '8px 14px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Etiquette</button>}
+                          <button onClick={async function() { await supabase.from('orders').update({ status: 'delivered' }).eq('id', o.id); loadData(shop.id) }} style={{ padding: '8px 14px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Livre</button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+                {orders.filter(function(o) { return o.status === 'paid' || o.status === 'shipped' }).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>\u2713</div>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Tout est a jour !</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {shipStep === 'form' && shipSelectedOrder && (
+              <div>
+                <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: '#999', marginBottom: 12 }}>COMMANDE</div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>{shipSelectedOrder.reference || '#'} — {(shipSelectedOrder.total_amount || shipSelectedOrder.total || shipSelectedOrder.amount || 0).toFixed(2)}\u20ac</div>
+                  <div style={{ fontSize: 13, color: '#777', marginTop: 4 }}>{shipSelectedOrder.client_first_name || ''} {shipSelectedOrder.client_last_name || ''}</div>
+                </div>
+
+                <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Informations du colis</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Poids (kg)</label>
+                      <input value={shipForm.weight} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { weight: e.target.value })) }}
+                        style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Longueur (cm)</label>
+                      <input value={shipForm.length} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { length: e.target.value })) }}
+                        style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Largeur (cm)</label>
+                      <input value={shipForm.width} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { width: e.target.value })) }}
+                        style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Hauteur (cm)</label>
+                      <input value={shipForm.height} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { height: e.target.value })) }}
+                        style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Contenu</label>
+                    <input value={shipForm.description} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { description: e.target.value })) }}
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} placeholder="Vetements, Accessoires..." />
+                  </div>
+
+                  {shipError && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#DC2626' }}>{shipError}</div>}
+
+                  <button onClick={function() { getShippingQuotes(shipSelectedOrder) }} disabled={shipQuoteLoading}
+                    style={{ width: '100%', padding: 16, background: shipQuoteLoading ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipQuoteLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
+                    {shipQuoteLoading ? 'Recherche des tarifs...' : 'Comparer les transporteurs'}
+                  </button>
+                  <button onClick={async function() { await supabase.from('orders').update({ status: 'shipped', shipped_at: new Date().toISOString() }).eq('id', shipSelectedOrder.id); loadData(shop.id); setShipStep('label') }}
+                    style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: '#999', border: '1px dashed rgba(0,0,0,.1)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
+                    Marquer expediee manuellement (sans Boxtal)
+                  </button>
+                </div>
+
+                {shipQuotes.length > 0 && (
+                  <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{shipQuotes.length} offres disponibles</div>
+                    {shipQuotes.map(function(q, i) {
+                      var sel = shipSelectedQuote && shipSelectedQuote.operator_code === q.operator_code && shipSelectedQuote.service_code === q.service_code
+                      return (
+                        <div key={i} onClick={function() { setShipSelectedQuote(q) }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 14, marginBottom: 8, cursor: 'pointer', border: sel ? '2px solid #667eea' : '2px solid rgba(0,0,0,.04)', background: sel ? '#F0F0FF' : '#FAFAF8', transition: 'all .2s' }}>
+                          {q.logo && <img src={q.logo} alt="" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }} />}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700 }}>{q.operator_label}</div>
+                            <div style={{ fontSize: 12, color: '#777' }}>{q.service_label}</div>
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{q.delivery_type || ''} {q.delivery_delay ? '- ' + q.delivery_delay : ''}</div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: 18, fontWeight: 800 }}>{q.price_ttc}\u20ac</div>
+                            <div style={{ fontSize: 10, color: '#999' }}>TTC</div>
+                          </div>
+                          <div style={{ width: 24, height: 24, borderRadius: '50%', border: sel ? '2px solid #667eea' : '2px solid #DDD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {sel && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#667eea' }} />}
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {shipSelectedQuote && (
+                      <button onClick={function() { createShipment(shipSelectedOrder, shipSelectedQuote) }} disabled={shipOrderLoading}
+                        style={{ width: '100%', marginTop: 16, padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.25)' }}>
+                        {shipOrderLoading ? 'Creation...' : 'Commander - ' + shipSelectedQuote.price_ttc + '\u20ac'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {shipStep === 'label' && (
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(16,185,129,.25)' }}>
+                  <span style={{ fontSize: 36, color: '#FFF' }}>\u2713</span>
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Envoi cree !</h2>
+                <p style={{ fontSize: 14, color: '#777', marginBottom: 24 }}>
+                  {shipSelectedQuote ? shipSelectedQuote.operator_label + ' - ' + shipSelectedQuote.service_label : ''}
+                  {shipTrackingNumber ? ' | Ref: ' + shipTrackingNumber : ''}
+                </p>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                  {shipLabel && <button onClick={function() { window.open(shipLabel, '_blank') }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>Telecharger l'etiquette</button>}
+                  <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null) }} style={{ padding: '14px 28px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Retour</button>
+                </div>
+                {!shipLabel && <div style={{ marginTop: 20, padding: '16px 20px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 12, maxWidth: 500, margin: '20px auto 0', fontSize: 13, color: '#92400E' }}>Commande marquee expediee. Configure tes cles API Boxtal dans les Parametres pour generer les etiquettes automatiquement.</div>}
               </div>
             )}
           </div>
         )}
 
+        {/* ─── MESSAGES ─── */}
+        {activeTab === 'messages' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div>
+                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Messages</h1>
+                <p style={{ fontSize: 13, color: '#999' }}>Messages de tes clientes depuis la page de paiement</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <span style={{ fontSize: 12, color: '#999' }}>{messages.filter(function(m) { return m.status !== 'replied' }).length} non lus</span>
+                <button onClick={function() { loadMessages(shop.id) }} style={{ padding: '8px 14px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Actualiser</button>
+              </div>
+            </div>
+
+            {messages.length === 0 && (
+              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Aucun message</p>
+                <p style={{ fontSize: 13, marginTop: 4, color: '#BBB' }}>Les messages de tes clientes apparaitront ici</p>
+              </div>
+            )}
+
+            {messages.map(function(msg) {
+              var isReplied = msg.status === 'replied'
+              var isOpen = messageReplyId === msg.id
+              return (
+                <div key={msg.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 16, padding: '18px 22px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)', borderLeft: isReplied ? '4px solid #10B981' : '4px solid #F59E0B' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{msg.sender_name || 'Client'}</div>
+                      <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{msg.sender_email || ''} {msg.sender_phone ? ' · ' + msg.sender_phone : ''}</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 8, background: isReplied ? '#ECFDF5' : '#FFFBEB', color: isReplied ? '#10B981' : '#F59E0B' }}>{isReplied ? 'Repondu' : 'Nouveau'}</span>
+                      <span style={{ fontSize: 11, color: '#CCC' }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString('fr-FR') : ''}</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+
+                  {msg.reply && (
+                    <div style={{ background: '#F0FDF4', borderRadius: 12, padding: '12px 16px', marginBottom: 10 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#10B981', marginBottom: 4 }}>Ta reponse :</div>
+                      <div style={{ fontSize: 13, color: '#333', whiteSpace: 'pre-wrap' }}>{msg.reply}</div>
+                    </div>
+                  )}
+
+                  {!isReplied && (
+                    <div>
+                      {isOpen ? (
+                        <div>
+                          <textarea value={messageReply} onChange={function(e) { setMessageReply(e.target.value) }}
+                            placeholder="Ta reponse..."
+                            rows={3}
+                            style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', marginBottom: 8 }} />
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button onClick={function() { sendMessageReply(msg.id) }} disabled={messageSending}
+                              style={{ padding: '10px 20px', background: messageSending ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: messageSending ? 'wait' : 'pointer', fontFamily: sf }}>
+                              {messageSending ? 'Envoi...' : 'Envoyer'}
+                            </button>
+                            <button onClick={function() { setMessageReplyId(null); setMessageReply('') }}
+                              style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button onClick={function() { setMessageReplyId(msg.id); setMessageReply('') }}
+                          style={{ padding: '8px 16px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                          Repondre
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* ─── AI ASSISTANT ─── */}
         {activeTab === 'assistant' && (
@@ -2175,6 +2612,60 @@ export default function Dashboard() {
               <div style={{ fontSize: 14 }}><strong>Lien :</strong> {typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug}</div>
             </div>
 
+            {/* Logo */}
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Logo de ta boutique</h3>
+              <p style={{ fontSize: 13, color: '#999', marginBottom: 16 }}>Ce logo sera affiche sur ta page de paiement, visible par tes clientes</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <div style={{ width: 80, height: 80, borderRadius: 16, border: '2px dashed rgba(0,0,0,.1)', background: '#FAFAF8', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                  {shopLogo ? (
+                    <img src={shopLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <span style={{ fontSize: 28, color: '#CCC' }}>🖼️</span>
+                  )}
+                </div>
+                <div>
+                  <label style={{ display: 'inline-block', padding: '10px 20px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
+                    {logoUploading ? 'Upload...' : shopLogo ? 'Changer le logo' : 'Ajouter un logo'}
+                    <input type="file" accept="image/*" onChange={uploadLogo} style={{ display: 'none' }} />
+                  </label>
+                  <div style={{ fontSize: 11, color: '#BBB', marginTop: 6 }}>PNG, JPG ou SVG - Max 2MB</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Legal texts */}
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Informations legales</h3>
+              <p style={{ fontSize: 13, color: '#999', marginBottom: 16 }}>Ces textes seront affiches en bas de ta page de paiement</p>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Conditions Generales de Vente (CGV)</label>
+                <textarea value={legalTexts.cgv || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { cgv: e.target.value })) }}
+                  rows={5} placeholder="Colle ici tes conditions generales de vente..."
+                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Mentions legales</label>
+                <textarea value={legalTexts.mentions || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { mentions: e.target.value })) }}
+                  rows={5} placeholder="Raison sociale, SIRET, adresse du siege..."
+                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Politique de confidentialite</label>
+                <textarea value={legalTexts.privacy || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { privacy: e.target.value })) }}
+                  rows={5} placeholder="Comment tu collectes et utilises les donnees personnelles..."
+                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+              </div>
+
+              <button onClick={saveLegalTexts} disabled={legalSaving}
+                style={{ padding: '14px 32px', background: legalSaving ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: legalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
+                {legalSaving ? 'Sauvegarde...' : 'Sauvegarder les textes legaux'}
+              </button>
+            </div>
+
             {/* Live Server Status */}
             <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>📡 Live Monitor</h3>
@@ -2229,6 +2720,72 @@ export default function Dashboard() {
                   Connecter Stripe
                 </button>
               )}
+            </div>
+
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginTop: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#FFF', fontSize: 18 }}>📦</span>
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Boxtal — Expedition</h3>
+                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Mondial Relay, Colissimo, Chronopost... tarifs negocies</p>
+                </div>
+                {boxtalConfig.user && boxtalConfig.pass && (
+                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: '#ECFDF5', color: '#10B981' }}>Connecte</span>
+                )}
+              </div>
+
+              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.6 }}>
+                <strong>Comment obtenir tes cles API ?</strong><br/>
+                1. Va sur <span style={{ color: '#FF6B35', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.boxtal.com', '_blank') }}>boxtal.com</span> et cree un compte gratuit<br/>
+                2. Dans ton espace Boxtal : Mon compte &gt; API &gt; Copie ton <strong>Identifiant</strong> et ton <strong>Mot de passe API</strong><br/>
+                3. Colle-les ci-dessous et clique Sauvegarder
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Identifiant API (login)</label>
+                  <input value={boxtalConfig.user || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { user: e.target.value })) }}
+                    placeholder="Ton identifiant Boxtal"
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none', transition: 'border .2s' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Mot de passe API</label>
+                  <input type="password" value={boxtalConfig.pass || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { pass: e.target.value })) }}
+                    placeholder="Ton mot de passe API"
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none', transition: 'border .2s' }} />
+                </div>
+              </div>
+
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8 }}>Adresse d'expedition (ton adresse)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <div>
+                  <input value={boxtalConfig.senderAddress || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderAddress: e.target.value })) }}
+                    placeholder="Adresse (ex: 15 rue de la Paix)"
+                    style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+                </div>
+                <div>
+                  <input value={boxtalConfig.senderZip || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderZip: e.target.value })) }}
+                    placeholder="Code postal"
+                    style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+                </div>
+                <div>
+                  <input value={boxtalConfig.senderCity || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderCity: e.target.value })) }}
+                    placeholder="Ville"
+                    style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+                </div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <input value={boxtalConfig.senderPhone || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderPhone: e.target.value })) }}
+                  placeholder="Telephone (ex: 0612345678)"
+                  style={{ width: 200, padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+              </div>
+
+              <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
+                style={{ padding: '14px 32px', background: boxtalSaving ? '#DDD' : 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: boxtalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(255,107,53,.25)' }}>
+                {boxtalSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+              </button>
             </div>
           </div>
         )}
