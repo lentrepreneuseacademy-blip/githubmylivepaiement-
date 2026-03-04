@@ -2,46 +2,62 @@
 // /app/api/boxtal/relays/route.js
 // API Route - Points Relais Boxtal (Mondial Relay)
 // ═══════════════════════════════════════════════════════
-import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export async function POST(request) {
   try {
     const body = await request.json()
     const { shopId, zipcode, country, city, address } = body
 
+    console.log('[Boxtal Relays] Requête reçue — shopId:', shopId, 'zipcode:', zipcode, 'city:', city)
+
     if (!zipcode || zipcode.length < 5) {
       return Response.json({ error: 'Code postal invalide', points: [] }, { status: 400 })
     }
 
-    // ─── Récupérer les credentials Boxtal de la boutique ───
+    // ─── Récupérer les credentials Boxtal de la boutique via REST (bypass RLS) ───
     let accessKey = ''
     let secretKey = ''
-    let isTest = true // Par défaut en mode test
+    let isTest = true
 
     if (shopId) {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        const shopRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/shops?id=eq.${encodeURIComponent(shopId)}&select=boxtal_config`,
+          {
+            method: 'GET',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Accept': 'application/vnd.pgrst.object+json',
+            },
+          }
         )
-        const { data: shop } = await supabase
-          .from('shops')
-          .select('boxtal_config')
-          .eq('id', shopId)
-          .single()
-
-        if (shop?.boxtal_config) {
-          const config = typeof shop.boxtal_config === 'string'
-            ? JSON.parse(shop.boxtal_config)
-            : shop.boxtal_config
-          // Le dashboard stocke : user, pass, testMode, senderAddress, etc.
-          if (config.user) accessKey = config.user
-          if (config.pass) secretKey = config.pass
-          if (config.testMode === true) isTest = true
-          if (config.testMode === false) isTest = false
+        
+        if (shopRes.ok) {
+          const shop = await shopRes.json()
+          console.log('[Boxtal Relays] Shop trouvé, boxtal_config présent:', !!shop?.boxtal_config, 'type:', typeof shop?.boxtal_config)
+          
+          if (shop?.boxtal_config) {
+            const config = typeof shop.boxtal_config === 'string'
+              ? JSON.parse(shop.boxtal_config)
+              : shop.boxtal_config
+            
+            console.log('[Boxtal Relays] Config parsée — user présent:', !!config.user, 'pass présent:', !!config.pass, 'testMode:', config.testMode)
+            
+            if (config.user) accessKey = config.user
+            if (config.pass) secretKey = config.pass
+            if (config.testMode === true) isTest = true
+            if (config.testMode === false) isTest = false
+          }
+        } else {
+          const errText = await shopRes.text()
+          console.error('[Boxtal Relays] Erreur lecture shop:', shopRes.status, errText)
         }
       } catch (e) {
-        console.error('[Boxtal] Erreur lecture config boutique:', e.message)
+        console.error('[Boxtal Relays] Erreur lecture config boutique:', e.message)
       }
     }
 
@@ -50,10 +66,13 @@ export async function POST(request) {
     if (!secretKey) secretKey = process.env.BOXTAL_SECRET_KEY || ''
     if (process.env.BOXTAL_ENV === 'production') isTest = false
 
+    console.log('[Boxtal Relays] Credentials finales — accessKey présent:', !!accessKey, 'secretKey présent:', !!secretKey, 'isTest:', isTest)
+
     if (!accessKey || !secretKey) {
       return Response.json({
         error: 'La boutique n\'a pas encore configuré Boxtal. Le point relais te sera communiqué par email.',
-        points: []
+        points: [],
+        debug: { shopId: shopId || 'null', hasConfig: false }
       }, { status: 200 })
     }
 
@@ -68,14 +87,11 @@ export async function POST(request) {
     if (city) params.append('ville', city)
     if (address) params.append('adresse', address)
 
-    // On demande Mondial Relay (MONR) par défaut
-    // Tu peux ajouter d'autres transporteurs ici : CHRP, SOGP, COPR, UPSE
     const carrierCode = 'MONR'
-
     const url = `${baseUrl}/${carrierCode}/listpoints?${params.toString()}`
     const auth = Buffer.from(`${accessKey}:${secretKey}`).toString('base64')
 
-    console.log(`[Boxtal] Requête: ${url}`)
+    console.log(`[Boxtal Relays] Appel API: ${url}`)
 
     // ─── Appeler l'API Boxtal ───
     const res = await fetch(url, {
@@ -88,7 +104,7 @@ export async function POST(request) {
 
     if (!res.ok) {
       const errorText = await res.text()
-      console.error(`[Boxtal] Erreur ${res.status}:`, errorText)
+      console.error(`[Boxtal Relays] Erreur ${res.status}:`, errorText)
       return Response.json({
         error: `Erreur Boxtal (${res.status})`,
         details: errorText,
@@ -97,16 +113,15 @@ export async function POST(request) {
     }
 
     const xml = await res.text()
-    console.log(`[Boxtal] Réponse reçue (${xml.length} chars)`)
+    console.log(`[Boxtal Relays] Réponse reçue (${xml.length} chars)`)
 
     // ─── Parser le XML en JSON ───
     const points = parseRelayPointsXML(xml)
-
-    console.log(`[Boxtal] ${points.length} points relais trouvés`)
+    console.log(`[Boxtal Relays] ${points.length} points relais trouvés`)
 
     return Response.json({ points })
   } catch (error) {
-    console.error('[Boxtal] Erreur serveur:', error)
+    console.error('[Boxtal Relays] Erreur serveur:', error)
     return Response.json({
       error: 'Erreur serveur lors de la recherche de points relais',
       points: []
