@@ -153,6 +153,59 @@ export async function POST(request) {
       return Response.json({ orders: result4.data || [] })
     }
 
+    // ─── UPDATE_STATUS — Mettre à jour le statut d'une commande ───
+    if (action === 'update_status') {
+      var updateOrderId = body.orderId
+      var updateFields = body.fields || {}
+
+      if (!updateOrderId) {
+        return Response.json({ error: 'orderId manquant' }, { status: 400 })
+      }
+
+      var result7 = await supabaseRequest('PATCH', 'orders', {
+        filters: { id: updateOrderId },
+        body: updateFields,
+      })
+
+      var updatedOrder = Array.isArray(result7.data) ? result7.data[0] : result7.data
+      return Response.json({ order: updatedOrder })
+    }
+
+    // ─── LIST_SHOP_ORDERS — Toutes les commandes d'un shop (pour dashboard) ───
+    if (action === 'list_shop_orders') {
+      var shopId3 = body.shop_id
+
+      if (!shopId3) {
+        return Response.json({ orders: [] })
+      }
+
+      var result5 = await supabaseRequest('GET', 'orders', {
+        filters: { shop_id: shopId3 },
+        select: '*',
+        order: 'created_at.desc',
+        limit: body.limit || 200,
+      })
+
+      return Response.json({ orders: result5.data || [] })
+    }
+
+    // ─── LIST_SHOP_CLIENTS — Tous les clients d'un shop (pour dashboard) ───
+    if (action === 'list_shop_clients') {
+      var shopId4 = body.shop_id
+
+      if (!shopId4) {
+        return Response.json({ clients: [] })
+      }
+
+      var result6 = await supabaseRequest('GET', 'clients', {
+        filters: { shop_id: shopId4 },
+        select: '*',
+        order: 'created_at.desc',
+      })
+
+      return Response.json({ clients: result6.data || [] })
+    }
+
     return Response.json({ error: 'Action inconnue' }, { status: 400 })
   } catch (error) {
     console.error('[Orders API] Erreur serveur:', error)
