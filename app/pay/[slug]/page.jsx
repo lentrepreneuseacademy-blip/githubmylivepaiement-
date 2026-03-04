@@ -821,22 +821,46 @@ export default function PayPage() {
     setContactSending(false);
   }
 
-  async function loadRelayPoints(zipcode) {
-    if (!zipcode || zipcode.length < 5 || !shopData?.id) return;
+  async function loadRelayPoints(zipcode, cityName, addressLine) {
+    if (!zipcode || zipcode.length < 5) return;
+    // Si pas de ville, essayer de la récupérer automatiquement via l'API Geo
+    var finalCity = cityName || ville;
+    if (!finalCity && zipcode.length === 5) {
+      try {
+        var geoRes = await fetch('https://geo.api.gouv.fr/communes?codePostal=' + zipcode + '&fields=nom&limit=1');
+        var geoData = await geoRes.json();
+        if (geoData && geoData.length > 0) {
+          finalCity = geoData[0].nom;
+          setVille(finalCity);
+        }
+      } catch(e) {}
+    }
+    if (!finalCity) return;
     setRelayLoading(true);
     setRelayError('');
+    setSelectedRelay(null);
     try {
       var res = await fetch('/api/boxtal/relays', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shopId: shopData.id, zipcode: zipcode, country: 'FR' })
+        body: JSON.stringify({
+          shopId: shopData?.id || null,
+          zipcode: zipcode,
+          city: finalCity,
+          address: addressLine || adresse || '',
+          country: 'FR'
+        })
       });
       var data = await res.json();
-      if (data.error) {
+      if (data.error && (!data.points || data.points.length === 0)) {
         setRelayError(data.error);
         setRealRelayPoints([]);
       } else {
         setRealRelayPoints(data.points || []);
+        // Auto-sélectionner le premier point relais
+        if (data.points && data.points.length > 0) {
+          setSelectedRelay(data.points[0].code);
+        }
       }
     } catch(e) {
       setRelayError('Impossible de charger les points relais');
@@ -849,7 +873,7 @@ export default function PayPage() {
   const shippingCost = freeShipping ? 0 : customShippingPrice;
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
-  const canPay = nom && prenom && email && phone && adresse && cp && ville && selectedRelay && cardNum.length >= 16 && cardExp && cardCvc && parsedAmount > 0;
+  const canPay = nom && prenom && email && phone && adresse && cp && ville && cardNum.length >= 16 && cardExp && cardCvc && parsedAmount > 0;
 
   // Auto-detect language on mount
   useEffect(() => {
@@ -1113,8 +1137,8 @@ export default function PayPage() {
                 <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.address} *</label><input value={adresse} onChange={(e) => setAdresse(e.target.value)} placeholder={t.addressPlaceholder} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.complement}</label><input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder={t.complementPlaceholder} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 10 }}>
-                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.postalCode} *</label><input value={cp} onChange={(e) => { var v = e.target.value.replace(/\D/g, "").substring(0, 5); setCp(v); if (v.length === 5) loadRelayPoints(v); }} required maxLength={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
-                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.city} *</label><input value={ville} onChange={(e) => setVille(e.target.value)} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
+                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.postalCode} *</label><input value={cp} onChange={(e) => { var v = e.target.value.replace(/\D/g, "").substring(0, 5); setCp(v); if (v.length === 5) loadRelayPoints(v, ville, adresse); }} required maxLength={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
+                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.city} *</label><input value={ville} onChange={(e) => { setVille(e.target.value); }} onBlur={() => { if (cp.length === 5 && ville && realRelayPoints.length === 0 && !relayLoading) loadRelayPoints(cp, ville, adresse); }} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 </div>
               </div>
 
@@ -1152,24 +1176,40 @@ export default function PayPage() {
                       </div>
                     ) : relayError ? (
                       <div style={{ textAlign: "center", padding: 12 }}>
-                        <div style={{ fontFamily: sf, fontSize: 12, color: "#F59E0B", marginBottom: 8 }}>{relayError}</div>
-                        <button type="button" onClick={() => loadRelayPoints(cp)} style={{ fontFamily: sf, fontSize: 12, padding: "6px 16px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 8, cursor: "pointer" }}>Réessayer</button>
+                        <div style={{ fontFamily: sf, fontSize: 12, color: "#E11D48", marginBottom: 6 }}>⚠ {relayError}</div>
+                        <button type="button" onClick={() => loadRelayPoints(cp, ville, adresse)} style={{ fontFamily: sf, fontSize: 11, color: "#1A1A1A", background: "#FFF", border: "1px solid rgba(0,0,0,.1)", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontWeight: 600 }}>Réessayer</button>
+                        <div style={{ fontFamily: sf, fontSize: 11, color: "#BBB", marginTop: 8 }}>Si le problème persiste, le point relais le plus proche te sera communiqué par email.</div>
                       </div>
                     ) : realRelayPoints.length === 0 ? (
                       <div style={{ textAlign: "center", padding: 12 }}>
-                        <div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginBottom: 8 }}>Aucun point relais trouvé pour ce code postal</div>
-                        <button type="button" onClick={() => loadRelayPoints(cp)} style={{ fontFamily: sf, fontSize: 12, padding: "6px 16px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 8, cursor: "pointer" }}>Rechercher</button>
+                        <div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginBottom: 4 }}>📍 Aucun point relais trouvé</div>
+                        <div style={{ fontFamily: sf, fontSize: 11, color: "#BBB" }}>Vérifie ton code postal et ta ville, puis </div>
+                        <button type="button" onClick={() => loadRelayPoints(cp, ville, adresse)} style={{ fontFamily: sf, fontSize: 11, color: "#1A1A1A", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", padding: 0, marginTop: 4 }}>relance la recherche</button>
                       </div>
                     ) : (
                       <div>
                         {realRelayPoints.slice(0, 5).map((r, i) => (
                           <button key={r.code || i} type="button" onClick={() => setSelectedRelay(r.code)}
-                            style={{ width: "100%", padding: "12px 14px", border: selectedRelay === r.code ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.06)", borderRadius: 10, background: selectedRelay === r.code ? "#1A1A1A" : "#FFF", marginBottom: 6, textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            style={{ width: "100%", padding: "14px 16px", border: selectedRelay === r.code ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.08)", borderRadius: 12, background: selectedRelay === r.code ? "#1A1A1A" : "#FFF", marginBottom: 8, textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all .15s" }}>
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: selectedRelay === r.code ? "#FFF" : "#1A1A1A" }}>{r.name}</div>
-                              <div style={{ fontFamily: sf, fontSize: 11, color: selectedRelay === r.code ? "rgba(255,255,255,.6)" : "#999", marginTop: 2 }}>{r.address}, {r.zipcode} {r.city}</div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontSize: 14 }}>📍</span>
+                                <span style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: selectedRelay === r.code ? "#FFF" : "#1A1A1A" }}>{r.name}</span>
+                              </div>
+                              <div style={{ fontFamily: sf, fontSize: 11, color: selectedRelay === r.code ? "rgba(255,255,255,.6)" : "#999", marginTop: 3, paddingLeft: 20 }}>{r.address}, {r.zipcode} {r.city}</div>
+                              {selectedRelay === r.code && r.schedule && r.schedule.length > 0 && (
+                                <div style={{ marginTop: 8, paddingLeft: 20, borderTop: "1px solid rgba(255,255,255,.15)", paddingTop: 8 }}>
+                                  <div style={{ fontFamily: sf, fontSize: 10, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Horaires</div>
+                                  {r.schedule.map((s, si) => (
+                                    <div key={si} style={{ fontFamily: sf, fontSize: 10, color: "rgba(255,255,255,.7)", display: "flex", justifyContent: "space-between", maxWidth: 220, marginBottom: 1 }}>
+                                      <span>{s.day}</span>
+                                      <span>{s.hours || 'Fermé'}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            {selectedRelay === r.code && <span style={{ color: "#FFF", fontSize: 16 }}>✓</span>}
+                            {selectedRelay === r.code && <span style={{ color: "#FFF", fontSize: 18, marginLeft: 8 }}>✓</span>}
                           </button>
                         ))}
                       </div>

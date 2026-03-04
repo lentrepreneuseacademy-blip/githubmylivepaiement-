@@ -1,107 +1,183 @@
-import { NextResponse } from 'next/server'
+// ═══════════════════════════════════════════════════════
+// /app/api/boxtal/quote/route.js
+// API Route — Cotation Boxtal (compare les transporteurs)
+// Appelée par le dashboard pro quand elle clique "Comparer les transporteurs"
+// ═══════════════════════════════════════════════════════
 
 export async function POST(request) {
   try {
-    var body = await request.json()
-    var bx = body.boxtal || {}
-    var recipient = body.recipient || {}
-    var parcel = body.parcel || {}
+    const body = await request.json()
+    const { boxtal, recipient, parcel } = body
 
-    var user = bx.user
-    var pass = bx.pass
-
-    if (!user || !pass) {
-      return NextResponse.json({ error: 'Configure tes identifiants Boxtal dans Parametres > Boxtal.' })
+    if (!boxtal?.user || !boxtal?.pass) {
+      return Response.json({ error: 'Identifiants Boxtal manquants. Va dans Parametres pour les configurer.' }, { status: 400 })
     }
 
-    // URL correcte Boxtal / EnvoiMoinsCher
-    // TEST = https://test.envoimoinscher.com
-    // PROD = https://www.envoimoinscher.com
-    var baseUrl = bx.testMode
-      ? 'https://test.envoimoinscher.com'
-      : 'https://www.envoimoinscher.com'
+    // ─── Construire l'URL de cotation ───
+    const baseUrl = boxtal.testMode
+      ? 'https://test.envoimoinscher.com/api/v1'
+      : 'https://www.envoimoinscher.com/api/v1'
 
-    var senderZip = bx.senderZip || '75002'
-    var senderCity = bx.senderCity || 'Paris'
-    var senderAddress = bx.senderAddress || '1 rue de Paris'
+    const params = new URLSearchParams()
 
-    var params = new URLSearchParams()
-    params.append('expediteur.pays', 'FR')
-    params.append('expediteur.code_postal', senderZip)
-    params.append('expediteur.ville', senderCity)
-    params.append('expediteur.adresse', senderAddress)
+    // Expéditeur (la vendeuse pro)
     params.append('expediteur.type', 'entreprise')
+    params.append('expediteur.pays', 'FR')
+    params.append('expediteur.code_postal', boxtal.senderZip || '75001')
+    params.append('expediteur.ville', boxtal.senderCity || 'Paris')
+
+    // Destinataire (la cliente)
+    params.append('destinataire.type', 'particulier')
     params.append('destinataire.pays', recipient.country || 'FR')
     params.append('destinataire.code_postal', recipient.zipcode || '')
     params.append('destinataire.ville', recipient.city || '')
-    params.append('destinataire.adresse', recipient.address || '1 rue de la Paix')
-    params.append('destinataire.type', 'particulier')
+
+    // Colis
     params.append('colis_1.poids', String(parcel.weight || 0.5))
     params.append('colis_1.longueur', String(parcel.length || 30))
     params.append('colis_1.largeur', String(parcel.width || 20))
     params.append('colis_1.hauteur', String(parcel.height || 10))
-    params.append('code_contenu', '40120')
 
-    var url = baseUrl + '/api/v1/cotation?' + params.toString()
-    var auth = Buffer.from(user + ':' + pass).toString('base64')
+    // Contenu : 10120 = Vêtements
+    params.append('code_contenu', '10120')
 
-    var res = await fetch(url, {
+    const url = `${baseUrl}/cotation?${params.toString()}`
+    const auth = Buffer.from(`${boxtal.user}:${boxtal.pass}`).toString('base64')
+
+    console.log('[Boxtal Quote] Requête cotation:', url)
+
+    const res = await fetch(url, {
+      method: 'GET',
       headers: {
-        'Authorization': 'Basic ' + auth,
+        'Authorization': `Basic ${auth}`,
         'Accept': 'application/xml',
-      }
+      },
     })
-    var xml = await res.text()
 
-    // Check for errors
-    if (res.status === 401 || res.status === 403) {
-      return NextResponse.json({
-        error: 'Identifiants Boxtal invalides. Verifie ton email et mot de passe.',
-        debug_status: res.status,
-      })
+    if (!res.ok) {
+      const errorText = await res.text()
+      console.error(`[Boxtal Quote] Erreur ${res.status}:`, errorText)
+
+      // Parser l'erreur XML
+      const errorMsg = extractTag(errorText, 'message') || `Erreur Boxtal (${res.status})`
+      return Response.json({ error: errorMsg, quotes: [] }, { status: 200 })
     }
 
-    if (xml.includes('<error>') || xml.includes('<errors>')) {
-      var errMsg = xml.match(/<message>(.*?)<\/message>/s)
-      return NextResponse.json({
-        error: errMsg ? errMsg[1] : 'Erreur API Boxtal. Verifie tes identifiants et ton adresse.',
-        debug_status: res.status,
-      })
-    }
+    const xml = await res.text()
+    console.log(`[Boxtal Quote] Réponse reçue (${xml.length} chars)`)
 
-    var quotes = []
-    var offerRegex = /<offer>(.*?)<\/offer>/gs
-    var match
-    while ((match = offerRegex.exec(xml)) !== null) {
-      var block = match[1]
-      var opBlock = block.match(/<operator>(.*?)<\/operator>/s)
-      var svcBlock = block.match(/<service>(.*?)<\/service>/s)
-      var priceBlock = block.match(/<price>(.*?)<\/price>/s)
-      var delivBlock = block.match(/<delivery>(.*?)<\/delivery>/s)
+    // ─── Parser les devis ───
+    const quotes = parseQuotesXML(xml)
+    console.log(`[Boxtal Quote] ${quotes.length} offres trouvées`)
 
-      var getSubTag = function(b, tag) {
-        if (!b) return ''
-        var m = b[1].match(new RegExp('<' + tag + '>(.*?)</' + tag + '>'))
-        return m ? m[1] : ''
-      }
-
-      quotes.push({
-        operator_code: getSubTag(opBlock, 'code'),
-        operator_label: getSubTag(opBlock, 'label'),
-        logo: getSubTag(opBlock, 'logo'),
-        service_code: getSubTag(svcBlock, 'code'),
-        service_label: getSubTag(svcBlock, 'label'),
-        price_ht: getSubTag(priceBlock, 'tax-exclusive'),
-        price_ttc: getSubTag(priceBlock, 'tax-inclusive'),
-        delivery_type: delivBlock ? getSubTag(delivBlock, 'label') : '',
-        delivery_delay: delivBlock ? getSubTag(delivBlock, 'delay') : '',
-      })
-    }
-
-    quotes.sort(function(a, b) { return parseFloat(a.price_ttc || 999) - parseFloat(b.price_ttc || 999) })
-    return NextResponse.json({ quotes: quotes, count: quotes.length })
-
-  } catch (err) {
-    return NextResponse.json({ error: 'Erreur connexion Boxtal: ' + (err.message || 'Erreur inconnue') })
+    return Response.json({ quotes })
+  } catch (error) {
+    console.error('[Boxtal Quote] Erreur serveur:', error)
+    return Response.json({ error: 'Erreur serveur lors de la cotation', quotes: [] }, { status: 500 })
   }
+}
+
+// ═══════════════════════════════════════════════════════
+// PARSER XML COTATION → JSON
+// ═══════════════════════════════════════════════════════
+
+function parseQuotesXML(xml) {
+  const quotes = []
+
+  // Chaque offre est dans un <offer>...</offer>
+  const offerBlocks = xml.match(/<offer>([\s\S]*?)<\/offer>/g)
+  if (!offerBlocks) return quotes
+
+  for (const block of offerBlocks) {
+    const inner = block.replace(/<\/?offer>/g, '')
+
+    // Operator
+    const operatorBlock = inner.match(/<operator>([\s\S]*?)<\/operator>/)
+    const operatorCode = operatorBlock ? extractTag(operatorBlock[1], 'code') : null
+    const operatorLabel = operatorBlock ? extractTag(operatorBlock[1], 'label') : null
+    const operatorLogo = operatorBlock ? extractTag(operatorBlock[1], 'logo') : null
+
+    // Service
+    const serviceBlock = inner.match(/<service>([\s\S]*?)<\/service>/)
+    const serviceCode = serviceBlock ? extractTag(serviceBlock[1], 'code') : null
+    const serviceLabel = serviceBlock ? extractTag(serviceBlock[1], 'label') : null
+
+    // Prix
+    const priceBlock = inner.match(/<price>([\s\S]*?)<\/price>/)
+    const priceHT = priceBlock ? extractTag(priceBlock[1], 'tax-exclusive') : null
+    const priceTTC = priceBlock ? extractTag(priceBlock[1], 'tax-inclusive') : null
+
+    // Delivery
+    const deliveryBlock = inner.match(/<delivery>([\s\S]*?)<\/delivery>/)
+    let deliveryType = ''
+    let deliveryDelay = ''
+    if (deliveryBlock) {
+      deliveryDelay = extractTag(deliveryBlock[1], 'label') || ''
+      const typeBlock = deliveryBlock[1].match(/<type>([\s\S]*?)<\/type>/)
+      if (typeBlock) {
+        deliveryType = extractTag(typeBlock[1], 'label') || ''
+      }
+    }
+
+    // Collection
+    const collectionBlock = inner.match(/<collection>([\s\S]*?)<\/collection>/)
+    let collectionType = ''
+    if (collectionBlock) {
+      const colTypeBlock = collectionBlock[1].match(/<type>([\s\S]*?)<\/type>/)
+      if (colTypeBlock) {
+        collectionType = extractTag(colTypeBlock[1], 'label') || ''
+      }
+    }
+
+    // Characteristics
+    const characteristics = []
+    const charMatches = inner.match(/<characteristics>([\s\S]*?)<\/characteristics>/)
+    if (charMatches) {
+      const labels = charMatches[1].match(/<label>([^<]*)<\/label>/g)
+      if (labels) {
+        labels.forEach(l => {
+          const val = l.replace(/<\/?label>/g, '').trim()
+          if (val) characteristics.push(val)
+        })
+      }
+    }
+
+    if (operatorCode && serviceCode && priceTTC) {
+      quotes.push({
+        operator_code: operatorCode,
+        operator_label: operatorLabel || operatorCode,
+        logo: operatorLogo || null,
+        service_code: serviceCode,
+        service_label: serviceLabel || serviceCode,
+        price_ht: parseFloat(priceHT) || 0,
+        price_ttc: parseFloat(priceTTC) || 0,
+        delivery_type: deliveryType,
+        delivery_delay: deliveryDelay,
+        collection_type: collectionType,
+        characteristics,
+      })
+    }
+  }
+
+  // Trier par prix TTC croissant
+  quotes.sort((a, b) => a.price_ttc - b.price_ttc)
+
+  return quotes
+}
+
+function extractTag(xml, tagName) {
+  const regex = new RegExp(`<${tagName}>([^<]*)</${tagName}>`)
+  const match = xml.match(regex)
+  if (!match) return null
+  const val = match[1].trim()
+  return val === '' || val === 'null' ? null : decodeXMLEntities(val)
+}
+
+function decodeXMLEntities(str) {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
 }
