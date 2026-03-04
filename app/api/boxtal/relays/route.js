@@ -9,9 +9,9 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_P
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { shopId, zipcode, country, city, address } = body
+    const { shopId, shopSlug, zipcode, country, city, address } = body
 
-    console.log('[Boxtal Relays] Requête reçue — shopId:', shopId, 'zipcode:', zipcode, 'city:', city)
+    console.log('[Boxtal Relays] Requête reçue — shopId:', shopId, 'shopSlug:', shopSlug, 'zipcode:', zipcode, 'city:', city)
 
     if (!zipcode || zipcode.length < 5) {
       return Response.json({ error: 'Code postal invalide', points: [] }, { status: 400 })
@@ -22,10 +22,15 @@ export async function POST(request) {
     let secretKey = ''
     let isTest = true
 
-    if (shopId) {
+    if (shopId || shopSlug) {
       try {
+        // Chercher par ID ou par slug
+        const filter = shopId 
+          ? `id=eq.${encodeURIComponent(shopId)}`
+          : `slug=eq.${encodeURIComponent(shopSlug)}`
+        
         const shopRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/shops?id=eq.${encodeURIComponent(shopId)}&select=boxtal_key,boxtal_secret,boxtal_config,relay_price,colissimo_price`,
+          `${SUPABASE_URL}/rest/v1/shops?${filter}&select=id,boxtal_key,boxtal_secret,boxtal_config,relay_price,colissimo_price`,
           {
             method: 'GET',
             headers: {
