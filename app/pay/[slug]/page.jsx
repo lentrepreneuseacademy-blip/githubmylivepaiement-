@@ -903,16 +903,16 @@ export default function PayPage() {
         return;
       }
       try {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { data } = await supabase
-          .from('orders')
-          .select('id')
-          .eq('shop_id', shopData.id)
-          .eq('client_email', email.toLowerCase().trim())
-          .in('status', ['paid', 'shipped', 'delivered'])
-          .gte('created_at', since)
-          .limit(1);
-        setHasPreviousOrderToday(data && data.length > 0);
+        const res = await fetch('/api/orders/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_client_orders', email: email.toLowerCase().trim(), shop_id: shopData.id })
+        });
+        const result = await res.json();
+        const orders = result.orders || [];
+        const since = Date.now() - 24 * 60 * 60 * 1000;
+        const recentPaid = orders.filter(o => (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && new Date(o.created_at).getTime() >= since);
+        setHasPreviousOrderToday(recentPaid.length > 0);
       } catch(e) {
         setHasPreviousOrderToday(false);
       }
