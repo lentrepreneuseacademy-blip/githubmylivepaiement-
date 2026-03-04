@@ -720,9 +720,13 @@ export default function PayPage() {
         setRef(returnRef)
         setOrderData({ reference: returnRef, ref: returnRef })
       }
-      // Mark order as paid in Supabase
+      // Mark order as paid via API (bypasse le RLS)
       if (returnRef && shopData?.id) {
-        supabase.from('orders').update({ status: 'paid' }).eq('reference', returnRef).eq('shop_id', shopData.id).then(() => {})
+        fetch('/api/orders/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark_paid', reference: returnRef, shopId: shopData.id })
+        }).then(r => r.json()).then(d => { console.log('[Pay] Commande marquée payée:', d) }).catch(e => console.error('[Pay] Erreur mark_paid:', e))
       }
     }
   }, [searchParams, shopData])
@@ -787,17 +791,25 @@ export default function PayPage() {
   // Load client orders when logging in
   async function loadClientOrders(clientEmail) {
     if (!shopData?.id || !clientEmail) return
-    const { data } = await supabase.from('orders').select('*').eq('shop_id', shopData.id).eq('client_email', clientEmail).order('created_at', { ascending: false })
-    if (data) {
-      setClientOrders(data.map(o => ({
-        id: o.id, ref: o.reference, date: new Date(o.created_at).toLocaleDateString('fr-FR'),
-        amount: o.total_amount || o.amount || 0, shipping: o.shipping_cost || 0,
-        method: o.shipping_method || 'colissimo', relay: null,
-        status: o.status === 'paid' ? 'confirmed' : o.status === 'shipped' ? 'shipped' : o.status === 'delivered' ? 'delivered' : 'pending',
-        tracking: o.tracking_number || '', items: o.description || o.reference,
-        deliveredDate: o.delivered_at ? new Date(o.delivered_at).toLocaleDateString('fr-FR') : null,
-      })))
-    }
+    try {
+      const res = await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_client_orders', email: clientEmail, shop_id: shopData.id })
+      })
+      const result = await res.json()
+      const data = result.orders || []
+      if (data.length > 0) {
+        setClientOrders(data.map(o => ({
+          id: o.id, ref: o.reference, date: new Date(o.created_at).toLocaleDateString('fr-FR'),
+          amount: o.total_amount || o.amount || 0, shipping: o.shipping_cost || 0,
+          method: o.shipping_method || 'colissimo', relay: null,
+          status: o.status === 'paid' ? 'confirmed' : o.status === 'shipped' ? 'shipped' : o.status === 'delivered' ? 'delivered' : 'pending',
+          tracking: o.tracking_number || '', items: o.description || o.reference,
+          deliveredDate: o.delivered_at ? new Date(o.delivered_at).toLocaleDateString('fr-FR') : null,
+        })))
+      }
+    } catch (e) { console.error('[Pay] Erreur loadClientOrders:', e) }
   }
 
   async function sendContact() {
@@ -1026,8 +1038,17 @@ export default function PayPage() {
                 <p style={{ fontFamily: sf, fontSize: 14, color: "#999" }}>{t.paySub}</p>
               </div>
               <form onSubmit={async (e) => { e.preventDefault(); if (!ref.trim()) { setRefError(t.refError); return; }
-                    // Lookup real order in Supabase
-                    const { data: foundOrder } = await supabase.from('orders').select('*').eq('reference', ref.toUpperCase()).eq('shop_id', shopData?.id).single()
+                    // Lookup real order via API (bypasse le RLS)
+                    let foundOrder = null
+                    try {
+                      const lookupRes = await fetch('/api/orders/upsert', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'lookup', reference: ref.toUpperCase(), shopId: shopData?.id })
+                      })
+                      const lookupData = await lookupRes.json()
+                      foundOrder = lookupData.order || null
+                    } catch(e) { console.error('[Pay] Lookup error:', e) }
                     if (foundOrder) {
                       setOrderData(foundOrder)
                       setAmount(String(foundOrder.total_amount || foundOrder.amount || ''))
@@ -1054,7 +1075,7 @@ export default function PayPage() {
           {payStep === "form" && orderData && (
             <form onSubmit={async (e) => { e.preventDefault(); setPaying(true);
                 try {
-                  // Save/update order in Supabase
+                  // Save/update order via API (bypasse le RLS)
                   const orderPayload = {
                     shop_id: shopData?.id,
                     reference: (orderData?.reference || orderData?.ref || ref.toUpperCase()),
@@ -1073,12 +1094,14 @@ export default function PayPage() {
                     status: 'pending_payment',
                   }
                   let orderId = orderData?.id
-                  if (orderId) {
-                    await supabase.from('orders').update(orderPayload).eq('id', orderId)
-                  } else {
-                    const { data: newOrder } = await supabase.from('orders').insert(orderPayload).select().single()
-                    if (newOrder) orderId = newOrder.id
-                  }
+                  const orderRes = await fetch('/api/orders/upsert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'create', order: orderPayload, orderId: orderId })
+                  })
+                  const orderResult = await orderRes.json()
+                  if (orderResult.order) orderId = orderResult.order.id
+                  console.log('[Pay] Commande sauvée:', orderId, orderResult)
                   // Create Stripe Checkout session
                   const res = await fetch('/api/create-checkout', {
                     method: 'POST',
@@ -1096,8 +1119,14 @@ export default function PayPage() {
                   if (checkout.url) {
                     window.location.href = checkout.url
                   } else {
-                    // Fallback: mark as paid directly (for testing)
-                    if (orderId) await supabase.from('orders').update({ status: 'paid' }).eq('id', orderId)
+                    // Fallback: mark as paid via API
+                    if (orderId) {
+                      await fetch('/api/orders/upsert', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'mark_paid', reference: orderPayload.reference, shopId: shopData?.id })
+                      })
+                    }
                     setPaid(true)
                   }
                 } catch (err) {
