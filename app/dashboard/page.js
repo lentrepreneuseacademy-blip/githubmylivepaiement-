@@ -103,7 +103,7 @@ export default function Dashboard() {
   const [shipLabel, setShipLabel] = useState(null)
   const [shipError, setShipError] = useState(null)
   const [shipTrackingNumber, setShipTrackingNumber] = useState(null)
-  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '' })
+  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90' })
   const [boxtalSaving, setBoxtalSaving] = useState(false)
 
   // Statistics
@@ -415,6 +415,7 @@ export default function Dashboard() {
             operator: quote.operator_code,
             service: quote.service_code,
           },
+          relayPoint: (function() { try { return shipSelectedOrder.relay_point ? JSON.parse(shipSelectedOrder.relay_point) : null } catch(e) { return null } })(),
           reference: order.reference || order.id,
         })
       })
@@ -2305,6 +2306,7 @@ export default function Dashboard() {
                           </div>
                           <div style={{ fontSize: 12, color: '#777' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
                           {o.shipping_address && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
+                          {o.relay_point && (function() { try { var rp = JSON.parse(o.relay_point); return <div style={{ fontSize: 11, color: '#6366F1', marginTop: 3, fontWeight: 600 }}>📍 Point relais : {rp.name} — {rp.address}, {rp.zipcode} {rp.city}</div> } catch(e) { return null } })()}
                         </div>
                         <button onClick={function() { startShipping(o) }}
                           style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)', whiteSpace: 'nowrap' }}>
@@ -2348,6 +2350,8 @@ export default function Dashboard() {
                   <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: '#999', marginBottom: 12 }}>COMMANDE</div>
                   <div style={{ fontSize: 16, fontWeight: 800 }}>{shipSelectedOrder.reference || '#'} — {(shipSelectedOrder.total_amount || shipSelectedOrder.total || shipSelectedOrder.amount || 0).toFixed(2)}\u20ac</div>
                   <div style={{ fontSize: 13, color: '#777', marginTop: 4 }}>{shipSelectedOrder.client_first_name || ''} {shipSelectedOrder.client_last_name || ''}</div>
+                  {shipSelectedOrder.shipping_address && <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{shipSelectedOrder.shipping_address}, {shipSelectedOrder.shipping_zipcode} {shipSelectedOrder.shipping_city}</div>}
+                  {shipSelectedOrder.relay_point && (function() { try { var rp = JSON.parse(shipSelectedOrder.relay_point); return <div style={{ marginTop: 8, padding: '10px 14px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#4F46E5' }}>📍 Point relais choisi par le client :</div><div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A', marginTop: 2 }}>{rp.name}</div><div style={{ fontSize: 12, color: '#666', marginTop: 1 }}>{rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
                 </div>
 
                 <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
@@ -2795,6 +2799,17 @@ export default function Dashboard() {
                 <input value={boxtalConfig.senderPhone || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderPhone: e.target.value })) }}
                   placeholder="Telephone (ex: 0612345678)"
                   style={{ width: 200, padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+              </div>
+
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Tarif livraison (facture a tes clients)</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <input value={boxtalConfig.shippingPrice || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { shippingPrice: e.target.value.replace(/[^0-9.,]/g, '') })) }}
+                    placeholder="4.90"
+                    style={{ width: 100, padding: '12px 14px', border: '2px solid #BBF7D0', borderRadius: 10, fontFamily: sf, fontSize: 18, fontWeight: 700, outline: 'none', textAlign: 'center' }} />
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#166534' }}>€</span>
+                  <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>C'est le prix que tes clients verront sur la page de paiement. Mets 0 pour offrir la livraison.</span>
+                </div>
               </div>
 
               <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
