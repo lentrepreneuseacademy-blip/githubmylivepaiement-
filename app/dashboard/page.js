@@ -316,7 +316,13 @@ export default function Dashboard() {
   // ═══════════════════════════════════════════════
   async function saveBoxtalConfig() {
     setBoxtalSaving(true)
-    await supabase.from('shops').update({ boxtal_config: JSON.stringify(boxtalConfig) }).eq('id', shop.id)
+    try {
+      await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_shop', shopId: shop.id, fields: { boxtal_config: JSON.stringify(boxtalConfig) } })
+      })
+    } catch (e) { console.error('[Dashboard] Erreur sauvegarde Boxtal:', e) }
     setBoxtalSaving(false)
   }
 
@@ -330,7 +336,11 @@ export default function Dashboard() {
     if (!error) {
       var { data: urlData } = supabase.storage.from('shop-assets').getPublicUrl(path)
       var url = urlData.publicUrl + '?t=' + Date.now()
-      await supabase.from('shops').update({ logo_url: url }).eq('id', shop.id)
+      await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_shop', shopId: shop.id, fields: { logo_url: url } })
+      })
       setShopLogo(url)
     }
     setLogoUploading(false)
@@ -338,7 +348,11 @@ export default function Dashboard() {
 
   async function saveLegalTexts() {
     setLegalSaving(true)
-    await supabase.from('shops').update({ legal_texts: JSON.stringify(legalTexts) }).eq('id', shop.id)
+    await fetch('/api/orders/upsert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_shop', shopId: shop.id, fields: { legal_texts: JSON.stringify(legalTexts) } })
+    })
     setLegalSaving(false)
   }
 

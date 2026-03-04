@@ -153,6 +153,24 @@ export async function POST(request) {
       return Response.json({ orders: result4.data || [] })
     }
 
+    // ─── UPDATE_SHOP — Mettre à jour les données d'un shop (config, logo, legal, etc.) ───
+    if (action === 'update_shop') {
+      var updateShopId = body.shopId
+      var shopFields = body.fields || {}
+
+      if (!updateShopId) {
+        return Response.json({ error: 'shopId manquant' }, { status: 400 })
+      }
+
+      var result8 = await supabaseRequest('PATCH', 'shops', {
+        filters: { id: updateShopId },
+        body: shopFields,
+      })
+
+      var updatedShop = Array.isArray(result8.data) ? result8.data[0] : result8.data
+      return Response.json({ shop: updatedShop })
+    }
+
     // ─── UPDATE_STATUS — Mettre à jour le statut d'une commande ───
     if (action === 'update_status') {
       var updateOrderId = body.orderId
