@@ -1,136 +1,161 @@
 // ═══════════════════════════════════════════════════════
 // /app/api/orders/upsert/route.js
-// API Route — Créer ou mettre à jour une commande
-// Utilise la service_role_key pour bypasser le RLS
-// Appelée par la page de paiement au moment du checkout
+// API Route — Créer / mettre à jour / lire les commandes
+// Utilise l'API REST Supabase directement (pas de SDK)
+// pour éviter les problèmes d'import
 // ═══════════════════════════════════════════════════════
 
-import { createClient } from '@supabase/supabase-js'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  )
+async function supabaseRequest(method, table, params) {
+  var url = SUPABASE_URL + '/rest/v1/' + table
+  var headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': method === 'POST' ? 'return=representation' : 'return=representation',
+  }
+
+  if (params.filters) {
+    var filterParts = []
+    for (var key in params.filters) {
+      filterParts.push(key + '=eq.' + encodeURIComponent(params.filters[key]))
+    }
+    url = url + '?' + filterParts.join('&')
+  }
+
+  if (params.select) {
+    url = url + (url.indexOf('?') > -1 ? '&' : '?') + 'select=' + params.select
+  }
+
+  if (params.order) {
+    url = url + (url.indexOf('?') > -1 ? '&' : '?') + 'order=' + params.order
+  }
+
+  if (params.limit) {
+    url = url + (url.indexOf('?') > -1 ? '&' : '?') + 'limit=' + params.limit
+  }
+
+  if (params.single) {
+    headers['Accept'] = 'application/vnd.pgrst.object+json'
+  }
+
+  var fetchOptions = { method: method, headers: headers }
+  if (params.body && (method === 'POST' || method === 'PATCH')) {
+    fetchOptions.body = JSON.stringify(params.body)
+  }
+
+  var res = await fetch(url, fetchOptions)
+  var text = await res.text()
+
+  if (!res.ok) {
+    console.error('[Supabase] Erreur ' + res.status + ':', text)
+    return { data: null, error: text }
+  }
+
+  try {
+    return { data: JSON.parse(text), error: null }
+  } catch (e) {
+    return { data: null, error: 'Parse error: ' + text }
+  }
 }
 
 export async function POST(request) {
   try {
-    const body = await request.json()
-    const { action, order, orderId, reference, shopId } = body
+    var body = await request.json()
+    var action = body.action
 
-    const supabase = getSupabase()
+    console.log('[Orders API] Action:', action)
 
-    // ─── ACTION: create — Créer ou mettre à jour la commande au checkout ───
+    // ─── CREATE — Créer ou mettre à jour la commande ───
     if (action === 'create') {
+      var order = body.order
+      var orderId = body.orderId
+
       if (!order || !order.shop_id) {
         return Response.json({ error: 'Données commande manquantes' }, { status: 400 })
       }
 
-      let resultOrder = null
-
+      var result
       if (orderId) {
-        // Mettre à jour une commande existante
-        const { data, error } = await supabase
-          .from('orders')
-          .update(order)
-          .eq('id', orderId)
-          .select()
-          .single()
-
-        if (error) {
-          console.error('[Orders Upsert] Erreur update:', error.message)
-          return Response.json({ error: error.message }, { status: 500 })
-        }
-        resultOrder = data
+        result = await supabaseRequest('PATCH', 'orders', {
+          filters: { id: orderId },
+          body: order,
+        })
       } else {
-        // Créer une nouvelle commande
-        const { data, error } = await supabase
-          .from('orders')
-          .insert(order)
-          .select()
-          .single()
-
-        if (error) {
-          console.error('[Orders Upsert] Erreur insert:', error.message)
-          return Response.json({ error: error.message }, { status: 500 })
-        }
-        resultOrder = data
+        result = await supabaseRequest('POST', 'orders', {
+          body: order,
+        })
       }
 
-      console.log('[Orders Upsert] Commande sauvée:', resultOrder?.id, resultOrder?.reference)
-      return Response.json({ order: resultOrder })
+      if (result.error) {
+        return Response.json({ error: result.error }, { status: 500 })
+      }
+
+      var savedOrder = Array.isArray(result.data) ? result.data[0] : result.data
+      console.log('[Orders API] Commande sauvée:', savedOrder?.id)
+      return Response.json({ order: savedOrder })
     }
 
-    // ─── ACTION: mark_paid — Marquer comme payée (retour Stripe) ───
+    // ─── MARK_PAID — Marquer comme payée ───
     if (action === 'mark_paid') {
+      var reference = body.reference
+      var shopId = body.shopId
+
       if (!reference || !shopId) {
         return Response.json({ error: 'Référence ou shopId manquant' }, { status: 400 })
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .update({ status: 'paid', paid_at: new Date().toISOString() })
-        .eq('reference', reference)
-        .eq('shop_id', shopId)
-        .select()
-        .single()
+      var result2 = await supabaseRequest('PATCH', 'orders', {
+        filters: { reference: reference, shop_id: shopId },
+        body: { status: 'paid', paid_at: new Date().toISOString() },
+      })
 
-      if (error) {
-        console.error('[Orders Upsert] Erreur mark_paid:', error.message)
-        return Response.json({ error: error.message }, { status: 500 })
-      }
-
-      console.log('[Orders Upsert] Commande payée:', data?.id, reference)
-      return Response.json({ order: data })
+      var paidOrder = Array.isArray(result2.data) ? result2.data[0] : result2.data
+      console.log('[Orders API] Commande payée:', paidOrder?.id)
+      return Response.json({ order: paidOrder })
     }
 
-    // ─── ACTION: lookup — Chercher une commande par référence ───
+    // ─── LOOKUP — Chercher une commande par référence ───
     if (action === 'lookup') {
-      if (!reference || !shopId) {
+      var ref = body.reference
+      var sid = body.shopId
+
+      if (!ref || !sid) {
         return Response.json({ order: null })
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('reference', reference)
-        .eq('shop_id', shopId)
-        .single()
+      var result3 = await supabaseRequest('GET', 'orders', {
+        filters: { reference: ref, shop_id: sid },
+        select: '*',
+        single: true,
+      })
 
-      if (error || !data) {
-        return Response.json({ order: null })
-      }
-
-      return Response.json({ order: data })
+      return Response.json({ order: result3.data || null })
     }
 
-    // ─── ACTION: get_client_orders — Récupérer les commandes d'un client ───
+    // ─── GET_CLIENT_ORDERS — Commandes d'un client ───
     if (action === 'get_client_orders') {
-      const { email, shop_id } = body
+      var email = body.email
+      var shopId2 = body.shop_id
 
-      if (!email || !shop_id) {
-        return Response.json({ error: 'Email ou shop_id manquant' }, { status: 400 })
+      if (!email || !shopId2) {
+        return Response.json({ orders: [] })
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('shop_id', shop_id)
-        .eq('client_email', email)
-        .order('created_at', { ascending: false })
+      var result4 = await supabaseRequest('GET', 'orders', {
+        filters: { shop_id: shopId2, client_email: email },
+        select: '*',
+        order: 'created_at.desc',
+      })
 
-      if (error) {
-        console.error('[Orders Upsert] Erreur get_client_orders:', error.message)
-        return Response.json({ error: error.message, orders: [] }, { status: 500 })
-      }
-
-      return Response.json({ orders: data || [] })
+      return Response.json({ orders: result4.data || [] })
     }
 
     return Response.json({ error: 'Action inconnue' }, { status: 400 })
   } catch (error) {
-    console.error('[Orders Upsert] Erreur serveur:', error)
-    return Response.json({ error: 'Erreur serveur' }, { status: 500 })
+    console.error('[Orders API] Erreur serveur:', error)
+    return Response.json({ error: 'Erreur serveur: ' + error.message }, { status: 500 })
   }
 }

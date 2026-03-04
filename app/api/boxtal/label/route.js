@@ -5,6 +5,8 @@
 // et la renvoie au navigateur de la pro en PDF
 // ═══════════════════════════════════════════════════════
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
