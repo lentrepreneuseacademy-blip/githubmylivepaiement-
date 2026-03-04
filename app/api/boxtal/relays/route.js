@@ -25,7 +25,7 @@ export async function POST(request) {
     if (shopId) {
       try {
         const shopRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/shops?id=eq.${encodeURIComponent(shopId)}&select=boxtal_config`,
+          `${SUPABASE_URL}/rest/v1/shops?id=eq.${encodeURIComponent(shopId)}&select=boxtal_key,boxtal_secret,boxtal_config,relay_price,colissimo_price`,
           {
             method: 'GET',
             headers: {
@@ -38,19 +38,22 @@ export async function POST(request) {
         
         if (shopRes.ok) {
           const shop = await shopRes.json()
-          console.log('[Boxtal Relays] Shop trouvé, boxtal_config présent:', !!shop?.boxtal_config, 'type:', typeof shop?.boxtal_config)
+          console.log('[Boxtal Relays] Shop trouvé — boxtal_key présent:', !!shop?.boxtal_key, 'boxtal_secret présent:', !!shop?.boxtal_secret, 'boxtal_config présent:', !!shop?.boxtal_config)
           
-          if (shop?.boxtal_config) {
-            const config = typeof shop.boxtal_config === 'string'
-              ? JSON.parse(shop.boxtal_config)
-              : shop.boxtal_config
-            
-            console.log('[Boxtal Relays] Config parsée — user présent:', !!config.user, 'pass présent:', !!config.pass, 'testMode:', config.testMode)
-            
-            if (config.user) accessKey = config.user
-            if (config.pass) secretKey = config.pass
-            if (config.testMode === true) isTest = true
-            if (config.testMode === false) isTest = false
+          // Méthode 1 : Colonnes séparées (boxtal_key / boxtal_secret)
+          if (shop?.boxtal_key) accessKey = shop.boxtal_key
+          if (shop?.boxtal_secret) secretKey = shop.boxtal_secret
+          
+          // Méthode 2 : Fallback sur boxtal_config JSON si les colonnes sont vides
+          if ((!accessKey || !secretKey) && shop?.boxtal_config) {
+            try {
+              const config = typeof shop.boxtal_config === 'string'
+                ? JSON.parse(shop.boxtal_config)
+                : shop.boxtal_config
+              if (!accessKey && config.user) accessKey = config.user
+              if (!secretKey && config.pass) secretKey = config.pass
+              if (config.testMode === false) isTest = false
+            } catch (e) {}
           }
         } else {
           const errText = await shopRes.text()
