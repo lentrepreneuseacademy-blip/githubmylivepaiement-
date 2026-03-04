@@ -14,13 +14,13 @@ const T = {
     flag: "🇫🇷",
     // Landing
     heroTitle: "Paiement sécurisé pour le live shopping",
-    heroSub: "Finalise ta commande en quelques clics. Paiement par carte, livraison en point relais ou à domicile.",
+    heroSub: "Finalise ta commande en quelques clics. Paiement par carte, livraison en point relais Mondial Relay.",
     ctaPay: "Payer ma commande",
     ctaAccount: "Mon espace client",
     feat1Title: "Paiement sécurisé",
     feat1Desc: "Tes données bancaires sont protégées par un chiffrement de bout en bout",
-    feat2Title: "Livraison au choix",
-    feat2Desc: "Colissimo à domicile ou retrait en point Mondial Relay",
+    feat2Title: "Mondial Relay",
+    feat2Desc: "Retrait en point relais Mondial Relay près de chez toi",
     feat3Title: "Suivi en temps réel",
     feat3Desc: "Suis ta commande étape par étape depuis ton espace client",
     howTitle: "Comment ça marche ?",
@@ -66,13 +66,15 @@ const T = {
     shippingSection: "Mode de livraison",
     colissimo: "Colissimo",
     colissimoDesc: "Livraison à domicile · 3-5 jours",
-    freeShippingBanner: "🎉 Tu as déjà commandé aujourd'hui — livraison offerte !",
+    freeShippingBanner: "🎉 Tu as déjà commandé dans les 24h — livraison offerte !",
     freeShippingTag: "OFFERT",
-    freeShippingLine: "Offerte (2e commande du jour)",
+    freeShippingLine: "Offerte (commande dans les 24h)",
     relay: "Mondial Relay",
     relayDesc: "Retrait en point relais · 4-6 jours",
     relayPoints: "Points relais",
     relayEnterCp: "Entre ton code postal complet pour voir les points relais",
+    relayInfo: "Point relais le plus proche",
+    relayInfoDesc: "Le point relais le plus proche de ton adresse sera sélectionné lors de l'expédition. Tu recevras un email avec l'adresse exacte.",
     cardSection: "Paiement par carte",
     cardNumber: "Numéro de carte",
     cardExpiry: "Expiration",
@@ -151,13 +153,13 @@ const T = {
     langName: "English",
     flag: "🇬🇧",
     heroTitle: "Secure payment for live shopping",
-    heroSub: "Complete your order in a few clicks. Pay by card, choose home delivery or relay point pickup.",
+    heroSub: "Complete your order in a few clicks. Pay by card, delivery to your nearest Mondial Relay point.",
     ctaPay: "Pay my order",
     ctaAccount: "My account",
     feat1Title: "Secure payment",
     feat1Desc: "Your bank details are protected by end-to-end encryption",
-    feat2Title: "Delivery options",
-    feat2Desc: "Home delivery or pickup at a relay point",
+    feat2Title: "Mondial Relay",
+    feat2Desc: "Pickup at a Mondial Relay point near you",
     feat3Title: "Real-time tracking",
     feat3Desc: "Track your order step by step from your client area",
     howTitle: "How does it work?",
@@ -202,13 +204,15 @@ const T = {
     shippingSection: "Delivery method",
     colissimo: "Standard delivery",
     colissimoDesc: "Home delivery · 3-5 days",
-    freeShippingBanner: "🎉 You already ordered today — free shipping!",
+    freeShippingBanner: "🎉 You ordered in the last 24h — free shipping!",
     freeShippingTag: "FREE",
-    freeShippingLine: "Free (2nd order today)",
+    freeShippingLine: "Free (order within 24h)",
     relay: "Pickup point",
     relayDesc: "Relay point pickup · 4-6 days",
     relayPoints: "Pickup points",
     relayEnterCp: "Enter your full zip code to see pickup points",
+    relayInfo: "Nearest pickup point",
+    relayInfoDesc: "The nearest pickup point to your address will be selected during shipping. You'll receive an email with the exact address.",
     cardSection: "Card payment",
     cardNumber: "Card number",
     cardExpiry: "Expiry",
@@ -285,13 +289,13 @@ const T = {
     langName: "Español",
     flag: "🇪🇸",
     heroTitle: "Pago seguro para live shopping",
-    heroSub: "Completa tu pedido en unos clics. Pago con tarjeta, entrega a domicilio o en punto de recogida.",
+    heroSub: "Completa tu pedido en unos clics. Pago con tarjeta, entrega en punto Mondial Relay.",
     ctaPay: "Pagar mi pedido",
     ctaAccount: "Mi cuenta",
     feat1Title: "Pago seguro",
     feat1Desc: "Tus datos bancarios están protegidos con cifrado de extremo a extremo",
-    feat2Title: "Opciones de envío",
-    feat2Desc: "Entrega a domicilio o recogida en punto de relevo",
+    feat2Title: "Mondial Relay",
+    feat2Desc: "Recogida en un punto Mondial Relay cerca de ti",
     feat3Title: "Seguimiento en tiempo real",
     feat3Desc: "Sigue tu pedido paso a paso desde tu espacio cliente",
     howTitle: "¿Cómo funciona?",
@@ -336,13 +340,15 @@ const T = {
     shippingSection: "Método de envío",
     colissimo: "Envío estándar",
     colissimoDesc: "Entrega a domicilio · 3-5 días",
-    freeShippingBanner: "🎉 Ya has pedido hoy — ¡envío gratis!",
+    freeShippingBanner: "🎉 Ya has pedido en las últimas 24h — ¡envío gratis!",
     freeShippingTag: "GRATIS",
-    freeShippingLine: "Gratis (2° pedido del día)",
+    freeShippingLine: "Gratis (pedido en 24h)",
     relay: "Punto de recogida",
     relayDesc: "Recogida en punto de relevo · 4-6 días",
     relayPoints: "Puntos de recogida",
     relayEnterCp: "Introduce tu código postal completo para ver los puntos",
+    relayInfo: "Punto de recogida más cercano",
+    relayInfoDesc: "El punto de recogida más cercano a tu dirección será seleccionado al enviar. Recibirás un email con la dirección exacta.",
     cardSection: "Pago con tarjeta",
     cardNumber: "Número de tarjeta",
     cardExpiry: "Caducidad",
@@ -419,13 +425,13 @@ const T = {
     langName: "Deutsch",
     flag: "🇩🇪",
     heroTitle: "Sichere Zahlung für Live Shopping",
-    heroSub: "Schließe deine Bestellung in wenigen Klicks ab. Zahlung per Karte, Lieferung nach Hause oder an Abholstelle.",
+    heroSub: "Schließe deine Bestellung in wenigen Klicks ab. Zahlung per Karte, Lieferung an Mondial Relay Punkt.",
     ctaPay: "Bestellung bezahlen",
     ctaAccount: "Mein Konto",
     feat1Title: "Sichere Zahlung",
     feat1Desc: "Deine Bankdaten sind durch Ende-zu-Ende-Verschlüsselung geschützt",
-    feat2Title: "Lieferoptionen",
-    feat2Desc: "Hauslieferung oder Abholung an einer Paketstation",
+    feat2Title: "Mondial Relay",
+    feat2Desc: "Abholung an einem Mondial Relay Punkt in deiner Nähe",
     feat3Title: "Echtzeit-Verfolgung",
     feat3Desc: "Verfolge deine Bestellung Schritt für Schritt in deinem Kundenbereich",
     howTitle: "Wie funktioniert es?",
@@ -470,13 +476,15 @@ const T = {
     shippingSection: "Versandart",
     colissimo: "Standardversand",
     colissimoDesc: "Hauslieferung · 3-5 Tage",
-    freeShippingBanner: "🎉 Du hast heute schon bestellt — kostenloser Versand!",
+    freeShippingBanner: "🎉 Du hast in den letzten 24h bestellt — kostenloser Versand!",
     freeShippingTag: "GRATIS",
-    freeShippingLine: "Kostenlos (2. Bestellung heute)",
+    freeShippingLine: "Kostenlos (Bestellung innerhalb 24h)",
     relay: "Abholstation",
     relayDesc: "Paketstation · 4-6 Tage",
     relayPoints: "Abholstellen",
     relayEnterCp: "Gib deine PLZ ein, um Abholstellen zu sehen",
+    relayInfo: "Nächste Abholstelle",
+    relayInfoDesc: "Die nächstgelegene Abholstelle wird beim Versand ausgewählt. Du erhältst eine E-Mail mit der genauen Adresse.",
     cardSection: "Kartenzahlung",
     cardNumber: "Kartennummer",
     cardExpiry: "Ablaufdatum",
@@ -553,11 +561,7 @@ const T = {
 
 const LANGS = ["fr", "en", "es", "de"];
 
-const MOCK_RELAY = [
-  { id: "R1", name: "Relay Center", address: "12 Main St", distance: "350m" },
-  { id: "R2", name: "Pack & Ship", address: "45 Commerce Ave", distance: "800m" },
-  { id: "R3", name: "Quick Stop", address: "89 Station Rd", distance: "1.2km" },
-];
+// (relay points loaded dynamically)
 
 // ═══════════════════════════════════════
 // LANG PICKER
@@ -743,8 +747,11 @@ export default function PayPage() {
   const [complement, setComplement] = useState("");
   const [cp, setCp] = useState("");
   const [ville, setVille] = useState("");
-  const [shippingMethod, setShippingMethod] = useState(null);
+  const [shippingMethod, setShippingMethod] = useState("relay");
   const [selectedRelay, setSelectedRelay] = useState(null);
+  const [realRelayPoints, setRealRelayPoints] = useState([]);
+  const [relayLoading, setRelayLoading] = useState(false);
+  const [relayError, setRelayError] = useState('');
   const [cardNum, setCardNum] = useState("");
   const [cardExp, setCardExp] = useState("");
   const [cardCvc, setCardCvc] = useState("");
@@ -814,11 +821,35 @@ export default function PayPage() {
     setContactSending(false);
   }
 
+  async function loadRelayPoints(zipcode) {
+    if (!zipcode || zipcode.length < 5 || !shopData?.id) return;
+    setRelayLoading(true);
+    setRelayError('');
+    try {
+      var res = await fetch('/api/boxtal/relays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shopId: shopData.id, zipcode: zipcode, country: 'FR' })
+      });
+      var data = await res.json();
+      if (data.error) {
+        setRelayError(data.error);
+        setRealRelayPoints([]);
+      } else {
+        setRealRelayPoints(data.points || []);
+      }
+    } catch(e) {
+      setRelayError('Impossible de charger les points relais');
+    }
+    setRelayLoading(false);
+  }
+
   const freeShipping = hasPreviousOrderToday;
-  const shippingCost = freeShipping ? 0 : (shippingMethod === "colissimo" ? 5.90 : shippingMethod === "relay" ? 3.90 : 0);
+  const customShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(c.shippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 4.90; })();
+  const shippingCost = freeShipping ? 0 : customShippingPrice;
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
-  const canPay = nom && prenom && email && phone && adresse && cp && ville && shippingMethod && (shippingMethod === "colissimo" || selectedRelay) && cardNum.length >= 16 && cardExp && cardCvc && parsedAmount > 0;
+  const canPay = nom && prenom && email && phone && adresse && cp && ville && selectedRelay && cardNum.length >= 16 && cardExp && cardCvc && parsedAmount > 0;
 
   // Auto-detect language on mount
   useEffect(() => {
@@ -828,15 +859,31 @@ export default function PayPage() {
     } catch (e) {}
   }, []);
 
-  // Check if email has a previous order today
+  // Check if email has a previous PAID order in last 24 hours
   useEffect(() => {
-    if (email && email.includes("@")) {
-      const timer = setTimeout(() => setHasPreviousOrderToday(true), 800);
-      return () => clearTimeout(timer);
-    } else {
-      setHasPreviousOrderToday(false);
+    async function checkPreviousOrder() {
+      if (!email || !email.includes("@") || !shopData?.id) {
+        setHasPreviousOrderToday(false);
+        return;
+      }
+      try {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('shop_id', shopData.id)
+          .eq('client_email', email.toLowerCase().trim())
+          .in('status', ['paid', 'shipped', 'delivered'])
+          .gte('created_at', since)
+          .limit(1);
+        setHasPreviousOrderToday(data && data.length > 0);
+      } catch(e) {
+        setHasPreviousOrderToday(false);
+      }
     }
-  }, [email]);
+    const timer = setTimeout(checkPreviousOrder, 600);
+    return () => clearTimeout(timer);
+  }, [email, shopData?.id]);
 
   // Header component
   const Header = ({ showBack }) => (
@@ -932,7 +979,7 @@ export default function PayPage() {
             <h1 style={{ fontFamily: ss, fontSize: 32, fontWeight: 400, marginBottom: 8 }}>{t.payConfirmed}</h1>
             <p style={{ fontFamily: sf, fontSize: 14, color: "#999", marginBottom: 32 }}>{t.emailSentTo} {email}</p>
             <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.08)", borderRadius: 16, padding: 24, textAlign: "left" }}>
-              {[{ l: t.ref, v: (orderData?.reference || orderData?.ref || ref.toUpperCase()) }, { l: t.amount, v: totalAmount + "€" }, { l: t.deliveryMethod, v: shippingMethod === "colissimo" ? t.colissimo + " — " + t.homeDelivery : t.relay }].map((row, i) => (
+              {[{ l: t.ref, v: (orderData?.reference || orderData?.ref || ref.toUpperCase()) }, { l: t.amount, v: totalAmount + "€" }, { l: t.deliveryMethod, v: t.relay }].map((row, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 2 ? "1px solid rgba(0,0,0,.04)" : "none" }}>
                   <span style={{ fontFamily: sf, fontSize: 13, color: "#999" }}>{row.l}</span><span style={{ fontFamily: sf, fontSize: 13, fontWeight: 600 }}>{row.v}</span>
                 </div>
@@ -997,6 +1044,7 @@ export default function PayPage() {
                     shipping_zipcode: cp,
                     shipping_city: ville,
                     shipping_method: shippingMethod,
+                    relay_point: shippingMethod === 'relay' && selectedRelay ? JSON.stringify(realRelayPoints.find(r => r.code === selectedRelay) || { code: selectedRelay }) : null,
                     description: orderData?.description || '',
                     status: 'pending_payment',
                   }
@@ -1065,7 +1113,7 @@ export default function PayPage() {
                 <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.address} *</label><input value={adresse} onChange={(e) => setAdresse(e.target.value)} placeholder={t.addressPlaceholder} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.complement}</label><input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder={t.complementPlaceholder} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 10 }}>
-                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.postalCode} *</label><input value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").substring(0, 5))} required maxLength={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
+                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.postalCode} *</label><input value={cp} onChange={(e) => { var v = e.target.value.replace(/\D/g, "").substring(0, 5); setCp(v); if (v.length === 5) loadRelayPoints(v); }} required maxLength={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                   <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.city} *</label><input value={ville} onChange={(e) => setVille(e.target.value)} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 </div>
               </div>
@@ -1078,46 +1126,54 @@ export default function PayPage() {
                     <span style={{ fontFamily: sf, fontSize: 13, color: "#065F46", fontWeight: 500 }}>{t.freeShippingBanner}</span>
                   </div>
                 )}
-                <button type="button" onClick={() => { setShippingMethod("colissimo"); setSelectedRelay(null); }}
-                  style={{ width: "100%", padding: "16px 18px", border: shippingMethod === "colissimo" ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.1)", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ width: "100%", padding: "16px 18px", border: "2px solid #1A1A1A", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: shippingMethod === "colissimo" ? "6px solid #1A1A1A" : "2px solid #DDD" }} />
-                    <div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>📦 {t.colissimo}</div><div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginTop: 2 }}>{t.colissimoDesc}</div></div>
-                  </div>
-                  {freeShipping ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontFamily: sf, fontSize: 13, color: "#999", textDecoration: "line-through" }}>5.90€</span>
-                      <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: "#065F46", background: "#ECFDF5", padding: "3px 8px", borderRadius: 6 }}>{t.freeShippingTag}</span>
-                    </div>
-                  ) : (
-                    <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>5.90€</div>
-                  )}
-                </button>
-                <button type="button" onClick={() => setShippingMethod("relay")}
-                  style={{ width: "100%", padding: "16px 18px", border: shippingMethod === "relay" ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.1)", borderRadius: 14, background: "#FFF", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: shippingMethod === "relay" ? "6px solid #1A1A1A" : "2px solid #DDD" }} />
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: "6px solid #1A1A1A" }} />
                     <div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>📍 {t.relay}</div><div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginTop: 2 }}>{t.relayDesc}</div></div>
                   </div>
                   {freeShipping ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontFamily: sf, fontSize: 13, color: "#999", textDecoration: "line-through" }}>3.90€</span>
+                      {customShippingPrice > 0 && <span style={{ fontFamily: sf, fontSize: 13, color: "#999", textDecoration: "line-through" }}>{customShippingPrice.toFixed(2)}€</span>}
                       <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: "#065F46", background: "#ECFDF5", padding: "3px 8px", borderRadius: 6 }}>{t.freeShippingTag}</span>
                     </div>
                   ) : (
-                    <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>3.90€</div>
+                    <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>{customShippingPrice > 0 ? customShippingPrice.toFixed(2) + "€" : "Gratuit"}</div>
                   )}
-                </button>
+                </div>
                 {shippingMethod === "relay" && (
                   <div style={{ marginTop: 12, background: "#F8F7F5", borderRadius: 12, padding: 14 }}>
                     <div style={{ fontFamily: sf, fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>{t.relayPoints}</div>
-                    {cp.length >= 3 ? MOCK_RELAY.map(r => (
-                      <button key={r.id} type="button" onClick={() => setSelectedRelay(r.id)}
-                        style={{ width: "100%", padding: "12px 14px", border: selectedRelay === r.id ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.06)", borderRadius: 10, background: selectedRelay === r.id ? "#1A1A1A" : "#FFF", marginBottom: 6, textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div><div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: selectedRelay === r.id ? "#FFF" : "#1A1A1A" }}>{r.name}</div><div style={{ fontFamily: sf, fontSize: 11, color: selectedRelay === r.id ? "rgba(255,255,255,.5)" : "#999", marginTop: 2 }}>{r.address}</div></div>
-                        <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 600, color: selectedRelay === r.id ? "rgba(255,255,255,.5)" : "#BBB" }}>{r.distance}</div>
-                      </button>
-                    )) : <div style={{ fontFamily: sf, fontSize: 12, color: "#CCC", textAlign: "center", padding: 8 }}>{t.relayEnterCp}</div>}
+                    {cp.length < 5 ? (
+                      <div style={{ fontFamily: sf, fontSize: 12, color: "#CCC", textAlign: "center", padding: 8 }}>{t.relayEnterCp}</div>
+                    ) : relayLoading ? (
+                      <div style={{ textAlign: "center", padding: 16 }}>
+                        <div style={{ width: 24, height: 24, border: "3px solid #E5E5E5", borderTopColor: "#1A1A1A", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
+                        <div style={{ fontFamily: sf, fontSize: 12, color: "#999" }}>Chargement des points relais...</div>
+                      </div>
+                    ) : relayError ? (
+                      <div style={{ textAlign: "center", padding: 12 }}>
+                        <div style={{ fontFamily: sf, fontSize: 12, color: "#F59E0B", marginBottom: 8 }}>{relayError}</div>
+                        <button type="button" onClick={() => loadRelayPoints(cp)} style={{ fontFamily: sf, fontSize: 12, padding: "6px 16px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 8, cursor: "pointer" }}>Réessayer</button>
+                      </div>
+                    ) : realRelayPoints.length === 0 ? (
+                      <div style={{ textAlign: "center", padding: 12 }}>
+                        <div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginBottom: 8 }}>Aucun point relais trouvé pour ce code postal</div>
+                        <button type="button" onClick={() => loadRelayPoints(cp)} style={{ fontFamily: sf, fontSize: 12, padding: "6px 16px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 8, cursor: "pointer" }}>Rechercher</button>
+                      </div>
+                    ) : (
+                      <div>
+                        {realRelayPoints.slice(0, 5).map((r, i) => (
+                          <button key={r.code || i} type="button" onClick={() => setSelectedRelay(r.code)}
+                            style={{ width: "100%", padding: "12px 14px", border: selectedRelay === r.code ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.06)", borderRadius: 10, background: selectedRelay === r.code ? "#1A1A1A" : "#FFF", marginBottom: 6, textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: selectedRelay === r.code ? "#FFF" : "#1A1A1A" }}>{r.name}</div>
+                              <div style={{ fontFamily: sf, fontSize: 11, color: selectedRelay === r.code ? "rgba(255,255,255,.6)" : "#999", marginTop: 2 }}>{r.address}, {r.zipcode} {r.city}</div>
+                            </div>
+                            {selectedRelay === r.code && <span style={{ color: "#FFF", fontSize: 16 }}>✓</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
