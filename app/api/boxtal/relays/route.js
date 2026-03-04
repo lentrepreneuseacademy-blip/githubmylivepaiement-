@@ -13,11 +13,10 @@ export async function POST(request) {
       return Response.json({ error: 'Code postal invalide', points: [] }, { status: 400 })
     }
 
-    // ─── Récupérer les credentials Boxtal ───
-    // Priorité : config boutique > variables d'environnement
-    let accessKey = process.env.BOXTAL_ACCESS_KEY || ''
-    let secretKey = process.env.BOXTAL_SECRET_KEY || ''
-    let isTest = process.env.BOXTAL_ENV !== 'production'
+    // ─── Récupérer les credentials Boxtal de la boutique ───
+    let accessKey = ''
+    let secretKey = ''
+    let isTest = true // Par défaut en mode test
 
     if (shopId) {
       try {
@@ -35,21 +34,27 @@ export async function POST(request) {
           const config = typeof shop.boxtal_config === 'string'
             ? JSON.parse(shop.boxtal_config)
             : shop.boxtal_config
-          if (config.accessKey) accessKey = config.accessKey
-          if (config.secretKey) secretKey = config.secretKey
-          if (config.env === 'production') isTest = false
-          if (config.env === 'test') isTest = true
+          // Le dashboard stocke : user, pass, testMode, senderAddress, etc.
+          if (config.user) accessKey = config.user
+          if (config.pass) secretKey = config.pass
+          if (config.testMode === true) isTest = true
+          if (config.testMode === false) isTest = false
         }
       } catch (e) {
         console.error('[Boxtal] Erreur lecture config boutique:', e.message)
       }
     }
 
+    // Fallback sur les variables d'environnement globales
+    if (!accessKey) accessKey = process.env.BOXTAL_ACCESS_KEY || ''
+    if (!secretKey) secretKey = process.env.BOXTAL_SECRET_KEY || ''
+    if (process.env.BOXTAL_ENV === 'production') isTest = false
+
     if (!accessKey || !secretKey) {
       return Response.json({
-        error: 'Credentials Boxtal non configurés. Ajoutez BOXTAL_ACCESS_KEY et BOXTAL_SECRET_KEY dans vos variables d\'environnement.',
+        error: 'La boutique n\'a pas encore configuré Boxtal. Le point relais te sera communiqué par email.',
         points: []
-      }, { status: 500 })
+      }, { status: 200 })
     }
 
     // ─── Construire l'URL de l'API Boxtal ───
