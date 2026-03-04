@@ -162,27 +162,38 @@ export default function Dashboard() {
 
   // ═══ LOAD DATA ═══
   async function loadData(shopId) {
-    const { data: orderData } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('shop_id', shopId)
-      .order('created_at', { ascending: false })
-      .limit(50)
+    // Load orders via API route (bypasse le RLS)
+    let orderData = []
+    try {
+      const orderRes = await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list_shop_orders', shop_id: shopId, limit: 200 })
+      })
+      const orderResult = await orderRes.json()
+      orderData = orderResult.orders || []
+    } catch (e) { console.error('[Dashboard] Erreur chargement commandes:', e) }
 
-    if (orderData) setOrders(orderData)
+    if (orderData.length > 0) setOrders(orderData)
 
-    const { data: clientData } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('shop_id', shopId)
-      .order('created_at', { ascending: false })
+    // Load clients via API route (bypasse le RLS)
+    let clientData = []
+    try {
+      const clientRes = await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list_shop_clients', shop_id: shopId })
+      })
+      const clientResult = await clientRes.json()
+      clientData = clientResult.clients || []
+    } catch (e) { console.error('[Dashboard] Erreur chargement clients:', e) }
 
-    if (clientData) setClients(clientData)
+    if (clientData.length > 0) setClients(clientData)
 
     const paid = orderData?.filter(o => o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') || []
     const pending = orderData?.filter(o => o.status === 'paid') || []
     setStats({
-      revenue: paid.reduce((sum, o) => sum + (o.total || o.amount || 0), 0),
+      revenue: paid.reduce((sum, o) => sum + (o.total_amount || o.total || o.amount || 0), 0),
       orderCount: paid.length,
       clientCount: clientData?.length || 0,
       pendingShip: pending.length,
@@ -205,7 +216,7 @@ export default function Dashboard() {
       date.setDate(date.getDate() - d)
       var dayStr = date.toISOString().slice(0, 10)
       var dayOrders = paid.filter(function(o) { return o.created_at && o.created_at.slice(0, 10) === dayStr })
-      var dayRev = dayOrders.reduce(function(s, o) { return s + (o.total || o.amount || 0) }, 0)
+      var dayRev = dayOrders.reduce(function(s, o) { return s + (o.total_amount || o.total || o.amount || 0) }, 0)
       daily.push({ name: dayNames[date.getDay()], revenue: dayRev, orders: dayOrders.length })
     }
 
@@ -215,14 +226,14 @@ export default function Dashboard() {
       var mDate = new Date(now.getFullYear(), now.getMonth() - m, 1)
       var mKey = mDate.getFullYear() + '-' + String(mDate.getMonth() + 1).padStart(2, '0')
       var mOrders = paid.filter(function(o) { return o.created_at && o.created_at.slice(0, 7) === mKey })
-      var mRev = mOrders.reduce(function(s, o) { return s + (o.total || o.amount || 0) }, 0)
+      var mRev = mOrders.reduce(function(s, o) { return s + (o.total_amount || o.total || o.amount || 0) }, 0)
       monthly.push({ name: monthNames[mDate.getMonth()], revenue: mRev, orders: mOrders.length })
     }
 
     // KPIs
     var rev7d = daily.reduce(function(s, d) { return s + d.revenue }, 0)
     var ord7d = daily.reduce(function(s, d) { return s + d.orders }, 0)
-    var avgOrder = paid.length > 0 ? paid.reduce(function(s, o) { return s + (o.total || o.amount || 0) }, 0) / paid.length : 0
+    var avgOrder = paid.length > 0 ? paid.reduce(function(s, o) { return s + (o.total_amount || o.total || o.amount || 0) }, 0) / paid.length : 0
     var totalComments = orderList.length
     var convRate = totalComments > 0 ? Math.round((paid.length / totalComments) * 100) : 0
 
@@ -275,18 +286,29 @@ export default function Dashboard() {
   async function handleCreateOrder(e) {
     e.preventDefault()
     const ref = newOrder.reference.toUpperCase() || `${shop.slug.toUpperCase().slice(0, 4)}-${String(orders.length + 1).padStart(3, '0')}`
-    const { data, error } = await supabase.from('orders').insert({
-      shop_id: shop.id,
-      reference: ref,
-      amount: parseFloat(newOrder.amount),
-      description: newOrder.description,
-      status: 'pending_payment',
-    }).select().single()
-
-    if (!error && data) {
-      setOrders([data, ...orders])
-      setShowNewOrder(false)
-      setNewOrder({ reference: '', amount: '', description: '' })
+    try {
+      const res = await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          order: {
+            shop_id: shop.id,
+            reference: ref,
+            total_amount: parseFloat(newOrder.amount),
+            amount: parseFloat(newOrder.amount),
+            description: newOrder.description,
+            status: 'pending_payment',
+          }
+        })
+      })
+      const result = await res.json()
+      if (result.order) {
+        setOrders([result.order, ...orders])
+        setShowNewOrder(false)
+        setNewOrder({ reference: '', amount: '', description: '' })
+      }
+    } catch (err) { console.error('[Dashboard] Erreur création commande:', err) }
     }
   }
 
@@ -425,13 +447,21 @@ export default function Dashboard() {
       } else {
         setShipLabel(data.label_url || null)
         setShipTrackingNumber(data.tracking || data.reference || null)
-        await supabase.from('orders').update({
-          status: 'shipped',
-          shipped_at: new Date().toISOString(),
-          tracking_number: data.tracking || data.reference || '',
-          shipping_carrier: quote.operator_label + ' - ' + quote.service_label,
-          shipping_label_url: data.label_url || '',
-        }).eq('id', order.id)
+        await fetch('/api/orders/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update_status',
+            orderId: order.id,
+            fields: {
+              status: 'shipped',
+              shipped_at: new Date().toISOString(),
+              tracking_number: data.tracking || data.reference || '',
+              shipping_carrier: quote.operator_label + ' - ' + quote.service_label,
+              shipping_label_url: data.label_url || '',
+            }
+          })
+        })
         loadData(shop.id)
         setShipStep('label')
       }
@@ -586,13 +616,21 @@ export default function Dashboard() {
         // Auto-create order in DB
         if (shop) {
           const ref = `${shop.slug.toUpperCase().slice(0, 4)}-${String(num).padStart(3, '0')}`
-          supabase.from('orders').insert({
-            shop_id: shop.id,
-            reference: ref,
-            amount: 0,
-            description: `Live: @${commentData.username} — "${commentData.text}"`,
-            status: 'pending_payment',
-            source: 'live_monitor',
+          fetch('/api/orders/upsert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'create',
+              order: {
+                shop_id: shop.id,
+                reference: ref,
+                total_amount: 0,
+                amount: 0,
+                description: `Live: @${commentData.username} — "${commentData.text}"`,
+                status: 'pending_payment',
+                source: 'live_monitor',
+              }
+            })
           })
         }
         return num
@@ -2329,7 +2367,7 @@ export default function Dashboard() {
                         </div>
                         <div style={{ display: 'flex', gap: 8 }}>
                           {o.shipping_label_url && <button onClick={function() { window.open(o.shipping_label_url, '_blank') }} style={{ padding: '8px 14px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Etiquette</button>}
-                          <button onClick={async function() { await supabase.from('orders').update({ status: 'delivered' }).eq('id', o.id); loadData(shop.id) }} style={{ padding: '8px 14px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Livre</button>
+                          <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: o.id, fields: { status: 'delivered' } }) }); loadData(shop.id) }} style={{ padding: '8px 14px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Livre</button>
                         </div>
                       </div>
                     </div>
@@ -2390,7 +2428,7 @@ export default function Dashboard() {
                     style={{ width: '100%', padding: 16, background: shipQuoteLoading ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipQuoteLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
                     {shipQuoteLoading ? 'Recherche des tarifs...' : 'Comparer les transporteurs'}
                   </button>
-                  <button onClick={async function() { await supabase.from('orders').update({ status: 'shipped', shipped_at: new Date().toISOString() }).eq('id', shipSelectedOrder.id); loadData(shop.id); setShipStep('label') }}
+                  <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: shipSelectedOrder.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }); loadData(shop.id); setShipStep('label') }}
                     style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: '#999', border: '1px dashed rgba(0,0,0,.1)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
                     Marquer expediee manuellement (sans Boxtal)
                   </button>
