@@ -68,9 +68,13 @@ export async function POST(request) {
 
     // ─── Parser les devis ───
     const allQuotes = parseQuotesXML(xml)
-    // Only keep Mondial Relay Point Relais (not domicile)
-    const quotes = allQuotes.filter(q => q.operator_code === 'MONR' && !q.service_label?.toLowerCase().includes('domicile'))
-    console.log(`[Boxtal Quote] ${allQuotes.length} offres total, ${quotes.length} Mondial Relay`)
+    const quotes = allQuotes.filter(q => {
+      if (q.operator_code !== 'MONR') return false
+      const label = (q.service_label || '').toLowerCase() + ' ' + (q.delivery_type || '').toLowerCase()
+      if (label.includes('domicile')) return false
+      return true
+    })
+    console.log('[Boxtal Quote] ' + allQuotes.length + ' total, ' + quotes.length + ' Mondial Relay Point Relais')
 
     return Response.json({ quotes })
   } catch (error) {
