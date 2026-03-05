@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { shopId, zipcode, country } = body
+    const { shopId, zipcode, country, city, address } = body
 
     if (!zipcode || zipcode.length < 5) {
       return Response.json({ error: 'Code postal invalide', points: [] })
@@ -46,60 +46,45 @@ export async function POST(request) {
       : 'https://www.envoimoinscher.com'
 
     const auth = Buffer.from(user + ':' + pass).toString('base64')
-    const headers = { 'Authorization': 'Basic ' + auth }
-    const cc = country || 'FR'
 
-    // Try ALL possible URL/param combinations
-    const urls = [
-      baseUrl + '/api/v1/MONR/listpoints?pays=' + cc + '&cp=' + zipcode,
-      baseUrl + '/api/v1/MONR/listpoints?pays=' + cc + '&postalcode=' + zipcode,
-      baseUrl + '/api/v1/MONR/listpoints?pays=' + cc + '&code_postal=' + zipcode,
-      baseUrl + '/api/v1/listpoints?carriers_code=MONR&pays=' + cc + '&cp=' + zipcode,
-      baseUrl + '/api/v1/listpoints?carriers_code=MONR&pays=' + cc + '&postalcode=' + zipcode,
-    ]
+    const params = new URLSearchParams()
+    params.append('pays', country || 'FR')
+    params.append('cp', zipcode)
+    if (city) params.append('ville', city)
 
-    for (let i = 0; i < urls.length; i++) {
-      console.log('[Relays] Try ' + (i+1) + ':', urls[i])
-      const res = await fetch(urls[i], { headers })
-      console.log('[Relays] Try ' + (i+1) + ' Status:', res.status)
+    const url = baseUrl + '/api/v1/MONR/listpoints?' + params.toString()
+    console.log('[Relays] URL:', url)
 
-      if (res.ok) {
-        const xml = await res.text()
-        const points = parsePoints(xml)
-        console.log('[Relays] SUCCESS with Try ' + (i+1) + ' — ' + points.length + ' points')
-        return Response.json({ points, count: points.length })
-      }
+    const res = await fetch(url, {
+      headers: { 'Authorization': 'Basic ' + auth }
+    })
 
-      // If 400/406, try next. If 401/403, stop (bad credentials)
-      if (res.status === 401 || res.status === 403) {
-        return Response.json({ error: 'Identifiants Boxtal invalides.', points: [] })
+    if (!res.ok) {
+      return Response.json({ error: 'Erreur Boxtal (' + res.status + ')', points: [] })
+    }
+
+    const xml = await res.text()
+    const points = []
+    const blocks = xml.match(/<point>([\s\S]*?)<\/point>/g)
+    if (blocks) {
+      for (const block of blocks) {
+        const get = (tag) => {
+          const m = block.match(new RegExp('<' + tag + '>([^<]*)</' + tag + '>'))
+          return m ? m[1].trim() : ''
+        }
+        const code = get('code')
+        const name = get('name')
+        if (code && name) {
+          points.push({ code, name, address: get('address'), city: get('city'), zipcode: get('zipcode'), country: get('country'), phone: get('phone') })
+        }
       }
     }
 
-    // None worked
-    console.log('[Relays] ALL attempts failed')
-    return Response.json({ error: 'Points relais indisponibles', points: [] })
+    console.log('[Relays] Points:', points.length)
+    return Response.json({ points, count: points.length })
 
   } catch (err) {
     console.error('[Relays] Error:', err)
     return Response.json({ error: 'Erreur: ' + (err.message || 'inconnue'), points: [] })
   }
-}
-
-function parsePoints(xml) {
-  const points = []
-  const blocks = xml.match(/<point>([\s\S]*?)<\/point>/g)
-  if (!blocks) return points
-  for (const block of blocks) {
-    const get = (tag) => {
-      const m = block.match(new RegExp('<' + tag + '>([^<]*)</' + tag + '>'))
-      return m ? m[1].trim() : ''
-    }
-    const code = get('code')
-    const name = get('name')
-    if (code && name) {
-      points.push({ code, name, address: get('address'), city: get('city'), zipcode: get('zipcode'), country: get('country'), phone: get('phone') })
-    }
-  }
-  return points
 }
