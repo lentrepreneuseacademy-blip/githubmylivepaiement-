@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { shopId, zipcode, country, city, address } = body
+    const { shopId, zipcode, country, city, lat, lng } = body
 
     if (!zipcode || zipcode.length < 5) {
       return Response.json({ error: 'Code postal invalide', points: [] })
@@ -53,7 +53,6 @@ export async function POST(request) {
     if (city) params.append('ville', city)
 
     const url = baseUrl + '/api/v1/MONR/listpoints?' + params.toString()
-    console.log('[Relays] URL:', url)
 
     const res = await fetch(url, {
       headers: { 'Authorization': 'Basic ' + auth }
@@ -64,7 +63,7 @@ export async function POST(request) {
     }
 
     const xml = await res.text()
-    const points = []
+    let points = []
     const blocks = xml.match(/<point>([\s\S]*?)<\/point>/g)
     if (blocks) {
       for (const block of blocks) {
@@ -75,9 +74,36 @@ export async function POST(request) {
         const code = get('code')
         const name = get('name')
         if (code && name) {
-          points.push({ code, name, address: get('address'), city: get('city'), zipcode: get('zipcode'), country: get('country'), phone: get('phone') })
+          points.push({
+            code, name,
+            address: get('address'),
+            city: get('city'),
+            zipcode: get('zipcode'),
+            country: get('country'),
+            phone: get('phone'),
+            lat: parseFloat(get('latitude')) || null,
+            lng: parseFloat(get('longitude')) || null,
+          })
         }
       }
+    }
+
+    // Sort by distance if client lat/lng provided
+    if (lat && lng) {
+      const clientLat = parseFloat(lat)
+      const clientLng = parseFloat(lng)
+      for (const p of points) {
+        if (p.lat && p.lng) {
+          const dLat = (p.lat - clientLat) * 111.32
+          const dLng = (p.lng - clientLng) * 111.32 * Math.cos(clientLat * Math.PI / 180)
+          p.distance = Math.sqrt(dLat * dLat + dLng * dLng)
+          p.distanceLabel = p.distance < 1 ? Math.round(p.distance * 1000) + 'm' : p.distance.toFixed(1) + 'km'
+        } else {
+          p.distance = 9999
+          p.distanceLabel = ''
+        }
+      }
+      points.sort((a, b) => a.distance - b.distance)
     }
 
     console.log('[Relays] Points:', points.length)
