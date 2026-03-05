@@ -407,10 +407,13 @@ export default function Dashboard() {
         })
       })
       var data = await res.json()
-      if (data.error) {
+      if (data.quotes && data.quotes.length > 0) {
+        setShipQuotes(data.quotes)
+        setShipError(null)
+      } else if (data.error) {
         setShipError(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
       } else {
-        setShipQuotes(data.quotes || [])
+        setShipError('Aucune offre Mondial Relay disponible pour cette destination.')
       }
     } catch (err) {
       setShipError('Erreur de connexion au service Boxtal')
@@ -483,6 +486,56 @@ export default function Dashboard() {
       setShipError('Erreur lors de la creation de l\'envoi')
     }
     setShipOrderLoading(false)
+  }
+
+  async function generateLabel(order) {
+    if (!boxtalConfig.user || !boxtalConfig.pass) {
+      setShipError('Configure d\'abord tes identifiants Boxtal dans Parametres.')
+      return
+    }
+    setShipQuoteLoading(true)
+    setShipError(null)
+    try {
+      var res = await fetch('/api/boxtal/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          boxtal: boxtalConfig,
+          recipient: {
+            firstname: order.client_first_name || 'Client',
+            lastname: order.client_last_name || '',
+            address: order.shipping_address || '',
+            zipcode: order.shipping_zipcode || order.shipping_zip || '',
+            city: order.shipping_city || '',
+            country: 'FR',
+            phone: order.client_phone || '',
+            email: order.client_email || '',
+          },
+          parcel: {
+            weight: parseFloat(shipForm.weight) || 0.5,
+            length: parseInt(shipForm.length) || 30,
+            width: parseInt(shipForm.width) || 20,
+            height: parseInt(shipForm.height) || 10,
+            description: shipForm.description || 'Vetements',
+            value: order.total_amount || order.total || order.amount || 0,
+          }
+        })
+      })
+      var data = await res.json()
+      if (data.quotes && data.quotes.length > 0) {
+        setShipQuoteLoading(false)
+        await createShipment(order, data.quotes[0])
+      } else if (data.error) {
+        setShipError(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
+        setShipQuoteLoading(false)
+      } else {
+        setShipError('Aucune offre Mondial Relay disponible.')
+        setShipQuoteLoading(false)
+      }
+    } catch (err) {
+      setShipError('Erreur de connexion au service Boxtal')
+      setShipQuoteLoading(false)
+    }
   }
 
   function startShipping(order) {
@@ -2330,7 +2383,7 @@ export default function Dashboard() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
                 <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Livraison</h1>
-                <p style={{ fontSize: 13, color: '#999' }}>Expedie tes commandes via Boxtal (Mondial Relay, Colissimo, Chronopost...)</p>
+                <p style={{ fontSize: 13, color: '#999' }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
               </div>
               {shipStep !== 'list' && (
                 <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null); setShipError(null) }}
@@ -2458,11 +2511,11 @@ export default function Dashboard() {
                       style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} placeholder="Vetements, Accessoires..." />
                   </div>
 
-                  {shipError && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#DC2626' }}>{shipError}</div>}
+                  {shipError && shipQuotes.length === 0 && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#DC2626' }}>{shipError}</div>}
 
-                  <button onClick={function() { getShippingQuotes(shipSelectedOrder) }} disabled={shipQuoteLoading}
-                    style={{ width: '100%', padding: 16, background: shipQuoteLoading ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipQuoteLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
-                    {shipQuoteLoading ? 'Recherche des tarifs...' : 'Comparer les transporteurs'}
+                  <button onClick={function() { generateLabel(shipSelectedOrder) }} disabled={shipQuoteLoading || shipOrderLoading}
+                    style={{ width: '100%', padding: 16, background: (shipQuoteLoading || shipOrderLoading) ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: (shipQuoteLoading || shipOrderLoading) ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>
+                    {shipQuoteLoading ? 'Recherche du tarif Mondial Relay...' : shipOrderLoading ? 'Creation de l\'etiquette...' : '🏷️ Generer l\'etiquette Mondial Relay'}
                   </button>
                   <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: shipSelectedOrder.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }); loadData(shop.id); setShipStep('label') }}
                     style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: '#999', border: '1px dashed rgba(0,0,0,.1)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
@@ -2470,38 +2523,6 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                {shipQuotes.length > 0 && (
-                  <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)' }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{shipQuotes.length} offres disponibles</div>
-                    {shipQuotes.map(function(q, i) {
-                      var sel = shipSelectedQuote && shipSelectedQuote.operator_code === q.operator_code && shipSelectedQuote.service_code === q.service_code
-                      return (
-                        <div key={i} onClick={function() { setShipSelectedQuote(q) }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 14, marginBottom: 8, cursor: 'pointer', border: sel ? '2px solid #667eea' : '2px solid rgba(0,0,0,.04)', background: sel ? '#F0F0FF' : '#FAFAF8', transition: 'all .2s' }}>
-                          {q.logo && <img src={q.logo} alt="" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }} />}
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 14, fontWeight: 700 }}>{q.operator_label}</div>
-                            <div style={{ fontSize: 12, color: '#777' }}>{q.service_label}</div>
-                            <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{q.delivery_type || ''} {q.delivery_delay ? '- ' + q.delivery_delay : ''}</div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: 18, fontWeight: 800 }}>{q.price_ttc}€</div>
-                            <div style={{ fontSize: 10, color: '#999' }}>TTC</div>
-                          </div>
-                          <div style={{ width: 24, height: 24, borderRadius: '50%', border: sel ? '2px solid #667eea' : '2px solid #DDD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {sel && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#667eea' }} />}
-                          </div>
-                        </div>
-                      )
-                    })}
-                    {shipSelectedQuote && (
-                      <button onClick={function() { createShipment(shipSelectedOrder, shipSelectedQuote) }} disabled={shipOrderLoading}
-                        style={{ width: '100%', marginTop: 16, padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.25)' }}>
-                        {shipOrderLoading ? 'Creation...' : 'Commander - ' + shipSelectedQuote.price_ttc + '€'}
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
             )}
 
@@ -2512,7 +2533,7 @@ export default function Dashboard() {
                 </div>
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Envoi cree !</h2>
                 <p style={{ fontSize: 14, color: '#777', marginBottom: 24 }}>
-                  {shipSelectedQuote ? shipSelectedQuote.operator_label + ' - ' + shipSelectedQuote.service_label : ''}
+                  Mondial Relay — Point Relais
                   {shipTrackingNumber ? ' | Ref: ' + shipTrackingNumber : ''}
                 </p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -2807,7 +2828,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Boxtal — Expedition</h3>
-                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Mondial Relay, Colissimo, Chronopost... tarifs negocies</p>
+                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Mondial Relay — tarifs negocies via Boxtal</p>
                 </div>
                 {boxtalConfig.user && boxtalConfig.pass && (
                   <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: '#ECFDF5', color: '#10B981' }}>Connecte</span>
