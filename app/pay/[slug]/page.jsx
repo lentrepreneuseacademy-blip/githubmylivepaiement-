@@ -836,6 +836,7 @@ export default function PayPage() {
   async function loadRelayPoints(zipcode, cityName, addressLine) {
     if (!zipcode || zipcode.length < 5) return;
     var finalCity = cityName || ville;
+    var finalAddress = addressLine || adresse || '';
     if (!finalCity && zipcode.length === 5) {
       try {
         var geoRes = await fetch('https://geo.api.gouv.fr/communes?codePostal=' + zipcode + '&fields=nom&limit=1');
@@ -850,6 +851,19 @@ export default function PayPage() {
     setRelayError('');
     setSelectedRelay(null);
     try {
+      // Geocode the address to get lat/lng for distance sorting
+      var clientLat = null;
+      var clientLng = null;
+      var geoQuery = (finalAddress ? finalAddress + ' ' : '') + zipcode + (finalCity ? ' ' + finalCity : '');
+      try {
+        var geoRes = await fetch('https://api-adresse.data.gouv.fr/search?q=' + encodeURIComponent(geoQuery) + '&limit=1');
+        var geoData = await geoRes.json();
+        if (geoData && geoData.features && geoData.features.length > 0) {
+          clientLng = geoData.features[0].geometry.coordinates[0];
+          clientLat = geoData.features[0].geometry.coordinates[1];
+        }
+      } catch(e) {}
+
       var res = await fetch('/api/boxtal/relays', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -857,8 +871,9 @@ export default function PayPage() {
           shopId: shopData?.id || null,
           zipcode: zipcode,
           city: finalCity,
-          address: addressLine || adresse || '',
-          country: 'FR'
+          country: 'FR',
+          lat: clientLat,
+          lng: clientLng,
         })
       });
       var data = await res.json();
@@ -867,7 +882,6 @@ export default function PayPage() {
         setRealRelayPoints([]);
       } else {
         setRealRelayPoints(data.points || []);
-        // Auto-sélectionner le premier point relais
         if (data.points && data.points.length > 0) {
           setSelectedRelay(data.points[0].code);
         }
@@ -1161,7 +1175,7 @@ export default function PayPage() {
               {/* Address */}
               <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 14 }}>{t.addressSection}</h2>
-                <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.address} *</label><input value={adresse} onChange={(e) => setAdresse(e.target.value)} placeholder={t.addressPlaceholder} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
+                <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.address} *</label><input value={adresse} onChange={(e) => setAdresse(e.target.value)} onBlur={() => { if (cp.length === 5 && adresse) loadRelayPoints(cp, ville, adresse); }} placeholder={t.addressPlaceholder} required style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.complement}</label><input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder={t.complementPlaceholder} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 10 }}>
                   <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.postalCode} *</label><input value={cp} onChange={(e) => { var v = e.target.value.replace(/\D/g, "").substring(0, 5); setCp(v); if (v.length === 5) loadRelayPoints(v, ville, adresse); }} required maxLength={5} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
@@ -1224,6 +1238,7 @@ export default function PayPage() {
                                 <span style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: selectedRelay === r.code ? "#FFF" : "#1A1A1A" }}>{r.name}</span>
                               </div>
                               <div style={{ fontFamily: sf, fontSize: 11, color: selectedRelay === r.code ? "rgba(255,255,255,.6)" : "#999", marginTop: 3, paddingLeft: 20 }}>{r.address}, {r.zipcode} {r.city}</div>
+                              {r.distanceLabel && <div style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: selectedRelay === r.code ? "rgba(255,255,255,.5)" : "#BBB", marginTop: 2, paddingLeft: 20 }}>📍 {r.distanceLabel}</div>}
                               {selectedRelay === r.code && r.schedule && r.schedule.length > 0 && (
                                 <div style={{ marginTop: 8, paddingLeft: 20, borderTop: "1px solid rgba(255,255,255,.15)", paddingTop: 8 }}>
                                   <div style={{ fontFamily: sf, fontSize: 10, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Horaires</div>
