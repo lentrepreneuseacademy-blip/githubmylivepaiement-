@@ -1502,7 +1502,7 @@ export default function Dashboard() {
             {/* Stats Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
-                { l: "Chiffre d'affaires", v: stats.revenue.toFixed(0) + '\u20ac', icon: '💰', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', shadow: 'rgba(102,126,234,.2)' },
+                { l: "Chiffre d'affaires", v: stats.revenue.toFixed(0) + '€', icon: '💰', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', shadow: 'rgba(102,126,234,.2)' },
                 { l: 'Commandes', v: stats.orderCount, icon: '📦', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', shadow: 'rgba(245,87,108,.2)' },
                 { l: 'A expedier', v: stats.pendingShip, icon: '🚚', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', shadow: 'rgba(79,172,254,.2)', alert: stats.pendingShip > 0 },
                 { l: 'Clients', v: stats.clientCount, icon: '👥', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', shadow: 'rgba(67,233,123,.2)' },
@@ -2138,9 +2138,9 @@ export default function Dashboard() {
             {/* KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
-                { l: 'CA 7 jours', v: statsData.totalRevenue7d.toFixed(0) + '\u20ac', icon: '💰', color: '#667eea' },
+                { l: 'CA 7 jours', v: statsData.totalRevenue7d.toFixed(0) + '€', icon: '💰', color: '#667eea' },
                 { l: 'Commandes 7j', v: statsData.totalOrders7d, icon: '📦', color: '#f5576c' },
-                { l: 'Panier moyen', v: statsData.avgOrderValue.toFixed(0) + '\u20ac', icon: '🛒', color: '#4facfe' },
+                { l: 'Panier moyen', v: statsData.avgOrderValue.toFixed(0) + '€', icon: '🛒', color: '#4facfe' },
                 { l: 'Taux conversion', v: statsData.conversionRate + '%', icon: '📊', color: '#43e97b' },
               ].map(function(s, i) {
                 return (
@@ -2165,7 +2165,7 @@ export default function Dashboard() {
                   var h = maxRev > 0 ? Math.max((d.revenue / maxRev) * 150, 4) : 4
                   return (
                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '\u20ac' : ''}</div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '€' : ''}</div>
                       <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)', transition: 'height .5s ease' }} />
                       <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
                     </div>
@@ -2353,7 +2353,7 @@ export default function Dashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                             <span style={{ fontSize: 15, fontWeight: 800 }}>{o.reference || '#'}</span>
                             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#FFFBEB', color: '#F59E0B' }}>A expedier</span>
-                            <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}\u20ac</span>
+                            <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                           </div>
                           <div style={{ fontSize: 12, color: '#777' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
                           {o.shipping_address && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
@@ -2399,7 +2399,7 @@ export default function Dashboard() {
               <div>
                 <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: '#999', marginBottom: 12 }}>COMMANDE</div>
-                  <div style={{ fontSize: 16, fontWeight: 800 }}>{shipSelectedOrder.reference || '#'} — {(shipSelectedOrder.total_amount || shipSelectedOrder.total || shipSelectedOrder.amount || 0).toFixed(2)}\u20ac</div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>{shipSelectedOrder.reference || '#'} — {(shipSelectedOrder.total_amount || shipSelectedOrder.total || shipSelectedOrder.amount || 0).toFixed(2)}€</div>
                   <div style={{ fontSize: 13, color: '#777', marginTop: 4 }}>{shipSelectedOrder.client_first_name || ''} {shipSelectedOrder.client_last_name || ''}</div>
                   {shipSelectedOrder.shipping_address && <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{shipSelectedOrder.shipping_address}, {shipSelectedOrder.shipping_zipcode} {shipSelectedOrder.shipping_city}</div>}
                   {shipSelectedOrder.relay_point && (function() { try { var rp = JSON.parse(shipSelectedOrder.relay_point); return <div style={{ marginTop: 8, padding: '10px 14px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#4F46E5' }}>📍 Point relais choisi par le client :</div><div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A', marginTop: 2 }}>{rp.name}</div><div style={{ fontSize: 12, color: '#666', marginTop: 1 }}>{rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
@@ -2462,7 +2462,7 @@ export default function Dashboard() {
                             <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{q.delivery_type || ''} {q.delivery_delay ? '- ' + q.delivery_delay : ''}</div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: 18, fontWeight: 800 }}>{q.price_ttc}\u20ac</div>
+                            <div style={{ fontSize: 18, fontWeight: 800 }}>{q.price_ttc}€</div>
                             <div style={{ fontSize: 10, color: '#999' }}>TTC</div>
                           </div>
                           <div style={{ width: 24, height: 24, borderRadius: '50%', border: sel ? '2px solid #667eea' : '2px solid #DDD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2474,7 +2474,7 @@ export default function Dashboard() {
                     {shipSelectedQuote && (
                       <button onClick={function() { createShipment(shipSelectedOrder, shipSelectedQuote) }} disabled={shipOrderLoading}
                         style={{ width: '100%', marginTop: 16, padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.25)' }}>
-                        {shipOrderLoading ? 'Creation...' : 'Commander - ' + shipSelectedQuote.price_ttc + '\u20ac'}
+                        {shipOrderLoading ? 'Creation...' : 'Commander - ' + shipSelectedQuote.price_ttc + '€'}
                       </button>
                     )}
                   </div>
