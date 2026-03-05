@@ -148,13 +148,19 @@ export async function POST(request) {
         return Response.json({ orders: [] })
       }
 
-      var result4 = await supabaseRequest('GET', 'orders', {
-        filters: { shop_id: shopId2, client_email: email },
-        select: '*',
-        order: 'created_at.desc',
+      // Use ilike for case-insensitive email match
+      var url = SUPABASE_URL + '/rest/v1/orders?shop_id=eq.' + encodeURIComponent(shopId2) + '&client_email=ilike.' + encodeURIComponent(email.toLowerCase().trim()) + '&select=*&order=created_at.desc'
+      var res4 = await fetch(url, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+        }
       })
+      var data4 = []
+      try { data4 = await res4.json() } catch(e) {}
+      console.log('[Orders API] get_client_orders for', email, ':', Array.isArray(data4) ? data4.length : 0, 'orders')
 
-      return Response.json({ orders: result4.data || [] })
+      return Response.json({ orders: Array.isArray(data4) ? data4 : [] })
     }
 
     // ─── UPDATE_SHOP — Mettre à jour les données d'un shop (config, logo, legal, etc.) ───
@@ -184,11 +190,14 @@ export async function POST(request) {
         return Response.json({ error: 'orderId manquant' }, { status: 400 })
       }
 
+      console.log('[Orders API] update_status orderId:', updateOrderId, 'fields:', JSON.stringify(updateFields))
+
       var result7 = await supabaseRequest('PATCH', 'orders', {
         filters: { id: updateOrderId },
         body: updateFields,
       })
 
+      console.log('[Orders API] update_status result:', result7.error ? 'ERROR: ' + result7.error : 'OK')
       var updatedOrder = Array.isArray(result7.data) ? result7.data[0] : result7.data
       return Response.json({ order: updatedOrder })
     }
