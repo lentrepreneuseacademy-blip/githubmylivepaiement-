@@ -37,13 +37,8 @@ export async function POST(request) {
       }
     }
 
-    console.log('[Relays] user:', !!user, 'pass:', !!pass, 'test:', testMode)
-
     if (!user || !pass) {
-      return Response.json({
-        error: 'Boxtal non configure.',
-        points: []
-      })
+      return Response.json({ error: 'Boxtal non configure.', points: [] })
     }
 
     const baseUrl = testMode
@@ -51,9 +46,8 @@ export async function POST(request) {
       : 'https://www.envoimoinscher.com'
 
     const auth = Buffer.from(user + ':' + pass).toString('base64')
+    const url = baseUrl + '/api/v1/listpoints?carriers_code=MONR&pays=' + (country || 'FR') + '&postalcode=' + zipcode
 
-    // Format: /api/v1/listpoints?carriers_code=MONR&pays=FR&code_postal=75017
-    const url = baseUrl + '/api/v1/listpoints?carriers_code=MONR&pays=' + (country || 'FR') + '&code_postal=' + zipcode
     console.log('[Relays] URL:', url)
 
     const res = await fetch(url, {
@@ -63,13 +57,11 @@ export async function POST(request) {
 
     if (!res.ok) {
       const errText = await res.text()
-      console.log('[Relays] Error body:', errText.substring(0, 300))
+      console.log('[Relays] Error:', errText.substring(0, 200))
       return Response.json({ error: 'Erreur Boxtal (' + res.status + ')', points: [] })
     }
 
     const xml = await res.text()
-    console.log('[Relays] XML length:', xml.length)
-
     const points = []
     const blocks = xml.match(/<point>([\s\S]*?)<\/point>/g)
     if (blocks) {
