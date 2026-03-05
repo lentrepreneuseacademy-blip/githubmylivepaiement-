@@ -67,8 +67,10 @@ export async function POST(request) {
     console.log(`[Boxtal Quote] Réponse reçue (${xml.length} chars)`)
 
     // ─── Parser les devis ───
-    const quotes = parseQuotesXML(xml)
-    console.log(`[Boxtal Quote] ${quotes.length} offres trouvées`)
+    const allQuotes = parseQuotesXML(xml)
+    // Only keep Mondial Relay (MONR)
+    const quotes = allQuotes.filter(q => q.operator_code === 'MONR')
+    console.log(`[Boxtal Quote] ${allQuotes.length} offres total, ${quotes.length} Mondial Relay`)
 
     return Response.json({ quotes })
   } catch (error) {
