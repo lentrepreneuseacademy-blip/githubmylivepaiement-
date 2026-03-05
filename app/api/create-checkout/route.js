@@ -37,7 +37,7 @@ export async function POST(request) {
         },
         quantity: 1,
       }],
-      success_url: origin + '/pay/' + shopSlug + '?success=true&ref=' + reference,
+      success_url: origin + '/pay/' + shopSlug + '?success=true&ref=' + reference + '&orderId=' + (orderId || ''),
       cancel_url: origin + '/pay/' + shopSlug + '?cancelled=true',
       metadata: {
         order_id: orderId || '',
