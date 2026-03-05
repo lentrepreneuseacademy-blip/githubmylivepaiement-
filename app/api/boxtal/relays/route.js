@@ -9,7 +9,6 @@ export async function POST(request) {
       return Response.json({ error: 'Code postal invalide', points: [] })
     }
 
-    // Read shop's boxtal config from Supabase (same method as quote route)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -42,7 +41,7 @@ export async function POST(request) {
 
     if (!user || !pass) {
       return Response.json({
-        error: 'Boxtal non configure. Le point relais te sera communique par email.',
+        error: 'Boxtal non configure.',
         points: []
       })
     }
@@ -52,34 +51,25 @@ export async function POST(request) {
       : 'https://www.envoimoinscher.com'
 
     const auth = Buffer.from(user + ':' + pass).toString('base64')
-    const params = 'pays=' + (country || 'FR') + '&code_postal=' + zipcode
 
-    // Try URL format 1: /api/v1/MONR/listpoints
-    const url1 = baseUrl + '/api/v1/MONR/listpoints?' + params
-    console.log('[Relays] Try 1:', url1)
-    let res = await fetch(url1, { headers: { 'Authorization': 'Basic ' + auth } })
+    // Format: /api/v1/listpoints?carriers_code=MONR&pays=FR&code_postal=75017
+    const url = baseUrl + '/api/v1/listpoints?carriers_code=MONR&pays=' + (country || 'FR') + '&code_postal=' + zipcode
+    console.log('[Relays] URL:', url)
 
-    // If 406, try format 2: /api/v1/listpoints?carriers_code=MONR
-    if (res.status === 406) {
-      const url2 = baseUrl + '/api/v1/listpoints?carriers_code=MONR&' + params
-      console.log('[Relays] Try 2:', url2)
-      res = await fetch(url2, { headers: { 'Authorization': 'Basic ' + auth } })
-    }
-
+    const res = await fetch(url, {
+      headers: { 'Authorization': 'Basic ' + auth }
+    })
     console.log('[Relays] Status:', res.status)
 
-    if (res.status === 401) {
-      return Response.json({
-        error: 'Identifiants Boxtal invalides. Va sur boxtal.com > Mon compte > API pour trouver tes cles API.',
-        points: []
-      })
-    }
-
     if (!res.ok) {
+      const errText = await res.text()
+      console.log('[Relays] Error body:', errText.substring(0, 300))
       return Response.json({ error: 'Erreur Boxtal (' + res.status + ')', points: [] })
     }
 
     const xml = await res.text()
+    console.log('[Relays] XML length:', xml.length)
+
     const points = []
     const blocks = xml.match(/<point>([\s\S]*?)<\/point>/g)
     if (blocks) {
@@ -91,19 +81,12 @@ export async function POST(request) {
         const code = get('code')
         const name = get('name')
         if (code && name) {
-          points.push({
-            code, name,
-            address: get('address'),
-            city: get('city'),
-            zipcode: get('zipcode'),
-            country: get('country'),
-            phone: get('phone'),
-          })
+          points.push({ code, name, address: get('address'), city: get('city'), zipcode: get('zipcode'), country: get('country'), phone: get('phone') })
         }
       }
     }
 
-    console.log('[Relays] Found:', points.length, 'points')
+    console.log('[Relays] Points:', points.length)
     return Response.json({ points: points, count: points.length })
 
   } catch (err) {
