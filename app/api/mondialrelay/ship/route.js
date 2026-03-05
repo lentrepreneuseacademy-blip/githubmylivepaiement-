@@ -148,6 +148,8 @@ export async function POST(request) {
 
     var expeditionNum = extractTag(xml, 'ExpeditionNum') || ''
     var labelUrl = extractTag(xml, 'URL_Etiquette') || ''
+    // Decode HTML entities in URL
+    labelUrl = labelUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     if (labelUrl && !labelUrl.startsWith('http')) {
       labelUrl = 'https://api.mondialrelay.com' + labelUrl
     }
