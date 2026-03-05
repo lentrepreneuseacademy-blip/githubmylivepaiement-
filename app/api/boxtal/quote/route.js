@@ -68,8 +68,8 @@ export async function POST(request) {
 
     // ─── Parser les devis ───
     const allQuotes = parseQuotesXML(xml)
-    // Only keep Mondial Relay (MONR)
-    const quotes = allQuotes.filter(q => q.operator_code === 'MONR')
+    // Only keep Mondial Relay Point Relais (not domicile)
+    const quotes = allQuotes.filter(q => q.operator_code === 'MONR' && !q.service_label?.toLowerCase().includes('domicile'))
     console.log(`[Boxtal Quote] ${allQuotes.length} offres total, ${quotes.length} Mondial Relay`)
 
     return Response.json({ quotes })
