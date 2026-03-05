@@ -408,7 +408,7 @@ export default function Dashboard() {
       })
       var data = await res.json()
       if (data.error) {
-        setShipError(data.error)
+        setShipError(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
       } else {
         setShipQuotes(data.quotes || [])
       }
@@ -457,7 +457,7 @@ export default function Dashboard() {
       })
       var data = await res.json()
       if (data.error) {
-        setShipError(data.error)
+        setShipError(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
       } else {
         setShipLabel(data.label_url || null)
         setShipTrackingNumber(data.tracking || data.reference || null)
