@@ -488,10 +488,10 @@ export default function Dashboard() {
   function startShipping(order) {
     setShipSelectedOrder(order)
     setShipStep('form')
+    setShipError(null)
     setShipQuotes([])
     setShipSelectedQuote(null)
     setShipLabel(null)
-    setShipError(null)
     setShipTrackingNumber(null)
   }
 
