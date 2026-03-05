@@ -104,7 +104,7 @@ export default function Dashboard() {
   const [shipLabel, setShipLabel] = useState(null)
   const [shipError, setShipError] = useState(null)
   const [shipTrackingNumber, setShipTrackingNumber] = useState(null)
-  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90' })
+  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90', mrEnseigne: '', mrPrivateKey: '' })
   const [boxtalSaving, setBoxtalSaving] = useState(false)
 
   // Statistics
@@ -489,53 +489,117 @@ export default function Dashboard() {
   }
 
   async function generateLabel(order) {
-    if (!boxtalConfig.user || !boxtalConfig.pass) {
-      setShipError('Configure d\'abord tes identifiants Boxtal dans Parametres.')
-      return
-    }
-    setShipQuoteLoading(true)
     setShipError(null)
-    try {
-      var res = await fetch('/api/boxtal/quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          boxtal: boxtalConfig,
-          recipient: {
-            firstname: order.client_first_name || 'Client',
-            lastname: order.client_last_name || '',
-            address: order.shipping_address || '',
-            zipcode: order.shipping_zipcode || order.shipping_zip || '',
-            city: order.shipping_city || '',
-            country: 'FR',
-            phone: order.client_phone || '',
-            email: order.client_email || '',
-          },
-          parcel: {
-            weight: parseFloat(shipForm.weight) || 0.5,
-            length: parseInt(shipForm.length) || 30,
-            width: parseInt(shipForm.width) || 20,
-            height: parseInt(shipForm.height) || 10,
-            description: shipForm.description || 'Vetements',
-            value: order.total_amount || order.total || order.amount || 0,
-          }
+    setShipOrderLoading(true)
+    var relay = null
+    try { if (order.relay_point) relay = JSON.parse(order.relay_point) } catch(e) {}
+    var shopName = shop ? shop.name : 'Ma Boutique'
+    var ref = order.reference || order.ref || order.id || ''
+    var relayCode = relay ? (relay.code || '').replace(/^MONR-/, '') : ''
+
+    // Try Mondial Relay API first
+    if (boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) {
+      try {
+        var res = await fetch('/api/mondialrelay/ship', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            enseigne: boxtalConfig.mrEnseigne,
+            privateKey: boxtalConfig.mrPrivateKey,
+            sender: {
+              name: shopName,
+              address: boxtalConfig.senderAddress || '',
+              zipcode: boxtalConfig.senderZip || '',
+              city: boxtalConfig.senderCity || '',
+              phone: boxtalConfig.senderPhone || '',
+              email: user ? user.email : '',
+            },
+            recipient: {
+              firstname: order.client_first_name || 'Client',
+              lastname: order.client_last_name || '',
+              address: order.shipping_address || '',
+              zipcode: order.shipping_zipcode || '',
+              city: order.shipping_city || '',
+              phone: order.client_phone || '',
+              email: order.client_email || '',
+            },
+            parcel: {
+              weight: parseFloat(shipForm.weight) || 0.5,
+            },
+            relayCode: relayCode,
+            reference: ref,
+          })
         })
-      })
-      var data = await res.json()
-      if (data.quotes && data.quotes.length > 0) {
-        setShipQuoteLoading(false)
-        await createShipment(order, data.quotes[0])
-      } else if (data.error) {
-        setShipError(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
-        setShipQuoteLoading(false)
-      } else {
-        setShipError('Aucune offre Mondial Relay disponible.')
-        setShipQuoteLoading(false)
+        var data = await res.json()
+        if (data.success && data.label_url) {
+          // Open the real Mondial Relay PDF label
+          window.open(data.label_url, '_blank')
+          setShipTrackingNumber(data.expeditionNum || data.tracking || null)
+          // Mark as shipped
+          await fetch('/api/orders/upsert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update_status', orderId: order.id, fields: { status: 'shipped', shipped_at: new Date().toISOString(), tracking_number: data.expeditionNum || '', shipping_carrier: 'Mondial Relay' } })
+          })
+          loadData(shop.id)
+          setShipStep('label')
+          setShipOrderLoading(false)
+          return
+        } else {
+          console.error('[MR] API error:', data.error)
+          setShipError(data.error || 'Erreur Mondial Relay')
+          setShipOrderLoading(false)
+          return
+        }
+      } catch(err) {
+        console.error('[MR] Connection error:', err)
+        setShipError('Erreur de connexion a Mondial Relay')
+        setShipOrderLoading(false)
+        return
       }
-    } catch (err) {
-      setShipError('Erreur de connexion au service Boxtal')
-      setShipQuoteLoading(false)
     }
+
+    // Fallback: generate local printable label
+    setShipOrderLoading(false)
+    var senderAddr = boxtalConfig.senderAddress || ''
+    var senderZip = boxtalConfig.senderZip || ''
+    var senderCity = boxtalConfig.senderCity || ''
+    var senderPhone = boxtalConfig.senderPhone || ''
+    var dateStr = new Date().toLocaleDateString('fr-FR')
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiquette ' + ref + '</title><style>'
+    html += 'body{margin:0;padding:20px;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    html += '.label{width:100mm;border:2px solid #000;padding:0;margin:0 auto}'
+    html += '.header{background:#1A1A2E;color:#FFF;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}'
+    html += '.mondial{background:#E30613;color:#FFF;padding:8px 14px;font-size:12px;font-weight:700;text-align:center}'
+    html += '.section{padding:10px 14px;border-bottom:1px dashed #CCC}'
+    html += '.section-title{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;font-weight:700}'
+    html += '.section-name{font-size:14px;font-weight:700;margin-bottom:2px}'
+    html += '.section-detail{font-size:11px;color:#444;line-height:1.5}'
+    html += '.relay{background:#F0F0FF;padding:10px 14px;border-bottom:1px dashed #CCC}'
+    html += '.ref-bar{padding:12px 14px;text-align:center;border-bottom:1px dashed #CCC}'
+    html += '.ref-code{font-size:24px;font-weight:900;letter-spacing:4px;color:#1A1A2E}'
+    html += '.footer{padding:8px 14px;display:flex;justify-content:space-between;font-size:9px;color:#999}'
+    html += '@media print{body{padding:0}.no-print{display:none !important}}'
+    html += '</style></head><body>'
+    html += '<div class="no-print" style="text-align:center;margin-bottom:20px;background:#FFF7ED;padding:16px;border-radius:10px;border:1px solid #FED7AA">'
+    html += '<p style="color:#92400E;font-size:13px;margin:0 0 10px">⚠️ Etiquette interne — configure tes identifiants Mondial Relay dans Parametres pour generer les vraies etiquettes avec code-barres et suivi.</p>'
+    html += '<button onclick="window.print()" style="padding:14px 40px;background:#1A1A2E;color:#FFF;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">🖨️ Imprimer</button>'
+    html += '</div>'
+    html += '<div class="label">'
+    html += '<div class="header"><div style="font-size:14px;font-weight:800">📦 COLIS</div><div style="font-size:10px;text-align:right">' + dateStr + '<br>Mondial Relay</div></div>'
+    html += '<div class="mondial">MONDIAL RELAY — POINT RELAIS</div>'
+    html += '<div class="section"><div class="section-title">Expediteur</div><div class="section-name">' + shopName + '</div><div class="section-detail">' + senderAddr + '<br>' + senderZip + ' ' + senderCity + '<br>Tel: ' + senderPhone + '</div></div>'
+    html += '<div class="section"><div class="section-title">Destinataire</div><div class="section-name">' + (order.client_first_name || '') + ' ' + (order.client_last_name || '') + '</div><div class="section-detail">' + (order.shipping_address || '') + '<br>' + (order.shipping_zipcode || '') + ' ' + (order.shipping_city || '') + '<br>Tel: ' + (order.client_phone || '') + '</div></div>'
+    if (relay) { html += '<div class="relay"><div style="font-size:9px;color:#6366F1;font-weight:700;margin-bottom:4px">📍 POINT RELAIS</div><div style="font-size:13px;font-weight:700">' + (relay.name || '') + '</div><div style="font-size:11px;color:#555">' + (relay.address || '') + ', ' + (relay.zipcode || '') + ' ' + (relay.city || '') + '</div></div>' }
+    html += '<div class="ref-bar"><div style="font-size:9px;color:#999;margin-bottom:4px">REFERENCE</div><div class="ref-code">' + ref + '</div></div>'
+    html += '<div class="footer"><span>MY LIVE PAIEMENT</span><span>' + ref + '</span></div>'
+    html += '</div></body></html>'
+    var w = window.open('', '_blank')
+    w.document.write(html)
+    w.document.close()
+    fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: order.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }).then(function() { loadData(shop.id) })
+    setShipStep('label')
   }
 
   function startShipping(order) {
@@ -2511,11 +2575,11 @@ export default function Dashboard() {
                       style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none' }} placeholder="Vetements, Accessoires..." />
                   </div>
 
-                  {shipError && shipQuotes.length === 0 && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#DC2626' }}>{shipError}</div>}
+                  {shipError && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#DC2626' }}>{shipError}</div>}
 
-                  <button onClick={function() { generateLabel(shipSelectedOrder) }} disabled={shipQuoteLoading || shipOrderLoading}
-                    style={{ width: '100%', padding: 16, background: (shipQuoteLoading || shipOrderLoading) ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: (shipQuoteLoading || shipOrderLoading) ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>
-                    {shipQuoteLoading ? 'Recherche du tarif Mondial Relay...' : shipOrderLoading ? 'Creation de l\'etiquette...' : '🏷️ Generer l\'etiquette Mondial Relay'}
+                  <button onClick={function() { generateLabel(shipSelectedOrder) }} disabled={shipOrderLoading}
+                    style={{ width: '100%', padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>
+                    {shipOrderLoading ? 'Generation en cours...' : '🏷️ Generer l\'etiquette d\'expedition'}
                   </button>
                   <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: shipSelectedOrder.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }); loadData(shop.id); setShipStep('label') }}
                     style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: '#999', border: '1px dashed rgba(0,0,0,.1)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
@@ -2531,16 +2595,14 @@ export default function Dashboard() {
                 <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(16,185,129,.25)' }}>
                   <span style={{ fontSize: 36, color: '#FFF' }}>✓</span>
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Envoi cree !</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Etiquette generee !</h2>
                 <p style={{ fontSize: 14, color: '#777', marginBottom: 24 }}>
-                  Mondial Relay — Point Relais
-                  {shipTrackingNumber ? ' | Ref: ' + shipTrackingNumber : ''}
+                  L'etiquette s'est ouverte dans un nouvel onglet.<br/>Imprime-la, colle-la sur ton colis et depose-le au point relais.
                 </p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                  {shipLabel && <button onClick={function() { window.open(shipLabel, '_blank') }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>Telecharger l'etiquette</button>}
+                  <button onClick={function() { generateLabel(shipSelectedOrder) }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🖨️ Re-imprimer</button>
                   <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null) }} style={{ padding: '14px 28px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Retour</button>
                 </div>
-                {!shipLabel && <div style={{ marginTop: 20, padding: '16px 20px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 12, maxWidth: 500, margin: '20px auto 0', fontSize: 13, color: '#92400E' }}>Commande marquee expediee. Configure tes cles API Boxtal dans les Parametres pour generer les etiquettes automatiquement.</div>}
               </div>
             )}
           </div>
@@ -2894,6 +2956,32 @@ export default function Dashboard() {
                 <input value={boxtalConfig.senderPhone || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderPhone: e.target.value })) }}
                   placeholder="Telephone (ex: 0612345678)"
                   style={{ width: 200, padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+              </div>
+
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', marginBottom: 8, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,.06)' }}>📦 Mondial Relay — Etiquettes automatiques</div>
+              <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>Connecte ton compte pro Mondial Relay pour generer les vraies etiquettes avec code-barres et suivi.</p>
+              {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '10px 14px', background: '#F0FDF4', borderRadius: 10, border: '1px solid #BBF7D0' }}>
+                  <span style={{ color: '#10B981', fontWeight: 600, fontSize: 13 }}>✓ Mondial Relay connecte (Enseigne: {boxtalConfig.mrEnseigne})</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '10px 14px', background: '#FFF7ED', borderRadius: 10, border: '1px solid #FED7AA' }}>
+                  <span style={{ color: '#92400E', fontSize: 12 }}>Renseigne tes identifiants Mondial Relay (dans ton profil sur mondialrelay.fr {'>'} Mes parametres de connexion)</span>
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Code Enseigne</label>
+                  <input value={boxtalConfig.mrEnseigne || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnseigne: e.target.value.toUpperCase() })) }}
+                    placeholder="Ex: CC23H7CX"
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none', letterSpacing: 1, fontWeight: 600 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Cle Privee</label>
+                  <input value={boxtalConfig.mrPrivateKey || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrPrivateKey: e.target.value })) }}
+                    placeholder="Ex: Diar0jh2"
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none' }} />
+                </div>
               </div>
 
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 16, marginBottom: 16 }}>
