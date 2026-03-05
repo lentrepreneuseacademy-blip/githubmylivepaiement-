@@ -713,6 +713,7 @@ export default function PayPage() {
   useEffect(() => {
     const isSuccess = searchParams.get('success')
     const returnRef = searchParams.get('ref')
+    const returnOrderId = searchParams.get('orderId')
     if (isSuccess === 'true') {
       setPage('payment')
       setPaid(true)
@@ -720,13 +721,19 @@ export default function PayPage() {
         setRef(returnRef)
         setOrderData({ reference: returnRef, ref: returnRef })
       }
-      // Mark order as paid via API (bypasse le RLS)
-      if (returnRef && shopData?.id) {
+      // Mark order as paid — try by orderId first, then by reference
+      if (returnOrderId && returnOrderId !== 'null' && returnOrderId !== 'undefined') {
+        fetch('/api/orders/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update_status', orderId: returnOrderId, fields: { status: 'paid', paid_at: new Date().toISOString() } })
+        }).then(r => r.json()).then(d => { console.log('[Pay] Commande payée par orderId:', d) }).catch(e => console.error('[Pay] Erreur:', e))
+      } else if (returnRef && shopData?.id) {
         fetch('/api/orders/upsert', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'mark_paid', reference: returnRef, shopId: shopData.id })
-        }).then(r => r.json()).then(d => { console.log('[Pay] Commande marquée payée:', d) }).catch(e => console.error('[Pay] Erreur mark_paid:', e))
+        }).then(r => r.json()).then(d => { console.log('[Pay] Commande payée par ref:', d) }).catch(e => console.error('[Pay] Erreur:', e))
       }
     }
   }, [searchParams, shopData])
