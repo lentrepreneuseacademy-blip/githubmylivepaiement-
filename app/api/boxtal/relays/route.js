@@ -87,9 +87,8 @@ export async function POST(request) {
     if (city) params.append('ville', city)
     if (address) params.append('adresse', address)
 
-    // Mondial Relay
-    params.append('carriers_code', 'MONR')
-    const url = `${baseUrl}/listpoints?${params.toString()}`
+    const carrierCode = 'MONR'
+    const url = `${baseUrl}/${carrierCode}/listpoints?${params.toString()}`
     const auth = Buffer.from(`${accessKey}:${secretKey}`).toString('base64')
 
     console.log(`[Boxtal Relays] Appel API: ${url}`)
@@ -99,7 +98,7 @@ export async function POST(request) {
       method: 'GET',
       headers: {
         'Authorization': `Basic ${auth}`,
-        'Accept': 'application/xml',
+        'Accept': '*/*',
       },
     })
 
@@ -108,8 +107,9 @@ export async function POST(request) {
       console.error(`[Boxtal Relays] Erreur ${res.status}:`, errorText)
       return Response.json({
         error: `Erreur Boxtal (${res.status})`,
+        details: errorText,
         points: []
-      })
+      }, { status: res.status })
     }
 
     const xml = await res.text()
