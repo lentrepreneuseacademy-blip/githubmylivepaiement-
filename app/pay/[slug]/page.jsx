@@ -719,22 +719,44 @@ export default function PayPage() {
       setPaid(true)
       if (returnRef) {
         setRef(returnRef)
-        setOrderData({ reference: returnRef, ref: returnRef })
       }
-      // Mark order as paid — try by orderId first, then by reference
-      if (returnOrderId && returnOrderId !== 'null' && returnOrderId !== 'undefined') {
-        fetch('/api/orders/upsert', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'update_status', orderId: returnOrderId, fields: { status: 'paid', paid_at: new Date().toISOString() } })
-        }).then(r => r.json()).then(d => { console.log('[Pay] Commande payée par orderId:', d) }).catch(e => console.error('[Pay] Erreur:', e))
-      } else if (returnRef && shopData?.id) {
-        fetch('/api/orders/upsert', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'mark_paid', reference: returnRef, shopId: shopData.id })
-        }).then(r => r.json()).then(d => { console.log('[Pay] Commande payée par ref:', d) }).catch(e => console.error('[Pay] Erreur:', e))
+      // Mark order as paid and reload full order data
+      async function markAndLoad() {
+        try {
+          if (returnOrderId && returnOrderId !== 'null' && returnOrderId !== 'undefined') {
+            await fetch('/api/orders/upsert', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'update_status', orderId: returnOrderId, fields: { status: 'paid', paid_at: new Date().toISOString() } })
+            })
+          } else if (returnRef && shopData?.id) {
+            await fetch('/api/orders/upsert', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'mark_paid', reference: returnRef, shopId: shopData.id })
+            })
+          }
+          // Reload the full order to get amount, email etc.
+          if (returnRef && shopData?.id) {
+            const lookupRes = await fetch('/api/orders/upsert', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'lookup', reference: returnRef, shopId: shopData.id })
+            })
+            const lookupData = await lookupRes.json()
+            if (lookupData.order) {
+              setOrderData(lookupData.order)
+              setAmount(String(lookupData.order.total_amount || lookupData.order.amount || ''))
+              setEmail(lookupData.order.client_email || '')
+              setNom(lookupData.order.client_last_name || '')
+              setPrenom(lookupData.order.client_first_name || '')
+            } else {
+              setOrderData({ reference: returnRef, ref: returnRef })
+            }
+          }
+        } catch(e) { console.error('[Pay] Erreur mark/load:', e) }
       }
+      markAndLoad()
     }
   }, [searchParams, shopData])
 
@@ -802,7 +824,7 @@ export default function PayPage() {
       const res = await fetch('/api/orders/upsert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_client_orders', email: clientEmail, shop_id: shopData.id })
+        body: JSON.stringify({ action: 'get_client_orders', email: clientEmail.toLowerCase().trim(), shop_id: shopData.id })
       })
       const result = await res.json()
       const data = result.orders || []
@@ -1102,7 +1124,7 @@ export default function PayPage() {
                     shipping_cost: shippingCost,
                     client_first_name: prenom,
                     client_last_name: nom,
-                    client_email: email,
+                    client_email: email.toLowerCase().trim(),
                     client_phone: phone,
                     shipping_address: adresse + (complement ? ', ' + complement : ''),
                     shipping_zipcode: cp,
