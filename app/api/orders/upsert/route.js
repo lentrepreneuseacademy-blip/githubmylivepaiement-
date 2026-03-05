@@ -77,6 +77,7 @@ export async function POST(request) {
         return Response.json({ error: 'Données commande manquantes' }, { status: 400 })
       }
 
+      console.log('[Orders API] Creating order, orderId:', orderId, 'shop_id:', order.shop_id, 'reference:', order.reference)
       var result
       if (orderId) {
         result = await supabaseRequest('PATCH', 'orders', {
@@ -107,10 +108,12 @@ export async function POST(request) {
         return Response.json({ error: 'Référence ou shopId manquant' }, { status: 400 })
       }
 
+      console.log('[Orders API] mark_paid reference:', reference, 'shopId:', shopId)
       var result2 = await supabaseRequest('PATCH', 'orders', {
         filters: { reference: reference, shop_id: shopId },
         body: { status: 'paid', paid_at: new Date().toISOString() },
       })
+      console.log('[Orders API] mark_paid result:', result2.error ? 'ERROR: ' + result2.error : 'OK')
 
       var paidOrder = Array.isArray(result2.data) ? result2.data[0] : result2.data
       console.log('[Orders API] Commande payée:', paidOrder?.id)
@@ -129,10 +132,11 @@ export async function POST(request) {
       var result3 = await supabaseRequest('GET', 'orders', {
         filters: { reference: ref, shop_id: sid },
         select: '*',
-        single: true,
+        limit: 1,
       })
 
-      return Response.json({ order: result3.data || null })
+      var found = Array.isArray(result3.data) ? result3.data[0] || null : result3.data
+      return Response.json({ order: found })
     }
 
     // ─── GET_CLIENT_ORDERS — Commandes d'un client ───
