@@ -103,11 +103,14 @@ export async function POST(request) {
 
     const xml = await res.text()
     console.log(`[Boxtal Ship] Réponse ${res.status} (${xml.length} chars)`)
+    console.log('[Boxtal Ship] XML:', xml.substring(0, 500))
 
     if (!res.ok) {
-      const errorMsg = extractTag(xml, 'message') || `Erreur Boxtal (${res.status})`
-      console.error('[Boxtal Ship] Erreur:', errorMsg)
-      return Response.json({ error: errorMsg }, { status: 200 })
+      const errorMsg = extractTag(xml, 'message') || extractTag(xml, 'error') || ''
+      const fullError = errorMsg || xml.substring(0, 300) || 'Erreur Boxtal (' + res.status + ')'
+      console.error('[Boxtal Ship] Erreur ' + res.status + ':', fullError)
+      console.error('[Boxtal Ship] XML complet:', xml)
+      return Response.json({ error: fullError }, { status: 200 })
     }
 
     // ─── Parser la réponse ───
