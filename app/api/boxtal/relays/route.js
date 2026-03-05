@@ -108,9 +108,8 @@ export async function POST(request) {
       console.error(`[Boxtal Relays] Erreur ${res.status}:`, errorText)
       return Response.json({
         error: `Erreur Boxtal (${res.status})`,
-        details: errorText,
         points: []
-      }, { status: res.status })
+      })
     }
 
     const xml = await res.text()

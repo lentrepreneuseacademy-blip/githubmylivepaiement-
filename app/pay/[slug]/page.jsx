@@ -857,7 +857,6 @@ export default function PayPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shopId: shopData?.id || null,
-          shopSlug: shopSlug || null,
           zipcode: zipcode,
           city: finalCity,
           address: addressLine || adresse || '',
@@ -882,14 +881,7 @@ export default function PayPage() {
   }
 
   const freeShipping = hasPreviousOrderToday;
-  const customShippingPrice = (function() {
-    // Lire le prix depuis les colonnes Supabase (relay_price / colissimo_price)
-    if (shippingMethod === 'relay' && shopData?.relay_price !== undefined && shopData?.relay_price !== null) return parseFloat(shopData.relay_price) || 4.90;
-    if (shippingMethod === 'colissimo' && shopData?.colissimo_price !== undefined && shopData?.colissimo_price !== null) return parseFloat(shopData.colissimo_price) || 5.90;
-    // Fallback sur boxtal_config JSON
-    try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(String(c.shippingPrice).replace(',', '.')) || 0; } } catch(e) {}
-    return 4.90;
-  })();
+  const customShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(c.shippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 4.90; })();
   const shippingCost = freeShipping ? 0 : customShippingPrice;
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
