@@ -2,6 +2,10 @@ import { createHash } from 'crypto'
 
 const MR_API_URL = 'https://api.mondialrelay.com/Web_Services.asmx'
 
+function removeAccents(str) {
+  return String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
 // Exact parameter order for MD5 security key calculation
 const PARAM_ORDER = [
   'Enseigne','ModeCol','ModeLiv','NDossier','NClient',
@@ -104,22 +108,36 @@ export async function POST(request) {
       + '</soap:Body>'
       + '</soap:Envelope>'
 
-    console.log('[MR Ship] SOAP preview:', soapXml.substring(0, 400))
+    console.log('[MR Ship] SOAP XML:', soapXml)
 
-    var res = await fetch(MR_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/xml; charset=utf-8',
-        'SOAPAction': 'http://www.mondialrelay.fr/webservice/WSI2_CreationEtiquette',
-      },
-      body: soapXml,
-    })
+    // Try main URL, then fallback
+    var urls = [
+      'https://api.mondialrelay.com/Web_Services.asmx',
+      'https://api.mondialrelay.com/WebService.asmx',
+    ]
+    var xml = ''
+    var stat = null
 
-    var xml = await res.text()
-    console.log('[MR Ship] Response:', res.status, xml.length, 'chars')
+    for (var u = 0; u < urls.length; u++) {
+      console.log('[MR Ship] Trying URL:', urls[u])
+      var res = await fetch(urls[u], {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'SOAPAction': 'http://www.mondialrelay.fr/webservice/WSI2_CreationEtiquette',
+        },
+        body: soapXml,
+      })
 
-    var stat = extractTag(xml, 'STAT')
-    console.log('[MR Ship] STAT:', stat)
+      xml = await res.text()
+      console.log('[MR Ship] Response:', res.status, xml.length, 'chars')
+
+      stat = extractTag(xml, 'STAT')
+      console.log('[MR Ship] STAT:', stat)
+
+      if (stat === '0') break
+      if (stat !== '97') break // Only retry on 97 (technical error)
+    }
 
     if (stat !== '0') {
       var errorMsg = MR_ERRORS[stat] || 'Erreur Mondial Relay (code ' + stat + ')'
@@ -151,11 +169,11 @@ export async function POST(request) {
 }
 
 function clean(str, max) {
-  return String(str || '').replace(/[<>&'"]/g, '').substring(0, max)
+  return removeAccents(String(str || '')).replace(/[<>&'"]/g, '').substring(0, max)
 }
 
 function cleanAlphaNum(str, max) {
-  return String(str || '').replace(/[^0-9A-Za-z_ -]/g, '').toUpperCase().substring(0, max)
+  return removeAccents(String(str || '')).replace(/[^0-9A-Za-z_ -]/g, '').toUpperCase().substring(0, max)
 }
 
 function escapeXml(str) {
