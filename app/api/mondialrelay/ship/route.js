@@ -147,14 +147,9 @@ export async function POST(request) {
     }
 
     var expeditionNum = extractTag(xml, 'ExpeditionNum') || ''
-    var labelUrl = extractTag(xml, 'URL_Etiquette') || ''
-    // Decode HTML entities in URL
-    labelUrl = labelUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    if (labelUrl && !labelUrl.startsWith('http')) {
-      labelUrl = 'https://api.mondialrelay.com' + labelUrl
-    }
+    var labelUrl = '/api/mondialrelay/label?expedition=' + expeditionNum + '&ens=' + enseigne + '&key=' + encodeURIComponent(privateKey)
 
-    console.log('[MR Ship] Success! Num:', expeditionNum, 'Label:', labelUrl)
+    console.log('[MR Ship] Success! Num:', expeditionNum, 'Label proxy:', labelUrl)
 
     return Response.json({
       success: true,
