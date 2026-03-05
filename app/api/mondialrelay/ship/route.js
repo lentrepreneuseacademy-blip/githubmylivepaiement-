@@ -1,58 +1,62 @@
-// ═══════════════════════════════════════════════════════
-// /app/api/mondialrelay/ship/route.js
-// Création expédition Mondial Relay + étiquette PDF
-// Via API SOAP directe Mondial Relay (WSI2_CreationEtiquette)
-// ═══════════════════════════════════════════════════════
-
 import { createHash } from 'crypto'
 
-const MR_ENSEIGNE = process.env.MR_ENSEIGNE || ''
-const MR_PRIVATE_KEY = process.env.MR_PRIVATE_KEY || ''
-const MR_BRAND_CODE = process.env.MR_BRAND_CODE || ''
 const MR_API_URL = 'https://api.mondialrelay.com/Web_Services.asmx'
+
+// Exact parameter order for MD5 security key calculation
+const PARAM_ORDER = [
+  'Enseigne','ModeCol','ModeLiv','NDossier','NClient',
+  'Expe_Langage','Expe_Ad1','Expe_Ad2','Expe_Ad3','Expe_Ad4',
+  'Expe_Ville','Expe_CP','Expe_Pays','Expe_Tel1','Expe_Tel2','Expe_Mail',
+  'Dest_Langage','Dest_Ad1','Dest_Ad2','Dest_Ad3','Dest_Ad4',
+  'Dest_Ville','Dest_CP','Dest_Pays','Dest_Tel1','Dest_Tel2','Dest_Mail',
+  'Poids','Longueur','Taille','NbColis',
+  'CRT_Valeur','CRT_Devise','Exp_Valeur','Exp_Devise',
+  'COL_Rel_Pays','COL_Rel','LIV_Rel_Pays','LIV_Rel',
+  'TAvis_Dest','Texte',
+]
 
 export async function POST(request) {
   try {
     const body = await request.json()
     const { sender, recipient, parcel, relayCode, reference } = body
-
-    const enseigne = body.enseigne || MR_ENSEIGNE
-    const privateKey = body.privateKey || MR_PRIVATE_KEY
+    const enseigne = (body.enseigne || process.env.MR_ENSEIGNE || '').toUpperCase().trim()
+    const privateKey = body.privateKey || process.env.MR_PRIVATE_KEY || ''
 
     if (!enseigne || !privateKey) {
-      return Response.json({ error: 'Identifiants Mondial Relay manquants. Configure Code Enseigne et Cle Privee dans Parametres.' }, { status: 400 })
+      return Response.json({ error: 'Identifiants Mondial Relay manquants.' }, { status: 400 })
     }
 
-    // Params for WSI2_CreationEtiquette
-    const params = {
-      Enseigne: enseigne.toUpperCase(),
-      ModeCol: 'CCC',       // Collecte chez commerçant
-      ModeLiv: '24R',        // Livraison en Point Relais
-      NDossier: (reference || '').substring(0, 15).replace(/[^0-9A-Z_ -]/gi, '').toUpperCase(),
+    var relayNum = (relayCode || '').replace(/^MONR-/, '').trim()
+
+    var params = {
+      Enseigne: enseigne,
+      ModeCol: 'CCC',
+      ModeLiv: '24R',
+      NDossier: cleanAlphaNum(reference || '', 15),
       NClient: '',
       Expe_Langage: 'FR',
-      Expe_Ad1: (sender?.name || 'Ma Boutique').substring(0, 32),
+      Expe_Ad1: clean(sender?.name || 'Ma Boutique', 32),
       Expe_Ad2: '',
-      Expe_Ad3: (sender?.address || '').substring(0, 32),
+      Expe_Ad3: clean(sender?.address || '', 32),
       Expe_Ad4: '',
-      Expe_Ville: (sender?.city || '').substring(0, 26),
-      Expe_CP: (sender?.zipcode || '').substring(0, 5),
+      Expe_Ville: clean(sender?.city || '', 26),
+      Expe_CP: (sender?.zipcode || '').replace(/\D/g, '').substring(0, 5),
       Expe_Pays: 'FR',
       Expe_Tel1: formatPhone(sender?.phone || ''),
       Expe_Tel2: '',
       Expe_Mail: (sender?.email || '').substring(0, 70),
       Dest_Langage: 'FR',
-      Dest_Ad1: ((recipient?.firstname || '') + ' ' + (recipient?.lastname || '')).trim().substring(0, 32),
+      Dest_Ad1: clean(((recipient?.firstname || '') + ' ' + (recipient?.lastname || '')).trim(), 32),
       Dest_Ad2: '',
-      Dest_Ad3: (recipient?.address || '').substring(0, 32),
+      Dest_Ad3: clean(recipient?.address || '', 32),
       Dest_Ad4: '',
-      Dest_Ville: (recipient?.city || '').substring(0, 26),
-      Dest_CP: (recipient?.zipcode || '').substring(0, 5),
+      Dest_Ville: clean(recipient?.city || '', 26),
+      Dest_CP: (recipient?.zipcode || '').replace(/\D/g, '').substring(0, 5),
       Dest_Pays: 'FR',
       Dest_Tel1: formatPhone(recipient?.phone || ''),
       Dest_Tel2: '',
       Dest_Mail: (recipient?.email || '').substring(0, 70),
-      Poids: String(Math.round((parcel?.weight || 0.5) * 1000)), // en grammes
+      Poids: String(Math.round((parcel?.weight || 0.5) * 1000)),
       Longueur: '',
       Taille: '',
       NbColis: '1',
@@ -63,25 +67,46 @@ export async function POST(request) {
       COL_Rel_Pays: '',
       COL_Rel: '',
       LIV_Rel_Pays: 'FR',
-      LIV_Rel: (relayCode || '').replace(/^MONR-/, ''),
-      TAvis662: '',
-      TTexte: '',
-      MModeLiv: '',
+      LIV_Rel: relayNum,
+      TAvis_Dest: '',
       Texte: '',
     }
 
-    // Generate MD5 security key
-    const concatStr = Object.values(params).join('') + privateKey
-    const security = createHash('md5').update(concatStr).digest('hex').toUpperCase()
+    // Build MD5 security key: concat all param values in EXACT order + private key
+    var concatParts = []
+    for (var i = 0; i < PARAM_ORDER.length; i++) {
+      concatParts.push(params[PARAM_ORDER[i]] || '')
+    }
+    var concatStr = concatParts.join('') + privateKey
+    var security = createHash('md5').update(concatStr, 'utf8').digest('hex').toUpperCase()
     params.Security = security
 
-    console.log('[MR Ship] Creating shipment, relay:', params.LIV_Rel, 'weight:', params.Poids + 'g')
+    console.log('[MR Ship] Enseigne:', enseigne, 'Relay:', relayNum, 'Weight:', params.Poids + 'g')
+    console.log('[MR Ship] Sender:', params.Expe_Ad1, params.Expe_CP, params.Expe_Ville)
+    console.log('[MR Ship] Dest:', params.Dest_Ad1, params.Dest_CP, params.Dest_Ville)
+    console.log('[MR Ship] MD5 input (first 100):', concatStr.substring(0, 100) + '...')
+    console.log('[MR Ship] MD5 hash:', security)
 
     // Build SOAP XML
-    const soapXml = buildSoapXml('WSI2_CreationEtiquette', params)
+    var soapBody = ''
+    var allKeys = PARAM_ORDER.concat(['Security'])
+    for (var k = 0; k < allKeys.length; k++) {
+      var key = allKeys[k]
+      soapBody += '<' + key + '>' + escapeXml(params[key] || '') + '</' + key + '>'
+    }
 
-    // Call Mondial Relay API
-    const res = await fetch(MR_API_URL, {
+    var soapXml = '<?xml version="1.0" encoding="utf-8"?>'
+      + '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">'
+      + '<soap:Body>'
+      + '<WSI2_CreationEtiquette xmlns="http://www.mondialrelay.fr/webservice/">'
+      + soapBody
+      + '</WSI2_CreationEtiquette>'
+      + '</soap:Body>'
+      + '</soap:Envelope>'
+
+    console.log('[MR Ship] SOAP preview:', soapXml.substring(0, 400))
+
+    var res = await fetch(MR_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/xml; charset=utf-8',
@@ -90,34 +115,33 @@ export async function POST(request) {
       body: soapXml,
     })
 
-    const xml = await res.text()
-    console.log('[MR Ship] Response status:', res.status, 'length:', xml.length)
+    var xml = await res.text()
+    console.log('[MR Ship] Response:', res.status, xml.length, 'chars')
 
-    // Parse response
-    const stat = extractTag(xml, 'STAT')
+    var stat = extractTag(xml, 'STAT')
     console.log('[MR Ship] STAT:', stat)
 
     if (stat !== '0') {
-      const errorMsg = MR_ERRORS[stat] || 'Erreur Mondial Relay (code ' + stat + ')'
+      var errorMsg = MR_ERRORS[stat] || 'Erreur Mondial Relay (code ' + stat + ')'
       console.error('[MR Ship] Error:', stat, errorMsg)
-      console.error('[MR Ship] XML:', xml.substring(0, 500))
+      console.error('[MR Ship] Full XML:', xml)
       return Response.json({ error: errorMsg, code: stat }, { status: 200 })
     }
 
-    const expeditionNum = extractTag(xml, 'ExpeditionNum')
-    const labelUrl = extractTag(xml, 'URL_Etiquette')
-    
-    const fullLabelUrl = labelUrl ? (labelUrl.startsWith('http') ? labelUrl : 'https://api.mondialrelay.com' + labelUrl) : null
+    var expeditionNum = extractTag(xml, 'ExpeditionNum') || ''
+    var labelUrl = extractTag(xml, 'URL_Etiquette') || ''
+    if (labelUrl && !labelUrl.startsWith('http')) {
+      labelUrl = 'https://api.mondialrelay.com' + labelUrl
+    }
 
-    console.log('[MR Ship] Success! ExpeditionNum:', expeditionNum, 'Label:', fullLabelUrl)
+    console.log('[MR Ship] Success! Num:', expeditionNum, 'Label:', labelUrl)
 
     return Response.json({
       success: true,
       expeditionNum: expeditionNum,
       tracking: expeditionNum,
-      label_url: fullLabelUrl,
+      label_url: labelUrl,
       carrier: 'Mondial Relay',
-      service: 'Point Relais',
     })
 
   } catch (error) {
@@ -126,90 +150,60 @@ export async function POST(request) {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════
+function clean(str, max) {
+  return String(str || '').replace(/[<>&'"]/g, '').substring(0, max)
+}
 
-function buildSoapXml(method, params) {
-  let paramsXml = ''
-  for (const [key, value] of Object.entries(params)) {
-    paramsXml += `<${key}>${escapeXml(value || '')}</${key}>`
-  }
-  return `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <${method} xmlns="http://www.mondialrelay.fr/webservice/">
-      ${paramsXml}
-    </${method}>
-  </soap:Body>
-</soap:Envelope>`
+function cleanAlphaNum(str, max) {
+  return String(str || '').replace(/[^0-9A-Za-z_ -]/g, '').toUpperCase().substring(0, max)
 }
 
 function escapeXml(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 function extractTag(xml, tag) {
-  const regex = new RegExp(`<${tag}>([^<]*)</${tag}>`, 'i')
-  const match = xml.match(regex)
+  var regex = new RegExp('<' + tag + '>([^<]*)</' + tag + '>', 'i')
+  var match = xml.match(regex)
   return match ? match[1].trim() : null
 }
 
 function formatPhone(phone) {
-  let clean = phone.replace(/[\s.\-\+]/g, '')
+  var clean = (phone || '').replace(/[\s.\-\+]/g, '')
   if (clean.startsWith('33')) clean = '0' + clean.slice(2)
-  if (!clean.startsWith('0')) clean = '0' + clean
-  return clean.substring(0, 10)
+  if (clean.length > 0 && !clean.startsWith('0')) clean = '0' + clean
+  // MR wants exactly 10 digits
+  clean = clean.replace(/\D/g, '').substring(0, 10)
+  return clean.padEnd(10, '0')
 }
 
-const MR_ERRORS = {
+var MR_ERRORS = {
   '1': 'Code enseigne invalide',
   '2': 'Numero de commande invalide',
-  '3': 'Numero de client invalide',
-  '5': 'Nombre de colis invalide',
-  '6': 'Destination invalide',
-  '7': 'Information expediteur manquante',
+  '7': 'Infos expediteur manquantes',
   '8': 'Adresse expediteur manquante',
   '9': 'Ville expediteur invalide',
   '10': 'Code postal expediteur invalide',
-  '11': 'Pays expediteur invalide',
   '12': 'Telephone expediteur invalide',
-  '13': 'Email expediteur invalide',
-  '14': 'Information destinataire manquante',
+  '14': 'Infos destinataire manquantes',
   '15': 'Adresse destinataire manquante',
   '16': 'Ville destinataire invalide',
   '17': 'Code postal destinataire invalide',
-  '18': 'Pays destinataire invalide',
   '19': 'Telephone destinataire invalide',
   '20': 'Poids invalide',
-  '21': 'Taille invalide',
-  '22': 'Longueur invalide',
   '24': 'Numero de point relais invalide',
-  '25': 'Point relais ferme ou indisponible',
+  '25': 'Point relais indisponible',
   '26': 'Mode de collecte invalide',
   '27': 'Mode de livraison invalide',
-  '28': 'Mode de livraison indisponible pour ce pays',
   '29': 'Colis trop lourd',
-  '30': 'Valeur de colis invalide',
-  '31': 'Assurance invalide',
-  '33': 'Enseigne non autorisee',
+  '33': 'Enseigne non autorisee pour ce service',
   '34': 'Service indisponible',
-  '35': 'Multi-colis non autorise',
   '38': 'Pays non autorise',
-  '39': 'Format etiquette invalide',
-  '40': 'Colis deja expedie',
-  '44': 'Doublon detecte',
-  '45': 'Quota expeditions depasse',
   '60': 'Solde insuffisant',
-  '62': 'Langue non supportee',
-  '80': 'Cle de securite invalide',
-  '81': 'Format de reference invalide',
-  '82': 'Expediteur incomplet',
+  '80': 'Cle de securite (MD5) invalide — verifie le Code Enseigne et la Cle Privee',
+  '82': 'Expediteur incomplet — remplis ton adresse dans Parametres',
   '83': 'Destinataire incomplet',
   '84': 'Point relais invalide',
   '86': 'Poids maximum depasse',
-  '94': 'Mode de collecte incompatible',
-  '95': 'Code postal expediteur invalide pour ce pays',
-  '96': 'Code postal destinataire invalide pour ce pays',
-  '97': 'Erreur technique Mondial Relay — reessaye dans quelques minutes',
+  '97': 'Erreur technique Mondial Relay — verifie tes identifiants ou reessaye dans quelques minutes',
 }
