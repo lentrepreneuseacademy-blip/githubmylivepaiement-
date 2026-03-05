@@ -835,7 +835,6 @@ export default function PayPage() {
 
   async function loadRelayPoints(zipcode, cityName, addressLine) {
     if (!zipcode || zipcode.length < 5) return;
-    // Si pas de ville, essayer de la récupérer automatiquement via l'API Geo
     var finalCity = cityName || ville;
     if (!finalCity && zipcode.length === 5) {
       try {
@@ -847,7 +846,6 @@ export default function PayPage() {
         }
       } catch(e) {}
     }
-    if (!finalCity) return;
     setRelayLoading(true);
     setRelayError('');
     setSelectedRelay(null);
@@ -1217,7 +1215,7 @@ export default function PayPage() {
                       </div>
                     ) : (
                       <div>
-                        {realRelayPoints.slice(0, 5).map((r, i) => (
+                        {realRelayPoints.slice(0, 10).map((r, i) => (
                           <button key={r.code || i} type="button" onClick={() => setSelectedRelay(r.code)}
                             style={{ width: "100%", padding: "14px 16px", border: selectedRelay === r.code ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.08)", borderRadius: 12, background: selectedRelay === r.code ? "#1A1A1A" : "#FFF", marginBottom: 8, textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all .15s" }}>
                             <div style={{ flex: 1 }}>
