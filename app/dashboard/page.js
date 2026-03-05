@@ -90,6 +90,7 @@ export default function Dashboard() {
 
   // New order form
   const [showNewOrder, setShowNewOrder] = useState(false)
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null)
   const [newOrder, setNewOrder] = useState({ reference: '', amount: '', description: '' })
 
   // Shipping / Boxtal
@@ -2243,7 +2244,7 @@ export default function Dashboard() {
             )}
 
             {orders.map(o => (
-              <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: '#FFF', border: '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', transition: 'all .2s' }}>
+              <div key={o.id} onClick={() => setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedOrderDetail?.id === o.id ? '#F8F7F5' : '#FFF', border: selectedOrderDetail?.id === o.id ? '2px solid #1A1A1A' : '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', transition: 'all .2s', cursor: 'pointer' }}>
                 <div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
@@ -2264,6 +2265,28 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+
+            {selectedOrderDetail && (
+              <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 20, marginBottom: 16, marginTop: -4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 18, fontWeight: 800 }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
+                  <button onClick={function() { setSelectedOrderDetail(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Client</div><div style={{ fontSize: 14, fontWeight: 600 }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Montant</div><div style={{ fontSize: 14, fontWeight: 700 }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Email</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.client_email || ''}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.client_phone || ''}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Adresse</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_address || ''}, {selectedOrderDetail.shipping_zipcode || ''} {selectedOrderDetail.shipping_city || ''}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Livraison</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_method === 'relay' ? 'Mondial Relay' : selectedOrderDetail.shipping_method || ''}</div></div>
+                  {selectedOrderDetail.relay_point && (function() { try { var rp = JSON.parse(selectedOrderDetail.relay_point); return <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Point relais</div><div style={{ fontSize: 13, color: '#6366F1', fontWeight: 600 }}>📍 {rp.name} — {rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {selectedOrderDetail.status === 'paid' && <button onClick={function() { startShipping(selectedOrderDetail); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>🚚 Expedier</button>}
+                  <div style={{ fontSize: 11, color: '#999' }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')}</div>
+                </div>
+              </div>
+            )}
 
             {orders.length === 0 && (
               <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
@@ -2312,7 +2335,7 @@ export default function Dashboard() {
               {shipStep !== 'list' && (
                 <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null); setShipError(null) }}
                   style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
-                  \u2190 Retour
+                  ← Retour
                 </button>
               )}
             </div>
@@ -2388,7 +2411,7 @@ export default function Dashboard() {
                 })}
                 {orders.filter(function(o) { return o.status === 'paid' || o.status === 'shipped' }).length === 0 && (
                   <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
-                    <div style={{ fontSize: 48, marginBottom: 12 }}>\u2713</div>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>✓</div>
                     <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Tout est a jour !</p>
                   </div>
                 )}
@@ -2485,7 +2508,7 @@ export default function Dashboard() {
             {shipStep === 'label' && (
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(16,185,129,.25)' }}>
-                  <span style={{ fontSize: 36, color: '#FFF' }}>\u2713</span>
+                  <span style={{ fontSize: 36, color: '#FFF' }}>✓</span>
                 </div>
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Envoi cree !</h2>
                 <p style={{ fontSize: 14, color: '#777', marginBottom: 24 }}>
