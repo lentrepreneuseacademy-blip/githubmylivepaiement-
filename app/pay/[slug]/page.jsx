@@ -821,6 +821,34 @@ export default function PayPage() {
   const [contactSending, setContactSending] = useState(false);
   const [clientOrders, setClientOrders] = useState([]);
   const [clientMessages, setClientMessages] = useState([]);
+  const [clientReplyMsg, setClientReplyMsg] = useState('');
+  const [clientReplySending, setClientReplySending] = useState(false);
+
+  async function sendClientReply() {
+    if (!clientReplyMsg.trim() || !shopData?.id) return
+    setClientReplySending(true)
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          shopId: shopData.id,
+          name: (prenom || '') + ' ' + (nom || '') || loginEmail || '',
+          email: loginEmail || email || '',
+          phone: phone || '',
+          content: clientReplyMsg,
+          subject: 'Reponse client',
+        })
+      })
+      setClientReplyMsg('')
+      // Reload messages
+      const msgRes = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'client_messages', shopId: shopData.id, email: (loginEmail || email || '').toLowerCase().trim() }) })
+      const msgResult = await msgRes.json()
+      setClientMessages(msgResult.messages || [])
+    } catch(e) { console.error('[Client] Reply error:', e) }
+    setClientReplySending(false)
+  }
 
   // Load client orders when logging in
   async function loadClientOrders(clientEmail) {
@@ -1020,10 +1048,12 @@ export default function PayPage() {
           )}
           <h1 style={{ fontFamily: ss, fontSize: 40, fontWeight: 300, lineHeight: 1.2, marginTop: 0, marginBottom: 16, color: "#1A1A1A" }}>{shopData?.name || t.heroTitle}</h1>
           <p style={{ fontFamily: sf, fontSize: 15, color: "#999", lineHeight: 1.7, marginBottom: 36 }}>{t.heroSub}</p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 60 }}>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 36 }}>
             <button onClick={() => { setPage("payment"); setPayStep("ref"); setPaid(false); }} style={{ padding: "16px 36px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t.ctaPay}</button>
             <button onClick={() => { setPage("client"); setClientView("login"); }} style={{ padding: "16px 36px", border: "1px solid rgba(0,0,0,.15)", borderRadius: 12, fontFamily: sf, fontSize: 14, color: "#666", background: "none", cursor: "pointer" }}>{t.ctaAccount}</button>
           </div>
+          <button onClick={() => { setShowContact(true); setPage("contact"); }} style={{ padding: "12px 28px", background: "none", border: "none", fontFamily: sf, fontSize: 13, color: "#999", cursor: "pointer", textDecoration: "underline" }}>💬 {t.contactUs}</button>
+          <div style={{ marginBottom: 40 }} />
 
           {/* Features */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 60 }}>
@@ -1061,6 +1091,46 @@ export default function PayPage() {
   // ═══════════════════════════════════════
   // PAYMENT PAGE
   // ═══════════════════════════════════════
+  if (page === "contact") {
+    return (
+      <div style={{ minHeight: "100vh", background: "#FAFAF8" }}>
+        <Header showBack />
+        <div style={{ maxWidth: 500, margin: "0 auto", padding: "40px 20px" }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+            <h1 style={{ fontFamily: ss, fontSize: 28, fontWeight: 400, marginBottom: 8 }}>{t.contactUs}</h1>
+            <p style={{ fontFamily: sf, fontSize: 14, color: "#999" }}>{shopData?.name || "La boutique"}</p>
+          </div>
+          {contactSent ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
+              <div style={{ fontFamily: sf, fontSize: 16, fontWeight: 600 }}>Message envoye !</div>
+              <div style={{ fontFamily: sf, fontSize: 13, color: "#999", marginTop: 8 }}>Tu recevras une reponse par email.</div>
+              <button onClick={() => { setPage("landing"); setContactSent(false); }} style={{ marginTop: 24, padding: "12px 28px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Retour</button>
+            </div>
+          ) : (
+            <div style={{ background: "#FFF", borderRadius: 16, padding: 24, border: "1px solid rgba(0,0,0,.06)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.firstName}</label><input value={contactName} onChange={(e) => setContactName(e.target.value)} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
+                <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.email}</label><input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF" }} /></div>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.contactMsgLabel || "Ton message"}</label>
+                <textarea value={contactMsg} onChange={(e) => setContactMsg(e.target.value)} rows={5}
+                  placeholder="Ecris ton message ici..."
+                  style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF", resize: "vertical" }} />
+              </div>
+              <button onClick={sendContact} disabled={contactSending || !contactMsg.trim()}
+                style={{ width: "100%", padding: 16, background: contactSending || !contactMsg.trim() ? "#DDD" : "#1A1A1A", color: "#FFF", border: "none", borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 600, cursor: contactSending ? "wait" : "pointer" }}>
+                {contactSending ? "Envoi..." : "Envoyer le message"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (page === "payment") {
     if (paid) {
       return (
@@ -1498,30 +1568,43 @@ export default function PayPage() {
                 <div style={{ textAlign: "center", padding: 40, color: "#CCC" }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
                   <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>Aucun message</div>
-                  <div style={{ fontFamily: sf, fontSize: 12, marginTop: 4 }}>Utilise le formulaire de contact pour ecrire a la boutique</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, marginTop: 4, color: "#999" }}>Envoie un message a la boutique ci-dessous</div>
                 </div>
               )}
               {clientMessages.map(function(msg) { return (
                 <div key={msg.id} style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.06)", borderRadius: 14, padding: "16px 18px", marginBottom: 10 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                     <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{msg.subject || "Message"}</div>
-                    <div style={{ fontFamily: sf, fontSize: 10, color: "#CCC" }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString("fr-FR") : ""}</div>
+                    <div style={{ fontFamily: sf, fontSize: 10, color: "#CCC" }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString("fr-FR") + " " + new Date(msg.created_at).toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"}) : ""}</div>
                   </div>
-                  <div style={{ fontFamily: sf, fontSize: 13, color: "#555", lineHeight: 1.6, marginBottom: msg.reply ? 12 : 0, padding: "10px 14px", background: "#F8F7F5", borderRadius: 10 }}>
+                  <div style={{ fontFamily: sf, fontSize: 13, color: "#555", lineHeight: 1.6, padding: "10px 14px", background: "#F8F7F5", borderRadius: 10, marginBottom: msg.reply ? 8 : 0 }}>
                     <div style={{ fontSize: 10, color: "#999", marginBottom: 4 }}>Toi :</div>
                     {msg.content}
                   </div>
                   {msg.reply && (
-                    <div style={{ fontFamily: sf, fontSize: 13, color: "#333", lineHeight: 1.6, marginTop: 8, padding: "10px 14px", background: "#F0FDF4", borderRadius: 10, border: "1px solid #BBF7D0" }}>
-                      <div style={{ fontSize: 10, color: "#10B981", fontWeight: 700, marginBottom: 4 }}>Reponse de la boutique :</div>
+                    <div style={{ fontFamily: sf, fontSize: 13, color: "#333", lineHeight: 1.6, padding: "10px 14px", background: "#F0FDF4", borderRadius: 10, border: "1px solid #BBF7D0", marginTop: 6 }}>
+                      <div style={{ fontSize: 10, color: "#10B981", fontWeight: 700, marginBottom: 4 }}>{shopData?.name || "La boutique"} :</div>
                       {msg.reply}
+                      {msg.replied_at && <div style={{ fontSize: 9, color: "#BBB", marginTop: 6 }}>{new Date(msg.replied_at).toLocaleDateString("fr-FR")} {new Date(msg.replied_at).toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"})}</div>}
                     </div>
                   )}
                   {!msg.reply && (
-                    <div style={{ fontFamily: sf, fontSize: 11, color: "#F59E0B", marginTop: 8, fontWeight: 600 }}>En attente de reponse...</div>
+                    <div style={{ fontFamily: sf, fontSize: 11, color: "#F59E0B", marginTop: 8, fontWeight: 600 }}>⏳ En attente de reponse...</div>
                   )}
                 </div>
               )})}
+
+              {/* New message / reply form */}
+              <div style={{ marginTop: 16, background: "#FFF", borderRadius: 14, padding: 18, border: "2px solid #1A1A1A" }}>
+                <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, marginBottom: 10 }}>💬 Ecrire a {shopData?.name || "la boutique"}</div>
+                <textarea value={clientReplyMsg} onChange={(e) => setClientReplyMsg(e.target.value)} rows={3}
+                  placeholder={"Ecris ton message ici..."}
+                  style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.08)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", resize: "vertical", marginBottom: 10 }} />
+                <button onClick={sendClientReply} disabled={clientReplySending || !clientReplyMsg.trim()}
+                  style={{ padding: "12px 24px", background: clientReplySending || !clientReplyMsg.trim() ? "#DDD" : "#1A1A1A", color: "#FFF", border: "none", borderRadius: 10, fontFamily: sf, fontSize: 13, fontWeight: 600, cursor: clientReplySending ? "wait" : "pointer" }}>
+                  {clientReplySending ? "Envoi..." : "Envoyer"}
+                </button>
+              </div>
             </div>
           )}
 
