@@ -12,14 +12,13 @@ export async function GET(request) {
     return new Response('Parametres manquants', { status: 400 })
   }
 
-  // WSI3_GetEtiquettes params
+  console.log('[MR Label] Getting label for expedition:', expedition)
+
   var params = {
     Enseigne: enseigne.toUpperCase(),
     Expeditions: expedition,
     Langue: 'FR',
   }
-
-  // MD5: concat all params + private key
   var concatStr = params.Enseigne + params.Expeditions + params.Langue + privateKey
   var security = createHash('md5').update(concatStr, 'utf8').digest('hex').toUpperCase()
 
@@ -35,8 +34,6 @@ export async function GET(request) {
     + '</soap:Body>'
     + '</soap:Envelope>'
 
-  console.log('[MR Label] Getting label for expedition:', expedition)
-
   try {
     var res = await fetch(MR_API_URL, {
       method: 'POST',
@@ -46,42 +43,62 @@ export async function GET(request) {
       },
       body: soapXml,
     })
-
     var xml = await res.text()
-    console.log('[MR Label] Response:', res.status, xml.length, 'chars')
+    console.log('[MR Label] WSI3 response:', xml.length, 'chars')
+    console.log('[MR Label] XML:', xml.substring(0, 800))
 
-    var stat = xml.match(/<STAT>([^<]*)<\/STAT>/i)
-    var statVal = stat ? stat[1].trim() : 'unknown'
-    console.log('[MR Label] STAT:', statVal)
-
-    if (statVal !== '0') {
-      console.error('[MR Label] Error:', statVal)
-      // Fallback: try the direct URL
-      var directUrl = 'https://www.mondialrelay.com/etiquette/getStickersExpeditionsAnonyme2.aspx?ens=' + enseigne + '&expedition=' + expedition + '&lg=FR&format=A4'
-      console.log('[MR Label] Trying direct URL:', directUrl)
-      return Response.redirect(directUrl, 302)
+    var pdfUrl = null
+    var patterns = ['URL_PDF_A4', 'URL_PDF_A5', 'URL_PDF_10x15', 'URL_Etiquette']
+    for (var i = 0; i < patterns.length; i++) {
+      var match = xml.match(new RegExp('<' + patterns[i] + '>([^<]*)</' + patterns[i] + '>', 'i'))
+      if (match && match[1].trim()) {
+        pdfUrl = match[1].trim().replace(/&amp;/g, '&')
+        if (!pdfUrl.startsWith('http')) pdfUrl = 'https://api.mondialrelay.com' + pdfUrl
+        console.log('[MR Label] Found', patterns[i], ':', pdfUrl)
+        break
+      }
     }
 
-    // Extract PDF URL from response
-    var urlMatch = xml.match(/<URL_PDF_A4>([^<]*)<\/URL_PDF_A4>/i)
-    if (!urlMatch) urlMatch = xml.match(/<URL_PDF_A5>([^<]*)<\/URL_PDF_A5>/i)
-    if (!urlMatch) urlMatch = xml.match(/<URL_PDF_10x15>([^<]*)<\/URL_PDF_10x15>/i)
-
-    if (urlMatch) {
-      var pdfUrl = urlMatch[1].trim().replace(/&amp;/g, '&')
-      if (!pdfUrl.startsWith('http')) pdfUrl = 'https://api.mondialrelay.com' + pdfUrl
-      console.log('[MR Label] PDF URL:', pdfUrl)
-      return Response.redirect(pdfUrl, 302)
+    if (pdfUrl) {
+      console.log('[MR Label] Downloading PDF from:', pdfUrl)
+      var pdfRes = await fetch(pdfUrl)
+      if (pdfRes.ok) {
+        var pdfBuffer = await pdfRes.arrayBuffer()
+        console.log('[MR Label] PDF downloaded:', pdfBuffer.byteLength, 'bytes')
+        return new Response(pdfBuffer, {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'inline; filename="etiquette-' + expedition + '.pdf"',
+          }
+        })
+      }
+      console.error('[MR Label] PDF download failed:', pdfRes.status)
     }
 
-    // No PDF URL found, try direct
-    console.log('[MR Label] No PDF URL in response, trying direct')
-    console.log('[MR Label] XML:', xml.substring(0, 500))
-    var directUrl2 = 'https://www.mondialrelay.com/etiquette/getStickersExpeditionsAnonyme2.aspx?ens=' + enseigne + '&expedition=' + expedition + '&lg=FR&format=A4'
-    return Response.redirect(directUrl2, 302)
+    // Fallback: instructions page
+    console.error('[MR Label] Could not get PDF for:', expedition)
+    return new Response(fallbackHtml(expedition, enseigne), { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
 
   } catch (error) {
     console.error('[MR Label] Error:', error)
-    return new Response('Erreur: ' + error.message, { status: 500 })
+    return new Response(fallbackHtml(expedition, enseigne), { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
   }
+}
+
+function fallbackHtml(expedition, enseigne) {
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiquette ' + expedition + '</title></head>'
+    + '<body style="font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto">'
+    + '<div style="text-align:center;margin-bottom:30px"><div style="width:60px;height:60px;background:#10B981;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px"><span style="color:#FFF;font-size:28px">✓</span></div>'
+    + '<h2 style="margin:0">Expedition creee !</h2></div>'
+    + '<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">'
+    + '<div style="font-size:12px;color:#999">Numero de suivi</div>'
+    + '<div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#1A1A2E;margin-top:4px">' + expedition + '</div></div>'
+    + '<p style="color:#555;line-height:1.7">L\'etiquette sera disponible dans quelques minutes sur ton espace Mondial Relay :</p>'
+    + '<ol style="color:#555;line-height:2">'
+    + '<li>Va sur <a href="https://www.mondialrelay.fr" target="_blank" style="color:#6366F1;font-weight:600">mondialrelay.fr</a> et connecte-toi</li>'
+    + '<li>Clique sur <strong>Envois</strong> en haut</li>'
+    + '<li>Tu verras l\'expedition <strong>' + expedition + '</strong></li>'
+    + '<li>Clique dessus pour <strong>imprimer l\'etiquette</strong></li></ol>'
+    + '<div style="text-align:center;margin-top:24px"><a href="https://www.mondialrelay.fr" target="_blank" style="display:inline-block;padding:16px 36px;background:#1A1A2E;color:#FFF;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Ouvrir Mondial Relay</a></div>'
+    + '</body></html>'
 }
