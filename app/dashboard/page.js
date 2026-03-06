@@ -208,18 +208,40 @@ export default function Dashboard() {
     if (orderData.length > 0) setOrders(orderData)
 
     // Load clients via API route (bypasse le RLS)
+    // Generate clients from orders (more reliable than separate clients table)
     let clientData = []
     try {
-      const clientRes = await fetch('/api/orders/upsert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list_shop_clients', shop_id: shopId })
+      var clientMap = {}
+      orderData.forEach(function(o) {
+        if (!o.client_email) return
+        var key = o.client_email.toLowerCase().trim()
+        if (!clientMap[key]) {
+          clientMap[key] = {
+            id: key,
+            first_name: o.client_first_name || '',
+            last_name: o.client_last_name || '',
+            email: o.client_email || '',
+            phone: o.client_phone || '',
+            city: o.shipping_city || '',
+            order_count: 0,
+            total_spent: 0,
+            last_order: o.created_at,
+          }
+        }
+        clientMap[key].order_count += 1
+        clientMap[key].total_spent += (o.total_amount || o.amount || 0)
+        if (o.created_at > clientMap[key].last_order) {
+          clientMap[key].last_order = o.created_at
+          clientMap[key].first_name = o.client_first_name || clientMap[key].first_name
+          clientMap[key].last_name = o.client_last_name || clientMap[key].last_name
+          clientMap[key].phone = o.client_phone || clientMap[key].phone
+          clientMap[key].city = o.shipping_city || clientMap[key].city
+        }
       })
-      const clientResult = await clientRes.json()
-      clientData = clientResult.clients || []
-    } catch (e) { console.error('[Dashboard] Erreur chargement clients:', e) }
+      clientData = Object.values(clientMap).sort(function(a, b) { return b.order_count - a.order_count })
+    } catch (e) { console.error('[Dashboard] Erreur generation clients:', e) }
 
-    if (clientData.length > 0) setClients(clientData)
+    setClients(clientData)
 
     const paid = orderData?.filter(o => o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') || []
     const pending = orderData?.filter(o => o.status === 'paid') || []
@@ -2550,6 +2572,7 @@ export default function Dashboard() {
                   <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedClient.phone || '—'}</div></div>
                   <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Ville</div><div style={{ fontSize: 13 }}>{selectedClient.city || '—'}</div></div>
                   <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Commandes</div><div style={{ fontSize: 13, fontWeight: 700 }}>{selectedClient.order_count || 0}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Total depense</div><div style={{ fontSize: 13, fontWeight: 700, color: '#10B981' }}>{(selectedClient.total_spent || 0).toFixed(2)}€</div></div>
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Commandes de ce client :</div>
                 {orders.filter(function(o) { return o.client_email && selectedClient.email && o.client_email.toLowerCase() === selectedClient.email.toLowerCase() }).map(function(o) { return (
@@ -2569,7 +2592,7 @@ export default function Dashboard() {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{c.order_count || 0} commande{(c.order_count || 0) > 1 ? 's' : ''}</div>
-                  <div style={{ fontSize: 11, color: '#999' }}>{c.city || '—'}</div>
+                  <div style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>{(c.total_spent || 0).toFixed(0)}€</div>
                 </div>
               </div>
             ))}
