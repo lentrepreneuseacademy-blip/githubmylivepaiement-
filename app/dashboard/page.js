@@ -142,11 +142,46 @@ export default function Dashboard() {
   const [statsPeriod, setStatsPeriod] = useState('7d')
 
   // AI Assistant
-  const [aiMessages, setAiMessages] = useState([{ role: 'assistant', content: 'Bonjour ! Je suis ton assistante MY LIVE PAIEMENT. Pose-moi une question sur le dashboard, le Live Monitor, les paiements, la livraison, ou demande-moi des conseils pour booster tes ventes !' }])
+  const [aiMessages, setAiMessages] = useState([])
   const [aiInput, setAiInput] = useState('')
+
+  // Generate predictive welcome message when assistant tab opens
+  useEffect(function() {
+    if (activeTab !== 'assistant' || aiMessages.length > 0) return
+    var welcome = 'Hey ' + (shop ? shop.name : '') + ' ! 👋\n\n'
+    var avg = stats.orderCount > 0 ? stats.revenue / stats.orderCount : 0
+    var daysSince = orders.length > 0 ? Math.floor((Date.now() - new Date(orders[0].created_at).getTime()) / 86400000) : 999
+    var newMsgs = messages.filter(function(m){return m.status==='new'}).length
+
+    // ALERTS (urgent)
+    if (stats.pendingShip > 0) welcome += '🔴 **' + stats.pendingShip + ' commande' + (stats.pendingShip > 1 ? 's' : '') + ' a expedier !**\n→ Va dans **Livraison** pour generer les etiquettes Mondial Relay\n\n'
+    if (newMsgs > 0) welcome += '💬 **' + newMsgs + ' nouveau' + (newMsgs > 1 ? 'x' : '') + ' message' + (newMsgs > 1 ? 's' : '') + '** de client(e)s\n→ Va dans **Messages** pour repondre\n\n'
+    if (!boxtalConfig.mrEnseigne) welcome += '⚠️ **Mondial Relay non configure** — tu ne peux pas generer d\'etiquettes\n→ Va dans **Parametres** et entre tes identifiants Mondial Relay\n\n'
+    if (!boxtalConfig.senderAddress) welcome += '⚠️ **Adresse d\'expedition manquante** — remplis-la dans **Parametres**\n\n'
+
+    // STATS
+    if (stats.revenue > 0) {
+      welcome += '📊 **Tes chiffres :**\n'
+      welcome += '• CA total : ' + stats.revenue.toFixed(0) + '€ | Cette semaine : ' + (statsData.totalRevenue7d || 0).toFixed(0) + '€\n'
+      welcome += '• ' + stats.orderCount + ' commandes | ' + clients.length + ' clientes | Panier moyen : ' + avg.toFixed(0) + '€\n\n'
+    }
+
+    // PREDICTIONS
+    welcome += '💡 **Mes recommandations :**\n'
+    if (daysSince > 3 && stats.orderCount > 0) welcome += '• Ca fait ' + daysSince + ' jour' + (daysSince > 1 ? 's' : '') + ' sans commande — planifie un live cette semaine !\n'
+    if (avg > 0 && avg < 25) welcome += '• Panier moyen de ' + avg.toFixed(0) + '€ — propose des lots "2 articles = -15%" pour l\'augmenter\n'
+    if (avg >= 25 && avg < 50) welcome += '• Panier moyen de ' + avg.toFixed(0) + '€ — offre la livraison a partir de ' + Math.ceil(avg * 1.5) + '€ pour booster\n'
+    if (avg >= 50) welcome += '• Panier moyen de ' + avg.toFixed(0) + '€ — c\'est excellent ! Fidelise tes meilleures clientes avec des offres VIP\n'
+    if (clients.length > 0 && clients.length < 10) welcome += '• ' + clients.length + ' clientes — partage ton lien de paiement dans ta bio TikTok/Insta pour en attirer plus\n'
+    if (clients.length >= 10) welcome += '• ' + clients.length + ' clientes — envoie une promo par email a tes meilleures clientes !\n'
+    if (stats.orderCount === 0) welcome += '• Pas encore de commandes ? Lance un live test avec le **Live Monitor** en mode demo !\n'
+    welcome += '\n'
+
+    welcome += 'Demande-moi ce que tu veux : comment utiliser une fonction, des idees pour tes lives, des conseils business, ou de l\'aide technique 🚀'
+    setAiMessages([{ role: 'assistant', content: welcome }])
+  }, [activeTab])
   const [aiLoading, setAiLoading] = useState(false)
   const aiScrollRef = useRef(null)
-  const [aiLastTopic, setAiLastTopic] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   // Shop branding & legal
@@ -1189,330 +1224,101 @@ export default function Dashboard() {
     setAiMessages(function(prev) { return prev.concat([{ role: 'user', content: userMsg }]) })
     setAiLoading(true)
     setTimeout(function() {
-      var result = getAiReply(userMsg, aiLastTopic)
-      if (result.topic) setAiLastTopic(result.topic)
-      setAiMessages(function(prev) { return prev.concat([{ role: 'assistant', content: result.text }]) })
+      var reply = localAiReply(userMsg)
+      setAiMessages(function(prev) { return prev.concat([{ role: 'assistant', content: reply }]) })
       setAiLoading(false)
-    }, 500)
+    }, 300 + Math.random() * 400)
   }
 
-  function getAiReply(msg, lastTopic) {
-    var q = msg.toLowerCase()
+  function localAiReply(msg) {
+    var q = msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     var sn = shop ? shop.name : 'ta boutique'
     var rev = stats.revenue || 0
     var oc = stats.orderCount || 0
-    var cc = stats.clientCount || 0
+    var cc = clients.length || 0
     var pe = stats.pendingShip || 0
     var avg = oc > 0 ? (rev / oc) : 0
     var r7 = statsData.totalRevenue7d || 0
     var o7 = statsData.totalOrders7d || 0
+    var paid = orders.filter(function(o){return o.status==='paid'}).length
+    var shipped = orders.filter(function(o){return o.status==='shipped'}).length
+    var delivered = orders.filter(function(o){return o.status==='delivered'}).length
+    var pending = orders.filter(function(o){return o.status==='pending_payment'}).length
+    var newMsg = messages.filter(function(m){return m.status==='new'}).length
+    var lastOrderDate = orders.length > 0 ? new Date(orders[0].created_at).toLocaleDateString('fr-FR') : null
+    var daysSince = orders.length > 0 ? Math.floor((Date.now() - new Date(orders[0].created_at).getTime()) / 86400000) : 999
+    var mrOk = !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey)
+    var addrOk = !!(boxtalConfig.senderAddress && boxtalConfig.senderZip)
+    var topC = clients.slice(0,3).map(function(c){return (c.first_name||'')+' '+(c.last_name||'')+' ('+c.order_count+' cmd, '+(c.total_spent||0).toFixed(0)+'€)'}).join(', ')
+    var slug = shop && shop.slug ? shop.slug : 'ta-boutique'
 
-    // ═══ FOLLOW-UP : quand la pro dit qu'elle n'y arrive pas ═══
-    var isStuck = q.match(/j.?y arrive pas|je comprends pas|ca marche pas|pas compris|aide.moi|comment faire|c.?est quoi|explique|plus d.?info|detail|etape par etape|pas clair|bloque|perdu|help/)
-    var isYes = q.match(/^(oui|ok|d.?accord|vas.?y|go|continue|dis.moi|je veux|montre)/)
-    var isNo = q.match(/^(non|pas|merci|c.?est bon|ok merci|compris)/)
-
-    if (isNo) return { text: 'Parfait ! N\'hesite pas si tu as d\'autres questions. Je suis la !', topic: null }
-
-    if ((isStuck || isYes) && lastTopic) {
-      if (lastTopic === 'live') {
-        return { topic: 'live', text:
-          'Pas de panique, voici etape par etape :\n\n' +
-          '\u{1F534} ETAPE 1 : Clique sur "Live Monitor" dans le menu a gauche\n\n' +
-          '\u{1F534} ETAPE 2 : Tu vois 2 icones : TikTok et Instagram. Clique sur celui que tu utilises.\n\n' +
-          '\u{1F534} ETAPE 3 : En bas tu as 2 boutons :\n' +
-          '   - "Mode Demo" (violet) = pour tester sans etre en live\n' +
-          '   - "Mode Reel" = pour ton vrai live\n\n' +
-          '\u{1F534} ETAPE 4 : Si mode reel, entre ton pseudo TikTok SANS le @\n' +
-          '   Exemple : si tu es @maboutique, ecris juste "maboutique"\n\n' +
-          '\u{1F534} ETAPE 5 : Clique le gros bouton rouge "Connecter au live"\n\n' +
-          'Ca y est ! Les commandes vont apparaitre automatiquement. Essaie d\'abord en mode Demo pour te familiariser !\n\n' +
-          'Tu veux que je t\'explique autre chose sur le live ?' }
+    if (q.match(/quoi de neuf|resume|bilan|situation|comment ca va|etat|overview/)) {
+      var r = '📊 Bilan ' + sn + ' :\n\n💰 CA total : ' + rev.toFixed(2) + '€ | semaine : ' + r7.toFixed(0) + '€\n📦 ' + oc + ' commandes | 👥 ' + cc + ' clients | 🛒 panier moyen : ' + avg.toFixed(0) + '€\n\n'
+      if (pe > 0) r += '🚨 ' + pe + ' commande'+(pe>1?'s':'')+' a expedier ! Va dans Livraison.\n'
+      if (newMsg > 0) r += '💬 ' + newMsg + ' message'+(newMsg>1?'s':'')+' non lu'+(newMsg>1?'s':'')+'.\n'
+      if (pending > 0) r += '⏳ ' + pending + ' en attente de paiement — relance !\n'
+      if (!mrOk) r += '⚠️ Mondial Relay pas configure ! Va dans Parametres.\n'
+      if (daysSince > 7 && oc > 0) r += '\n💡 Derniere commande il y a ' + daysSince + ' jours. Planifie un live !'
+      if (oc === 0) r += '\n🚀 Pas de commande. Lance ton premier live !'
+      if (avg > 0 && avg < 25) r += '\n💡 Panier moyen ' + avg.toFixed(0) + '€ — propose des lots !'
+      if (topC) r += '\n\n👑 Meilleures clientes : ' + topC
+      return r
+    }
+    if (q.match(/analyse|conseil|ameliorer|booster|vente|strategie|plan|augment/)) {
+      var r = '🚀 Plan d\'action ' + sn + ' :\n\n'
+      if (oc === 0) { r += '🔴 PRIORITE 1 : Premier live !\n → 10-15 pieces, 3 stories teasing, titre "ARRIVAGE 🔥"\n → Objectif : 30 min\n\n🔴 PRIORITE 2 : Partage ton lien\n → githubmylivepaiement.vercel.app/pay/' + slug + '\n → Bio TikTok + message prive apres "je prends"' }
+      else {
+        if (pe > 0) r += '🔴 URGENT : Expedie ' + pe + ' commandes !\n\n'
+        if (avg < 25) r += '💡 PANIER MOYEN (' + avg.toFixed(0) + '€) :\n → Lots "2 pieces = -10%"\n → Livraison offerte des 40€\n → Looks complets\n\n'
+        if (daysSince > 5) r += '📅 REGULARITE (dernier: ' + daysSince + 'j) :\n → 2 lives/semaine (mardi+jeudi 20h)\n → Story "LIVE CE SOIR 20H"\n\n'
+        r += '📈 FIDELISATION (' + cc + ' clients) :\n → Mot manuscrit dans chaque colis\n → Photo du colis avant envoi\n → Groupe WhatsApp VIP\n'
+        if (topC) r += ' → Meilleures clientes : ' + topC
       }
-
-      if (lastTopic === 'stripe') {
-        return { topic: 'stripe', text:
-          'Ok je te guide pas a pas :\n\n' +
-          '\u{1F534} ETAPE 1 : Va dans l\'onglet "Parametres" (icone roue dentee dans le menu)\n\n' +
-          '\u{1F534} ETAPE 2 : Descends jusqu\'a la section "Stripe Connect"\n\n' +
-          '\u{1F534} ETAPE 3 : Clique sur le bouton violet "Connecter Stripe"\n\n' +
-          '\u{1F534} ETAPE 4 : Tu es redirigee vers Stripe. La il faut :\n' +
-          '   - Creer un compte Stripe (gratuit) ou te connecter\n' +
-          '   - Renseigner ton IBAN pour recevoir les virements\n' +
-          '   - Valider ton identite (carte d\'identite)\n\n' +
-          '\u{1F534} ETAPE 5 : Une fois fait, tu reviens sur le dashboard et c\'est connecte !\n\n' +
-          'Apres ca, quand tu envoies ton lien de paiement, l\'argent arrive directement sur ton compte bancaire sous 2-7 jours.\n\n' +
-          'Tu as une question sur une etape en particulier ?' }
-      }
-
-      if (lastTopic === 'impression') {
-        return { topic: 'impression', text:
-          'Je t\'explique en detail :\n\n' +
-          '\u{1F534} D\'abord, il faut etre connecte au live (ou en mode demo)\n\n' +
-          '\u{1F534} En haut de l\'ecran du Live Monitor, tu vois les boutons :\n' +
-          '   - "Tickets" (bleu) : ouvre la fenetre des tickets\n' +
-          '   - "Impression auto" : quand c\'est rouge = actif\n\n' +
-          '\u{1F534} Pour configurer ton imprimante MUNBYN :\n' +
-          '   1. Branche l\'imprimante en USB\n' +
-          '   2. Installe le driver MUNBYN si pas deja fait\n' +
-          '   3. Dans les reglages imprimante de ton PC :\n' +
-          '      - Taille papier : 50.8mm x 50.8mm (ou 2x2 pouces)\n' +
-          '      - Orientation : portrait\n\n' +
-          '\u{1F534} Pour tester : lance le mode Demo, attends qu\'un ticket arrive, clique "Imprimer"\n\n' +
-          'Si ca imprime trop grand ou trop petit, verifie la taille du papier dans les parametres de l\'imprimante.' }
-      }
-
-      if (lastTopic === 'expedition') {
-        return { topic: 'expedition', text:
-          'Voici comment expedier concretement :\n\n' +
-          '\u{1F534} ETAPE 1 : Va dans l\'onglet "Livraison"\n\n' +
-          '\u{1F534} ETAPE 2 : Tu vois la liste des commandes payees a expedier\n\n' +
-          '\u{1F534} ETAPE 3 : Pour chaque commande :\n' +
-          '   - Choisis le transporteur (Mondial Relay, Colissimo...)\n' +
-          '   - L\'etiquette se genere automatiquement\n' +
-          '   - Imprime-la et colle-la sur le colis\n\n' +
-          '\u{1F534} ETAPE 4 : Depose le colis au point relais ou en bureau de poste\n\n' +
-          'Conseils pro :\n' +
-          '\u{2022} Emballe le soir meme du live\n' +
-          '\u{2022} Ajoute un petit mot manuscrit (les clientes adorent)\n' +
-          '\u{2022} Prends une photo du colis et envoie-la a ta cliente\n' +
-          '\u{2022} Envoie le numero de suivi par message' }
-      }
-
-      if (lastTopic === 'commandes') {
-        return { topic: 'commandes', text:
-          'Je te montre comment gerer tes commandes :\n\n' +
-          '\u{1F534} VOIR LES COMMANDES :\n' +
-          'Va dans l\'onglet "Commandes". Tu vois la liste avec reference, montant et statut.\n\n' +
-          '\u{1F534} COMPRENDRE LES STATUTS :\n' +
-          '\u{2022} Gris "En attente" = le lien de paiement a ete envoye mais la cliente n\'a pas encore paye\n' +
-          '\u{2022} Orange "Payee" = paiement recu ! Il faut expedier\n' +
-          '\u{2022} Violet "Expediee" = colis envoye, en cours de livraison\n' +
-          '\u{2022} Vert "Livree" = la cliente a recu son colis\n\n' +
-          '\u{1F534} ASTUCE :\n' +
-          'Apres chaque live, va dans le suivi des paiements pour voir qui n\'a pas encore paye et relance-les !' }
-      }
-
-      if (lastTopic === 'stats') {
-        return { topic: 'stats', text:
-          'Voici comment lire tes statistiques :\n\n' +
-          '\u{1F534} VA DANS l\'onglet "Statistiques"\n\n' +
-          '\u{1F534} EN HAUT : 4 chiffres cles\n' +
-          '\u{2022} CA 7 jours = ton chiffre d\'affaires de la semaine\n' +
-          '\u{2022} Commandes 7j = combien de ventes cette semaine\n' +
-          '\u{2022} Panier moyen = combien depense chaque cliente en moyenne\n' +
-          '\u{2022} Taux conversion = % de commandes payees\n\n' +
-          '\u{1F534} LES GRAPHIQUES :\n' +
-          '\u{2022} Barres violettes = chiffre d\'affaires par jour\n' +
-          '\u{2022} Barres roses = nombre de commandes par jour\n' +
-          '\u{2022} Tu peux changer la periode : 7 jours, 30 jours, 6 mois\n\n' +
-          'Tu as actuellement ' + oc + ' commandes pour ' + rev.toFixed(0) + '\u20ac de CA.' }
-      }
-
-      if (lastTopic === 'motscles') {
-        return { topic: 'motscles', text:
-          'Pas a pas pour les mots-cles :\n\n' +
-          '\u{1F534} ETAPE 1 : Va dans le Live Monitor\n\n' +
-          '\u{1F534} ETAPE 2 : Avant de lancer le live, clique sur le bouton "Mots-cles"\n\n' +
-          '\u{1F534} ETAPE 3 : Tu vois la liste des mots-cles actuels. Pour chaque mot-cle :\n' +
-          '   - Clique sur la croix X pour le supprimer\n' +
-          '   - Tape un nouveau mot et clique "Ajouter" pour en creer un\n\n' +
-          '\u{1F534} BONS MOTS-CLES : "jp", "je prends", "pour moi", "je le veux"\n' +
-          '\u{1F534} MAUVAIS MOTS-CLES : "oui", "moi", "ok" (trop de faux positifs)\n\n' +
-          'Le systeme detecte les mots entiers. "jp" ne sera pas detecte dans "aujourd\'hui" par exemple.' }
-      }
-
-      if (lastTopic === 'booster') {
-        return { topic: 'booster', text:
-          'Voici un plan d\'action concret pour cette semaine :\n\n' +
-          '\u{1F4C5} LUNDI : Prepare tes produits, fais de belles photos pour les stories\n\n' +
-          '\u{1F4C5} MARDI 20h : Live ! Commence par les nouveautes\n' +
-          '   - Titre : "ARRIVAGE + PROMOS \u{1F525}"\n' +
-          '   - Objectif : au moins 30 min de live\n\n' +
-          '\u{1F4C5} MERCREDI : Emballe et expedie les commandes du live\n\n' +
-          '\u{1F4C5} JEUDI 20h : 2eme live de la semaine\n' +
-          '   - Repropose les invendus + nouvelles pieces\n\n' +
-          '\u{1F4C5} VENDREDI : Expeditions + stories "colis du jour"\n\n' +
-          '\u{1F4C5} SAMEDI : Story recap de la semaine + teasing prochain live\n\n' +
-          'La regularite c\'est la CLE. 2 lives/semaine minimum. Tes viewers doivent savoir quand tu es en live !' }
-      }
-
-      return { text: 'Dis-moi exactement sur quoi tu bloques et je te guide etape par etape ! Tu peux me demander :\n' +
-        '\u{2022} "aide live" — pour le Live Monitor\n' +
-        '\u{2022} "aide stripe" — pour les paiements\n' +
-        '\u{2022} "aide impression" — pour les tickets\n' +
-        '\u{2022} "aide expedition" — pour la livraison\n' +
-        '\u{2022} "aide stats" — pour les statistiques', topic: lastTopic }
+      return r
     }
-
-    if (q.match(/tableau|dashboard|vue d.ensemble|accueil/)) {
-      return { topic: 'dashboard', text:
-        '\u{1F4CA} Le Tableau de bord — ta page d\'accueil !\n\n' +
-        '\u{2022} Chiffre d\'affaires : ' + rev.toFixed(0) + '\u20ac\n' +
-        '\u{2022} Commandes : ' + oc + '\n' +
-        '\u{2022} Clients : ' + cc + '\n' +
-        '\u{2022} A expedier : ' + pe + '\n\n' +
-        'Regarde cette page tous les matins pour suivre ton activite !\n\n' +
-        'Tu veux que je t\'explique un element en detail ?' }
+    if (q.match(/tableau|dashboard|accueil|vue d.ensemble|tour|fonctionnalit/)) {
+      return '🏠 Tour du dashboard :\n\n📊 TABLEAU DE BORD — 4 chiffres cles + graphiques\n📡 LIVE MONITOR — capte les commandes en live\n📋 COMMANDES — gere, modifie, filtre par statut\n👥 CLIENTS — liste auto + total depense\n📦 LIVRAISON — etiquettes Mondial Relay 1 clic\n📈 STATISTIQUES — CA, graphiques, periodes\n💬 MESSAGES — reponds a tes clientes\n⚙️ PARAMETRES — MR, adresse, logo, tarifs\n🤖 IA ASSISTANT — c\'est moi !\n\nDemande le detail de n\'importe quelle section !'
     }
-
-    if (q.match(/live|monitor|tiktok|instagram|connexion|lancer/)) {
-      return { topic: 'live', text:
-        '\u{1F4E1} Le Live Monitor capte les commandes automatiquement !\n\n' +
-        '1. Va dans l\'onglet Live Monitor\n' +
-        '2. Choisis TikTok ou Instagram\n' +
-        '3. Entre ton pseudo\n' +
-        '4. Lance la connexion\n\n' +
-        'Mode Demo disponible pour tester sans etre en live.\n\n' +
-        'Tu veux que je t\'explique etape par etape ? Dis "oui" !' }
+    if (q.match(/live|monitor|tiktok|instagram|direct|stream|capter|detect/)) {
+      return '📡 Guide Live Monitor :\n\n🔴 ETAPE 1 : Menu gauche > "Live Monitor"\n🔴 ETAPE 2 : Choisis TikTok ou Instagram\n🔴 ETAPE 3 : Mode Demo (tester) ou Mode Reel\n🔴 ETAPE 4 : Entre ton pseudo SANS le @\n → Ex: @maboutique → tape "maboutique"\n🔴 ETAPE 5 : Bouton rouge "Connecter au live"\n🔴 ETAPE 6 : Le systeme detecte les mots-cles !\n\n⚙️ MOTS-CLES :\n → Bons : "jp", "je prends", "pour moi"\n → Evite : "oui", "moi" (faux positifs)\n\n🖨️ TICKETS :\n → Bouton "Tickets" > "Auto-print"\n → Format 50.8mm pour MUNBYN\n\n💡 Teste en Mode Demo d\'abord !'
     }
-
-    if (q.match(/mot.cl[eE]|detection|keyword|detect/)) {
-      return { topic: 'motscles', text:
-        '\u{1F3AF} Les mots-cles detectent les commandes dans le chat.\n\n' +
-        'Quand un viewer ecrit "je prends" ou "jp", ca cree un ticket.\n\n' +
-        'Tu peux ajouter/supprimer des mots-cles dans les reglages du Live Monitor.\n\n' +
-        'Tu veux que je t\'explique comment les configurer ?' }
+    if (q.match(/commande|statut|status|en attente|payee|expediee|livree|gerer|modifier|editer/)) {
+      return '📋 Commandes :\n\n📊 ⏳' + pending + ' en attente | 💰' + paid + ' payees | 🚚' + shipped + ' expediees | ✅' + delivered + ' livrees\n\n🔴 VOIR : Menu > Commandes > filtres par statut\n🔴 MODIFIER : Clic commande > "✏️ Modifier" > changer nom/adresse/montant/statut > "💾 Sauvegarder"\n🔴 EXPEDIER : Clic > "🚚 Expedier"\n🔴 SUIVI : Clic > "📦 Suivre le colis"\n\n📌 STATUTS :\n ⏳ Gris = pas paye\n 💰 Orange = paye, a expedier\n 🚚 Violet = en route\n ✅ Vert = livre\n ❌ Rouge = annule' + (pe > 0 ? '\n\n🚨 ' + pe + ' a expedier !' : '')
     }
-
-    if (q.match(/imprim|ticket|etiquette|thermique|print/)) {
-      return { topic: 'impression', text:
-        '\u{1F5A8} Impression tickets 50.8mm x 50.8mm\n\n' +
-        '\u{2022} Impression auto : chaque ticket s\'imprime en temps reel\n' +
-        '\u{2022} Imprimer tout : tous les tickets d\'un coup\n\n' +
-        'Clique "Tickets" dans le Live Monitor pour ouvrir la fenetre.\n\n' +
-        'Besoin d\'aide pour configurer l\'imprimante ? Dis "oui" !' }
+    if (q.match(/livr|expedi|colis|mondial|relay|etiquette|envo|point relais|suivi|tracking/)) {
+      if (!mrOk) return '📦 Livraison Mondial Relay :\n\n⚠️ PAS ENCORE CONFIGURE !\n\n🔴 1. Menu > Parametres\n🔴 2. Section "Mondial Relay"\n🔴 3. Trouve tes cles :\n → mondialrelay.fr > profil > "Mes parametres de connexion"\n → Section "Webservices (API, Module)"\n → Copie Code Enseigne + Cle Privee\n🔴 4. Colle et Sauvegarder\n\nPas de compte ? mondialrelay.fr/inscription (gratuit)'
+      return '📦 Livraison (✅ MR connecte : ' + boxtalConfig.mrEnseigne + ') :\n\n🔴 1. Menu > Livraison\n🔴 2. Clique une commande payee\n🔴 3. Verifie poids + dimensions\n🔴 4. Bouton vert "🏷️ Generer l\'etiquette"\n🔴 5. L\'expedition se cree chez MR\n🔴 6. Telecharge le PDF sur connect.mondialrelay.com\n🔴 7. Imprime, colle sur le colis, depose au relais !\n\n💡 Ajoute un petit mot dans le colis' + (pe > 0 ? '\n\n🚨 ' + pe + ' a expedier !' : '')
     }
-
-    if (q.match(/stat|graphique|chiffre|performance|analyse|resultat/)) {
-      var r = '\u{1F4C8} Tes stats ' + sn + ' :\n\n'
-      r += 'CA 7 jours : ' + r7.toFixed(0) + '\u20ac | Commandes 7j : ' + o7 + '\n'
-      r += 'CA total : ' + rev.toFixed(0) + '\u20ac | Panier moyen : ' + avg.toFixed(0) + '\u20ac\n\n'
-      if (oc === 0) r += 'Lance ton premier live pour remplir tes stats !'
-      else if (avg < 25) r += 'Conseil : panier moyen de ' + avg.toFixed(0) + '\u20ac — propose des lots pour l\'augmenter !'
-      else if (avg < 50) r += 'Bon panier moyen ! Ventes flash avec compte a rebours pour aller plus haut.'
-      else r += 'Excellent ! ' + avg.toFixed(0) + '\u20ac de panier moyen. Fidelise tes meilleures clientes.'
-      r += '\n\nTu veux que je t\'explique comment lire les graphiques ?'
-      return { topic: 'stats', text: r }
+    if (q.match(/client|fidel|meilleur|acheteur|qui.*achete/)) {
+      if (cc === 0) return '👥 Pas de client pour l\'instant. Ils apparaissent apres le premier paiement !\n\n💡 Lance un live + partage ton lien :\ngithubmylivepaiement.vercel.app/pay/' + slug
+      return '👥 Tes ' + cc + ' clients :\n\n' + (topC ? '👑 Top : ' + topC + '\n\n' : '') + '🔴 Menu > Clients\n → Liste triee par commandes\n → Clic = voir ses commandes\n\n💡 FIDELISATION :\n → Mot manuscrit dans colis\n → Photo colis avant envoi\n → Groupe WhatsApp VIP\n → Offre speciale 3+ commandes'
     }
-
-    if (q.match(/commande|order|gestion|suivi|pay[eé]|qui.*pas.*pay|impay|relance/)) {
-      var r = '\u{1F4CB} Commandes : ' + oc + ' au total'
-      if (pe > 0) r += ' dont ' + pe + ' a expedier\n\n'
-      else r += '\n\n'
-      r += 'Statuts : En attente (pas paye) > Payee > Expediee > Livree\n\n'
-      r += '\u{1F4A1} Pour voir qui n\'a pas paye :\n'
-      r += 'Va dans l\'onglet Commandes — les commandes "En attente" sont celles pas encore payees.\n'
-      r += 'Apres un live, va dans le Live Monitor > "Suivi paiements" pour croiser les tickets live avec les paiements recus.\n\n'
-      r += 'Astuce : relance les non-payees dans les 24h !'
-      return { topic: 'commandes', text: r }
+    if (q.match(/stat|chiffre|ca |revenue|graphi|performance|resultat|combien/)) {
+      return '📊 Stats ' + sn + ' :\n\n💰 CA : ' + rev.toFixed(2) + '€ | semaine : ' + r7.toFixed(0) + '€\n📦 ' + oc + ' commandes | 🛒 ' + avg.toFixed(0) + '€ moy.\n👥 ' + cc + ' clients' + (lastOrderDate ? ' | 🕐 dernier : ' + lastOrderDate : '') + '\n\n🔴 Menu > Statistiques\n → 4 chiffres cles en haut\n → Graphiques CA (violet) + commandes (rose)\n → Periodes : 7j, 30j, 6 mois\n' + (avg < 25 && avg > 0 ? '\n💡 Panier ' + avg.toFixed(0) + '€ — lots "2 pour X€" !' : '') + (daysSince > 7 && oc > 0 ? '\n⚠️ ' + daysSince + 'j sans commande — live cette semaine !' : '')
     }
-
-    if (q.match(/stripe|paiement|argent|carte|bancaire|connect|virement/)) {
-      return { topic: 'stripe', text:
-        '\u{1F4B3} Stripe — systeme de paiement\n\n' +
-        '1. Parametres > Stripe Connect\n' +
-        '2. Connecte ton compte Stripe\n' +
-        '3. Tes clientes paient par carte\n' +
-        '4. Argent sur ton compte en 2-7 jours\n\n' +
-        'Envoie le lien de paiement dans les 30min apres le live !\n\n' +
-        'Tu veux un guide pas a pas ? Dis "oui" !' }
+    if (q.match(/message|contact|repon|ecri|communiqu/)) {
+      return '💬 Messages :' + (newMsg > 0 ? '\n\n🚨 ' + newMsg + ' non lu'+(newMsg>1?'s':'')+'!' : '') + '\n\n🔴 Menu > Messages\n → Orange "Nouveau" = non lu\n → Clic "Repondre" > ecrire > "Envoyer"\n → La cliente recoit un email + voit dans son espace\n → Les clients peuvent joindre des fichiers\n\n📩 Les clients ecrivent via :\n → Bouton "💬 Nous contacter" sur ta page\n → Espace client > Messages\n\n💡 Reponds vite = 2x plus de commandes !'
     }
-
-    if (q.match(/livr|expedi|colis|boxtal|mondial|colissimo|envoi|relais/)) {
-      var r = '\u{1F4E6} Expedition\n\n'
-      r += '\u{2022} Mondial Relay — le moins cher (point relais)\n'
-      r += '\u{2022} Colissimo — rapide (domicile)\n'
-      r += '\u{2022} Boxtal — compare les prix\n\n'
-      if (pe > 0) r += '\u{26A0} Tu as ' + pe + ' commande(s) a expedier !\n\n'
-      r += 'Besoin d\'aide pour expedier ? Dis "oui" !'
-      return { topic: 'expedition', text: r }
+    if (q.match(/param|config|regl|logo|tarif|prix livr|stripe|paiement/)) {
+      return '⚙️ Parametres :\n\n🔴 Menu > Parametres\n\n📌 LOGO : upload image boutique\n📌 MONDIAL RELAY : ' + (mrOk ? '✅ connecte' : '❌ a configurer !') + '\n📌 ADRESSE : ' + (addrOk ? '✅ ok' : '❌ a remplir !') + '\n📌 TARIF LIVRAISON : ' + (boxtalConfig.shippingPrice || '0') + '€\n → 0 = livraison offerte\n📌 STRIPE : pour recevoir les paiements CB'
     }
-
-    if (q.match(/abonnement|prix|tarif|forfait|27|mensuel/)) {
-      return { topic: null, text:
-        '\u{1F48E} 27\u20ac/mois — 0% commission — sans engagement\n\n' +
-        'Inclus : Dashboard, Live Monitor, Impression, Stats, Assistant, Commandes, Stripe\n\n' +
-        'Quelques ventes suffisent pour rentabiliser !' }
+    if (q.match(/lien|url|page.*paie|partag|qr|bio/)) {
+      return '🔗 Ton lien :\n\n👉 githubmylivepaiement.vercel.app/pay/' + slug + '\n\n🔴 OU PARTAGER :\n → Bio TikTok/Instagram\n → Commentaire pendant le live\n → Message prive apres "je prends"\n → Story avec sticker lien\n → WhatsApp\n\n💡 Dis pendant le live : "Le lien est dans ma bio, entrez votre ref et payez par CB !"\n\n📱 La cliente : lien > ref > infos > relais > CB > fait !'
     }
-
-    if (q.match(/boost|vente|strateg|augment|conseil|astuce|evoluer|developper|croissance|grandir|ameliorer/)) {
-      if (oc < 10) {
-        return { topic: 'booster', text:
-          '\u{1F680} Tu debutes — les bases :\n\n' +
-          '1. 2-3 lives/semaine a heures fixes\n' +
-          '2. Titres accrocheurs : "ARRIVAGE -50%"\n' +
-          '3. Reponds a CHAQUE commentaire\n' +
-          '4. Urgence : "Il en reste 3 !"\n' +
-          '5. Montre l\'emballage en live\n\n' +
-          'Tu veux un planning semaine concret ? Dis "oui" !' }
-      } else if (oc < 50) {
-        return { topic: 'booster', text:
-          '\u{1F680} ' + oc + ' commandes, bravo ! Pour accelerer :\n\n' +
-          '1. Lots : "2 articles = -20%" (panier moyen : ' + avg.toFixed(0) + '\u20ac)\n' +
-          '2. Stories 2h avant le live\n' +
-          '3. Groupe WhatsApp VIP\n' +
-          '4. Cross-selling\n' +
-          '5. Teste 20h-22h\n\n' +
-          'Tu veux un plan d\'action semaine ? Dis "oui" !' }
-      } else {
-        return { topic: 'booster', text:
-          '\u{1F680} ' + oc + ' commandes, tu es une pro ! Pour scaler :\n\n' +
-          '1. Recrute pour emballer\n' +
-          '2. Multi-plateforme TikTok + Instagram\n' +
-          '3. Exclusivites live\n' +
-          '4. Programme VIP (' + cc + ' clients)\n' +
-          '5. Collabs vendeuses\n\n' +
-          'Tu veux un plan semaine ? Dis "oui" !' }
-      }
+    if (q.match(/imprim|ticket|munbyn|thermal|papier|format/)) {
+      return '🖨️ Impression tickets :\n\n🔴 1. Branche MUNBYN en USB\n🔴 2. Installe le driver\n🔴 3. Reglages imprimante PC :\n → Taille : 50.8mm x 50.8mm\n → Orientation : portrait\n → Marges : 0\n🔴 4. Live Monitor > "Tickets" > "Auto-print"\n🔴 5. Teste en Mode Demo\n\n💡 Si trop grand/petit, ajuste la taille papier'
     }
-
-    if (q.match(/client|fideli|acheteu|audience/)) {
-      return { topic: null, text:
-        '\u{1F465} ' + cc + ' clients\n\n' +
-        '\u{2022} Message perso apres chaque achat\n' +
-        '\u{2022} Reduction 2e achat\n' +
-        '\u{2022} Groupe prive meilleures clientes\n' +
-        '\u{2022} Note preferences (taille, style)\n' +
-        '\u{2022} Avant-premieres nouveaux arrivages' }
+    if (q.match(/^(merci|thanks|salut|bonjour|hello|coucou|hey|bonsoir)/)) {
+      var g = ['Avec plaisir ! 😊','De rien !','Hello ! 👋','Coucou ' + sn + ' ! 😊'][Math.floor(Math.random()*4)]
+      if (pe > 0) g += '\n\n🚨 Rappel : ' + pe + ' commande'+(pe>1?'s':'')+' a expedier !'
+      return g
     }
-
-    if (q.match(/^(bonjour|salut|hello|coucou|hey|bjr)/)) {
-      return { topic: null, text:
-        'Coucou ! Je suis ton assistante MY LIVE PAIEMENT !\n\n' +
-        'Je peux t\'aider avec :\n' +
-        '\u{1F4CA} Dashboard et stats\n' +
-        '\u{1F4E1} Live Monitor\n' +
-        '\u{1F4B3} Paiements Stripe\n' +
-        '\u{1F4E6} Expeditions\n' +
-        '\u{1F680} Conseils business\n\n' +
-        'Qu\'est-ce que je peux faire pour toi ?' }
+    if (q.match(/aide|help|comment|comprend|bloque|perdu|quoi faire|expliqu/)) {
+      return '🤝 Dis-moi :\n\n📡 "aide live" — Live Monitor\n📋 "aide commandes" — gerer commandes\n📦 "aide livraison" — Mondial Relay\n📊 "aide stats" — statistiques\n💬 "aide messages" — messagerie\n⚙️ "aide parametres" — config\n🔗 "aide lien" — lien paiement\n🖨️ "aide impression" — tickets\n🚀 "conseils" — booster ventes\n📊 "bilan" — resume complet\n\nOu pose ta question directement !'
     }
-
-    if (q.match(/merci|parfait|super|genial|top/)) {
-      return { topic: null, text: 'Avec plaisir ! N\'hesite pas, je suis la pour ' + sn + ' !' }
-    }
-
-    if (q.match(/param|config|reglage|modifier/)) {
-      return { topic: null, text:
-        'Dans Parametres :\n' +
-        '\u{2022} Infos boutique\n' +
-        '\u{2022} Serveur Live Monitor\n' +
-        '\u{2022} Abonnement\n' +
-        '\u{2022} Stripe Connect' }
-    }
-
-    return { topic: null, text:
-      'Je peux t\'aider sur :\n\n' +
-      '\u{1F4CA} Dashboard — dis "dashboard"\n' +
-      '\u{1F4E1} Live Monitor — dis "live"\n' +
-      '\u{1F4C8} Statistiques — dis "stats"\n' +
-      '\u{1F4CB} Commandes — dis "commandes"\n' +
-      '\u{1F4B3} Paiements — dis "stripe"\n' +
-      '\u{1F4E6} Livraison — dis "expedition"\n' +
-      '\u{1F680} Booster ventes — dis "conseils"\n' +
-      '\u{1F3AF} Mots-cles — dis "mots-cles"\n' +
-      '\u{1F5A8} Impression — dis "tickets"' }
+    var r = 'Hmm, je n\'ai pas bien compris. Essaie :\n\n📊 "bilan" — ta situation\n🚀 "conseils" — plan d\'action\n📡 "live" — Live Monitor\n📋 "commandes" — gestion\n📦 "livraison" — Mondial Relay\n⚙️ "parametres" — config\n🔗 "lien" — ton lien de paiement'
+    if (pe > 0) r += '\n\n🚨 ' + pe + ' commande'+(pe>1?'s':'')+' a expedier !'
+    return r
   }
 
   // Auto-scroll AI chat
@@ -2872,13 +2678,14 @@ export default function Dashboard() {
             {/* Quick actions */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
               {[
-                { icon: '📊', label: 'Comment lire mes stats ?', q: 'Comment lire et comprendre mes statistiques de vente dans le dashboard ?' },
-                { icon: '📡', label: 'Aide Live Monitor', q: 'Comment configurer et utiliser le Live Monitor pour capter les commandes pendant mon live TikTok ?' },
-                { icon: '💳', label: 'Configurer Stripe', q: 'Comment configurer Stripe Connect pour recevoir les paiements de mes clientes ?' },
-                { icon: '📦', label: 'Expedier commandes', q: 'Comment expedier mes commandes avec Mondial Relay ?' },
-                { icon: '🚀', label: 'Booster mes ventes', q: 'Donne-moi 5 strategies concretes pour augmenter mes ventes en live TikTok' },
-                { icon: '🎯', label: 'Mots-cles detection', q: 'Comment configurer les mots-cles de detection pour que le Live Monitor detecte mieux les commandes ?' },
-              ].map(function(a, i) {
+                stats.pendingShip > 0 ? { icon: '🚨', label: stats.pendingShip + ' a expedier !', q: 'J\'ai ' + stats.pendingShip + ' commandes a expedier. Guide-moi etape par etape pour generer les etiquettes Mondial Relay.' } : null,
+                { icon: '🔮', label: 'Analyse mon business', q: 'Analyse toutes mes donnees en detail et dis-moi exactement ce que je dois faire cette semaine. Sois ultra concrete avec des actions precises.' },
+                { icon: '📡', label: 'Aide Live Monitor', q: 'Guide-moi etape par etape pour utiliser le Live Monitor. Connexion, mots-cles, tickets, impression automatique — tout.' },
+                { icon: '📦', label: 'Aide expedition', q: 'Comment expedier mes commandes avec Mondial Relay ? De A a Z : etiquette, impression, colis, depot.' },
+                { icon: '🚀', label: 'Booster mes ventes', q: 'Plan d\'action detaille pour cette semaine : quand faire des lives, quoi dire, comment fideliser, augmenter le panier moyen.' },
+                { icon: '⚙️', label: 'Configurer', q: 'Guide-moi pour configurer ma boutique : logo, Mondial Relay, adresse, prix livraison, textes legaux. Etape par etape.' },
+                { icon: '💡', label: 'Tour complet', q: 'Tour COMPLET du dashboard : chaque menu, chaque bouton, chaque fonctionnalite en detail.' },
+              ].filter(Boolean).map(function(a, i) {
                 return (
                   <button key={i} onClick={function() { setAiInput(a.q); }}
                     style={{ padding: '8px 14px', background: '#FFF', border: '1px solid rgba(0,0,0,.06)', borderRadius: 10, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: sf, color: '#555', display: 'flex', alignItems: 'center', gap: 6, transition: 'all .2s' }}>
