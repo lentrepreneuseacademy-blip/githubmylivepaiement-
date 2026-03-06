@@ -2595,12 +2595,15 @@ export default function Dashboard() {
                 <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(16,185,129,.25)' }}>
                   <span style={{ fontSize: 36, color: '#FFF' }}>✓</span>
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Etiquette generee !</h2>
-                <p style={{ fontSize: 14, color: '#777', marginBottom: 24 }}>
-                  L'etiquette s'est ouverte dans un nouvel onglet.<br/>Imprime-la, colle-la sur ton colis et depose-le au point relais.
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Expedition creee !</h2>
+                <p style={{ fontSize: 14, color: '#777', marginBottom: 6 }}>
+                  {shipTrackingNumber ? <span>Numero de suivi : <strong style={{ fontSize: 18, letterSpacing: 2 }}>{shipTrackingNumber}</strong></span> : 'Mondial Relay — Point Relais'}
+                </p>
+                <p style={{ fontSize: 13, color: '#999', marginBottom: 24 }}>
+                  Telecharge l'etiquette sur Mondial Relay Connect, imprime-la et colle-la sur ton colis.
                 </p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                  <button onClick={function() { generateLabel(shipSelectedOrder) }} style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🖨️ Re-imprimer</button>
+                  <button onClick={function() { window.open('/api/mondialrelay/label?expedition=' + (shipTrackingNumber || '') + '&ens=' + (boxtalConfig.mrEnseigne || '') + '&key=' + encodeURIComponent(boxtalConfig.mrPrivateKey || ''), '_blank') }} style={{ padding: '14px 28px', background: '#E30613', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🏷️ Imprimer l'etiquette</button>
                   <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null) }} style={{ padding: '14px 28px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Retour</button>
                 </div>
               </div>
