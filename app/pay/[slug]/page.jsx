@@ -117,6 +117,7 @@ const T = {
     totalLabel: "Total",
     myOrders: "Mes commandes",
     myAccount: "Mon compte",
+    myMessages: "Messages",
     currentDelivery: "En cours de livraison",
     history: "Historique",
     seeDetail: "Voir le détail →",
@@ -253,6 +254,7 @@ const T = {
     totalLabel: "Total",
     myOrders: "My orders",
     myAccount: "My account",
+    myMessages: "Messages",
     currentDelivery: "Being delivered",
     history: "History",
     seeDetail: "See details →",
@@ -389,6 +391,7 @@ const T = {
     totalLabel: "Total",
     myOrders: "Mis pedidos",
     myAccount: "Mi cuenta",
+    myMessages: "Messages",
     currentDelivery: "En camino",
     history: "Historial",
     seeDetail: "Ver detalle →",
@@ -525,6 +528,7 @@ const T = {
     totalLabel: "Gesamt",
     myOrders: "Meine Bestellungen",
     myAccount: "Mein Konto",
+    myMessages: "Nachrichten",
     currentDelivery: "Wird geliefert",
     history: "Verlauf",
     seeDetail: "Details ansehen →",
@@ -816,6 +820,7 @@ export default function PayPage() {
   const [contactSent, setContactSent] = useState(false);
   const [contactSending, setContactSending] = useState(false);
   const [clientOrders, setClientOrders] = useState([]);
+  const [clientMessages, setClientMessages] = useState([]);
 
   // Load client orders when logging in
   async function loadClientOrders(clientEmail) {
@@ -839,6 +844,16 @@ export default function PayPage() {
         })))
       }
     } catch (e) { console.error('[Pay] Erreur loadClientOrders:', e) }
+    // Load messages too
+    try {
+      const msgRes = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'client_messages', shopId: shopData.id, email: clientEmail.toLowerCase().trim() })
+      })
+      const msgResult = await msgRes.json()
+      setClientMessages(msgResult.messages || [])
+    } catch(e) { console.error('[Pay] Erreur loadClientMessages:', e) }
   }
 
   async function sendContact() {
@@ -1441,7 +1456,7 @@ export default function PayPage() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "#F0EEEC", borderRadius: 12, padding: 4 }}>
-            {[{ id: "orders", label: t.myOrders }, { id: "account", label: t.myAccount }].map(tab => (
+            {[{ id: "orders", label: t.myOrders }, { id: "messages", label: (t.myMessages || "Messages") + (clientMessages.length > 0 ? " (" + clientMessages.length + ")" : "") }, { id: "account", label: t.myAccount }].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: activeTab === tab.id ? "#FFF" : "transparent", fontFamily: sf, fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 400, color: activeTab === tab.id ? "#1A1A1A" : "#999", cursor: "pointer", boxShadow: activeTab === tab.id ? "0 1px 3px rgba(0,0,0,.06)" : "none" }}>{tab.label}</button>
             ))}
           </div>
@@ -1473,6 +1488,40 @@ export default function PayPage() {
                   </button>
                 ); })}
               </div>
+            </div>
+          )}
+
+          {activeTab === "messages" && (
+            <div>
+              <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 12 }}>Mes messages</div>
+              {clientMessages.length === 0 && (
+                <div style={{ textAlign: "center", padding: 40, color: "#CCC" }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
+                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>Aucun message</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, marginTop: 4 }}>Utilise le formulaire de contact pour ecrire a la boutique</div>
+                </div>
+              )}
+              {clientMessages.map(function(msg) { return (
+                <div key={msg.id} style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.06)", borderRadius: 14, padding: "16px 18px", marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{msg.subject || "Message"}</div>
+                    <div style={{ fontFamily: sf, fontSize: 10, color: "#CCC" }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString("fr-FR") : ""}</div>
+                  </div>
+                  <div style={{ fontFamily: sf, fontSize: 13, color: "#555", lineHeight: 1.6, marginBottom: msg.reply ? 12 : 0, padding: "10px 14px", background: "#F8F7F5", borderRadius: 10 }}>
+                    <div style={{ fontSize: 10, color: "#999", marginBottom: 4 }}>Toi :</div>
+                    {msg.content}
+                  </div>
+                  {msg.reply && (
+                    <div style={{ fontFamily: sf, fontSize: 13, color: "#333", lineHeight: 1.6, marginTop: 8, padding: "10px 14px", background: "#F0FDF4", borderRadius: 10, border: "1px solid #BBF7D0" }}>
+                      <div style={{ fontSize: 10, color: "#10B981", fontWeight: 700, marginBottom: 4 }}>Reponse de la boutique :</div>
+                      {msg.reply}
+                    </div>
+                  )}
+                  {!msg.reply && (
+                    <div style={{ fontFamily: sf, fontSize: 11, color: "#F59E0B", marginTop: 8, fontWeight: 600 }}>En attente de reponse...</div>
+                  )}
+                </div>
+              )})}
             </div>
           )}
 
