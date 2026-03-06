@@ -410,17 +410,22 @@ export default function Dashboard() {
   }
 
   async function loadMessages(shopId) {
-    var { data } = await supabase.from('messages').select('*').eq('shop_id', shopId).order('created_at', { ascending: false })
-    if (data) setMessages(data)
+    try {
+      var res = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list', shopId: shopId }) })
+      var data = await res.json()
+      if (data.messages) setMessages(data.messages)
+    } catch(e) { console.error('[Messages] Load error:', e) }
   }
 
   async function sendMessageReply(msgId) {
     if (!messageReply.trim()) return
     setMessageSending(true)
-    await supabase.from('messages').update({ reply: messageReply, replied_at: new Date().toISOString(), status: 'replied' }).eq('id', msgId)
-    setMessageReply('')
-    setMessageReplyId(null)
-    loadMessages(shop.id)
+    try {
+      await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reply', messageId: msgId, reply: messageReply }) })
+      setMessageReply('')
+      setMessageReplyId(null)
+      loadMessages(shop.id)
+    } catch(e) { console.error('[Messages] Reply error:', e) }
     setMessageSending(false)
   }
 
