@@ -823,6 +823,30 @@ export default function PayPage() {
   const [clientMessages, setClientMessages] = useState([]);
   const [clientReplyMsg, setClientReplyMsg] = useState('');
   const [clientReplySending, setClientReplySending] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFileUpload(e) {
+    var files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setUploading(true)
+    var uploaded = [...attachedFiles]
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].size > 10 * 1024 * 1024) { alert('Fichier trop gros (max 10MB): ' + files[i].name); continue }
+      try {
+        var fd = new FormData()
+        fd.append('file', files[i])
+        fd.append('shopId', shopData?.id || 'default')
+        var res = await fetch('/api/upload', { method: 'POST', body: fd })
+        var data = await res.json()
+        if (data.ok) { uploaded.push({ name: data.name, url: data.url, size: data.size, type: data.type }) }
+        else { console.error('Upload error:', data.error) }
+      } catch(err) { console.error('Upload error:', err) }
+    }
+    setAttachedFiles(uploaded)
+    setUploading(false)
+    e.target.value = ''
+  }
 
   async function sendClientReply() {
     if (!clientReplyMsg.trim() || !shopData?.id) return
@@ -839,9 +863,11 @@ export default function PayPage() {
           phone: phone || '',
           content: clientReplyMsg,
           subject: 'Reponse client',
+          attachments: attachedFiles.length > 0 ? attachedFiles : null,
         })
       })
       setClientReplyMsg('')
+      setAttachedFiles([])
       // Reload messages
       const msgRes = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'client_messages', shopId: shopData.id, email: (loginEmail || email || '').toLowerCase().trim() }) })
       const msgResult = await msgRes.json()
@@ -892,15 +918,18 @@ export default function PayPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'send',
           shopId: shopData?.id,
           name: contactName || nom || prenom || '',
           email: contactEmail || email || '',
           phone: phone || '',
           content: contactMsg,
+          attachments: attachedFiles.length > 0 ? attachedFiles : null,
         })
       });
       setContactSent(true);
       setContactMsg('');
+      setAttachedFiles([]);
     } catch(e) {}
     setContactSending(false);
   }
@@ -1120,6 +1149,26 @@ export default function PayPage() {
                   placeholder="Ecris ton message ici..."
                   style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", background: "#FFF", resize: "vertical" }} />
               </div>
+              {/* File upload */}
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "#F5F4F2", borderRadius: 8, cursor: uploading ? "wait" : "pointer", fontSize: 12, fontFamily: sf, fontWeight: 600, color: "#777" }}>
+                  📎 {uploading ? "Envoi..." : "Joindre un fichier"}
+                  <input type="file" multiple onChange={handleFileUpload} style={{ display: "none" }} accept="image/*,.pdf,.doc,.docx,.txt,.zip" />
+                </label>
+                <span style={{ fontSize: 10, color: "#CCC", marginLeft: 8 }}>Max 10MB par fichier</span>
+              </div>
+              {attachedFiles.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  {attachedFiles.map(function(f, i) { return (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: "#F0FDF4", borderRadius: 8, marginBottom: 4, fontSize: 12 }}>
+                      <span>📄</span>
+                      <span style={{ flex: 1, fontFamily: sf, color: "#333" }}>{f.name}</span>
+                      <span style={{ color: "#999", fontSize: 10 }}>{(f.size / 1024).toFixed(0)}KB</span>
+                      <button onClick={function() { setAttachedFiles(attachedFiles.filter(function(_, j) { return j !== i })) }} style={{ background: "none", border: "none", cursor: "pointer", color: "#DC2626", fontSize: 14, padding: 0 }}>×</button>
+                    </div>
+                  )})}
+                </div>
+              )}
               <button onClick={sendContact} disabled={contactSending || !contactMsg.trim()}
                 style={{ width: "100%", padding: 16, background: contactSending || !contactMsg.trim() ? "#DDD" : "#1A1A1A", color: "#FFF", border: "none", borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 600, cursor: contactSending ? "wait" : "pointer" }}>
                 {contactSending ? "Envoi..." : "Envoyer le message"}
@@ -1580,6 +1629,7 @@ export default function PayPage() {
                   <div style={{ fontFamily: sf, fontSize: 13, color: "#555", lineHeight: 1.6, padding: "10px 14px", background: "#F8F7F5", borderRadius: 10, marginBottom: msg.reply ? 8 : 0 }}>
                     <div style={{ fontSize: 10, color: "#999", marginBottom: 4 }}>Toi :</div>
                     {msg.content}
+                    {msg.attachments && (function() { try { var files = JSON.parse(msg.attachments); return files.map(function(f, fi) { return <a key={fi} href={f.url} target="_blank" rel="noopener" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", background: "#FFF", borderRadius: 8, marginTop: 8, fontSize: 11, color: "#6366F1", textDecoration: "none", border: "1px solid rgba(0,0,0,.06)" }}>📄 {f.name} <span style={{ color: "#CCC" }}>{f.size ? (f.size/1024).toFixed(0) + "KB" : ""}</span></a> }) } catch(e) { return null } })()}
                   </div>
                   {msg.reply && (
                     <div style={{ fontFamily: sf, fontSize: 13, color: "#333", lineHeight: 1.6, padding: "10px 14px", background: "#F0FDF4", borderRadius: 10, border: "1px solid #BBF7D0", marginTop: 6 }}>
@@ -1599,7 +1649,19 @@ export default function PayPage() {
                 <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, marginBottom: 10 }}>💬 Ecrire a {shopData?.name || "la boutique"}</div>
                 <textarea value={clientReplyMsg} onChange={(e) => setClientReplyMsg(e.target.value)} rows={3}
                   placeholder={"Ecris ton message ici..."}
-                  style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.08)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", resize: "vertical", marginBottom: 10 }} />
+                  style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.08)", borderRadius: 10, fontFamily: sf, fontSize: 13, outline: "none", resize: "vertical", marginBottom: 8 }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", background: "#F5F4F2", borderRadius: 8, cursor: uploading ? "wait" : "pointer", fontSize: 11, fontFamily: sf, fontWeight: 600, color: "#777" }}>
+                    📎 {uploading ? "Envoi..." : "Joindre"}
+                    <input type="file" multiple onChange={handleFileUpload} style={{ display: "none" }} accept="image/*,.pdf,.doc,.docx,.txt,.zip" />
+                  </label>
+                  {attachedFiles.map(function(f, i) { return (
+                    <div key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px", background: "#F0FDF4", borderRadius: 6, fontSize: 10 }}>
+                      <span>📄 {f.name.substring(0, 20)}</span>
+                      <button onClick={function() { setAttachedFiles(attachedFiles.filter(function(_, j) { return j !== i })) }} style={{ background: "none", border: "none", cursor: "pointer", color: "#DC2626", fontSize: 12, padding: 0 }}>×</button>
+                    </div>
+                  )})}
+                </div>
                 <button onClick={sendClientReply} disabled={clientReplySending || !clientReplyMsg.trim()}
                   style={{ padding: "12px 24px", background: clientReplySending || !clientReplyMsg.trim() ? "#DDD" : "#1A1A1A", color: "#FFF", border: "none", borderRadius: 10, fontFamily: sf, fontSize: 13, fontWeight: 600, cursor: clientReplySending ? "wait" : "pointer" }}>
                   {clientReplySending ? "Envoi..." : "Envoyer"}
