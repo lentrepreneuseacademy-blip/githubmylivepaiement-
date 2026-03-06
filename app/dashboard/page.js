@@ -426,7 +426,7 @@ export default function Dashboard() {
 
   async function getShippingQuotes(order) {
     if (!boxtalConfig.user || !boxtalConfig.pass) {
-      setShipError('Configure d\'abord tes identifiants Boxtal dans Parametres.')
+      setShipError('Configure d\'abord tes identifiants Mondial Relay dans Parametres.')
       return
     }
     setShipQuoteLoading(true)
@@ -468,7 +468,7 @@ export default function Dashboard() {
         setShipError('Aucune offre Mondial Relay disponible pour cette destination.')
       }
     } catch (err) {
-      setShipError('Erreur de connexion au service Boxtal')
+      setShipError('Erreur de connexion a Mondial Relay')
     }
     setShipQuoteLoading(false)
   }
@@ -2627,8 +2627,8 @@ export default function Dashboard() {
                 {(!boxtalConfig.user || !boxtalConfig.pass) && (
                   <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', border: '1px solid #FED7AA', borderRadius: 14, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#92400E' }}>Connecte Boxtal pour expedier tes colis</div>
-                      <div style={{ fontSize: 12, color: '#B45309', marginTop: 2 }}>Va dans Parametres, entre tes 2 cles API Boxtal et c'est tout !</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#92400E' }}>Configure Mondial Relay dans Parametres</div>
+                      <div style={{ fontSize: 12, color: '#B45309', marginTop: 2 }}>Va dans Parametres, entre ton Code Enseigne et Cle Privee Mondial Relay</div>
                     </div>
                     <button onClick={function() { setActiveTab('settings') }}
                       style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, whiteSpace: 'nowrap' }}>
@@ -2748,7 +2748,7 @@ export default function Dashboard() {
                   </button>
                   <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: shipSelectedOrder.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }); loadData(shop.id); setShipStep('label') }}
                     style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: '#999', border: '1px dashed rgba(0,0,0,.1)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
-                    Marquer expediee manuellement (sans Boxtal)
+                    Marquer expediee manuellement
                   </button>
                 </div>
 
@@ -2869,7 +2869,7 @@ export default function Dashboard() {
                 { icon: '📊', label: 'Comment lire mes stats ?', q: 'Comment lire et comprendre mes statistiques de vente dans le dashboard ?' },
                 { icon: '📡', label: 'Aide Live Monitor', q: 'Comment configurer et utiliser le Live Monitor pour capter les commandes pendant mon live TikTok ?' },
                 { icon: '💳', label: 'Configurer Stripe', q: 'Comment configurer Stripe Connect pour recevoir les paiements de mes clientes ?' },
-                { icon: '📦', label: 'Expedier commandes', q: 'Comment expedier mes commandes avec Boxtal, Mondial Relay ou Colissimo ?' },
+                { icon: '📦', label: 'Expedier commandes', q: 'Comment expedier mes commandes avec Mondial Relay ?' },
                 { icon: '🚀', label: 'Booster mes ventes', q: 'Donne-moi 5 strategies concretes pour augmenter mes ventes en live TikTok' },
                 { icon: '🎯', label: 'Mots-cles detection', q: 'Comment configurer les mots-cles de detection pour que le Live Monitor detecte mieux les commandes ?' },
               ].map(function(a, i) {
@@ -3053,56 +3053,61 @@ export default function Dashboard() {
 
             <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginTop: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#E30613', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: '#FFF', fontSize: 18 }}>📦</span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Boxtal — Expedition</h3>
-                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Mondial Relay — tarifs negocies via Boxtal</p>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Mondial Relay — Expedition</h3>
+                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
                 </div>
-                {boxtalConfig.user && boxtalConfig.pass && (
+                {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && (
                   <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: '#ECFDF5', color: '#10B981' }}>Connecte</span>
                 )}
               </div>
 
-              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.6 }}>
-                <strong>Comment obtenir tes cles API ?</strong><br/>
-                1. Va sur <span style={{ color: '#FF6B35', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.boxtal.com', '_blank') }}>boxtal.com</span> et cree un compte gratuit<br/>
-                2. Tes identifiants API = <strong>ton email de connexion</strong> + <strong>ton mot de passe</strong> Boxtal<br/>
-                3. Colle-les ci-dessous et clique Sauvegarder<br/><br/>
-                <strong>Pour tester sans payer :</strong><br/>
-                1. Cree un compte TEST sur <span style={{ color: '#FF6B35', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://test.envoimoinscher.com', '_blank') }}>test.envoimoinscher.com</span><br/>
-                2. Utilise les identifiants de ce compte TEST ci-dessous<br/>
-                3. Active le Mode test ci-dessous
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '12px 16px', background: boxtalConfig.testMode ? '#FFF7ED' : '#F0FDF4', borderRadius: 12, border: boxtalConfig.testMode ? '1px solid #FED7AA' : '1px solid #BBF7D0' }}>
-                <button onClick={function() { setBoxtalConfig(Object.assign({}, boxtalConfig, { testMode: !boxtalConfig.testMode })) }}
-                  style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', position: 'relative', background: boxtalConfig.testMode ? '#F97316' : '#10B981', transition: 'background .2s', flexShrink: 0 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: 9, background: '#FFF', position: 'absolute', top: 3, left: boxtalConfig.testMode ? 23 : 3, transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.2)' }} />
-                </button>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: boxtalConfig.testMode ? '#C2410C' : '#166534' }}>{boxtalConfig.testMode ? 'Mode TEST active' : 'Mode PRODUCTION'}</div>
-                  <div style={{ fontSize: 11, color: '#999' }}>{boxtalConfig.testMode ? 'Les commandes ne sont pas facturees (compte test.envoimoinscher.com)' : 'Les commandes seront facturees (compte boxtal.com)'}</div>
+              {/* Status */}
+              {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '12px 16px', background: '#F0FDF4', borderRadius: 12, border: '1px solid #BBF7D0' }}>
+                  <span style={{ color: '#10B981', fontWeight: 600, fontSize: 13 }}>✓ Mondial Relay connecte (Enseigne: {boxtalConfig.mrEnseigne})</span>
                 </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '12px 16px', background: '#FFF7ED', borderRadius: 12, border: '1px solid #FED7AA' }}>
+                  <span style={{ color: '#92400E', fontSize: 12 }}>Configure tes identifiants Mondial Relay pour generer les etiquettes automatiquement</span>
+                </div>
+              )}
+
+              {/* How to get credentials */}
+              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.7 }}>
+                <strong style={{ color: '#1A1A2E' }}>Comment obtenir tes identifiants Mondial Relay ?</strong><br/><br/>
+                1. Va sur <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.mondialrelay.fr/connexion/', '_blank') }}>mondialrelay.fr</span> et connecte-toi a ton compte pro<br/>
+                2. Clique sur ton <strong>profil</strong> en haut a droite<br/>
+                3. Va dans l'onglet <strong>Mes parametres de connexion</strong><br/>
+                4. En bas tu verras la section <strong>Webservices (API, Module)</strong><br/>
+                5. Copie le <strong>Code Enseigne</strong> (8 caracteres, ex: CC23H7CX)<br/>
+                6. Copie la <strong>Cle Privee</strong> (ex: Diar0jh2)<br/>
+                7. Colle-les ci-dessous et clique Sauvegarder<br/><br/>
+                <span style={{ color: '#999', fontSize: 11 }}>Pas encore de compte ? <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.mondialrelay.fr/inscription/', '_blank') }}>Cree un compte pro gratuit</span></span>
               </div>
 
+              {/* MR credentials */}
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8 }}>Identifiants API Mondial Relay</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Identifiant API (login)</label>
-                  <input value={boxtalConfig.user || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { user: e.target.value })) }}
-                    placeholder="Ton identifiant Boxtal"
-                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none', transition: 'border .2s' }} />
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Code Enseigne</label>
+                  <input value={boxtalConfig.mrEnseigne || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnseigne: e.target.value.toUpperCase().trim() })) }}
+                    placeholder="Ex: CC23H7CX"
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 16, outline: 'none', letterSpacing: 2, fontWeight: 700, textTransform: 'uppercase' }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Mot de passe API</label>
-                  <input type="password" value={boxtalConfig.pass || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { pass: e.target.value })) }}
-                    placeholder="Ton mot de passe API"
-                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none', transition: 'border .2s' }} />
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Cle Privee</label>
+                  <input value={boxtalConfig.mrPrivateKey || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrPrivateKey: e.target.value.trim() })) }}
+                    placeholder="Ex: Diar0jh2"
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 16, outline: 'none', fontWeight: 600 }} />
                 </div>
               </div>
 
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8 }}>Adresse d'expedition (ton adresse)</div>
+              {/* Sender address */}
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,.06)' }}>Adresse d'expedition (ton adresse)</div>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
                 <div>
                   <input value={boxtalConfig.senderAddress || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderAddress: e.target.value })) }}
@@ -3126,32 +3131,7 @@ export default function Dashboard() {
                   style={{ width: 200, padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
               </div>
 
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E', marginBottom: 8, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,.06)' }}>📦 Mondial Relay — Etiquettes automatiques</div>
-              <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>Connecte ton compte pro Mondial Relay pour generer les vraies etiquettes avec code-barres et suivi.</p>
-              {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '10px 14px', background: '#F0FDF4', borderRadius: 10, border: '1px solid #BBF7D0' }}>
-                  <span style={{ color: '#10B981', fontWeight: 600, fontSize: 13 }}>✓ Mondial Relay connecte (Enseigne: {boxtalConfig.mrEnseigne})</span>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '10px 14px', background: '#FFF7ED', borderRadius: 10, border: '1px solid #FED7AA' }}>
-                  <span style={{ color: '#92400E', fontSize: 12 }}>Renseigne tes identifiants Mondial Relay (dans ton profil sur mondialrelay.fr {'>'} Mes parametres de connexion)</span>
-                </div>
-              )}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Code Enseigne</label>
-                  <input value={boxtalConfig.mrEnseigne || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnseigne: e.target.value.toUpperCase() })) }}
-                    placeholder="Ex: CC23H7CX"
-                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none', letterSpacing: 1, fontWeight: 600 }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Cle Privee</label>
-                  <input value={boxtalConfig.mrPrivateKey || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrPrivateKey: e.target.value })) }}
-                    placeholder="Ex: Diar0jh2"
-                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 14, outline: 'none' }} />
-                </div>
-              </div>
-
+              {/* Shipping price */}
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 16, marginBottom: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Tarif livraison (facture a tes clients)</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -3164,7 +3144,7 @@ export default function Dashboard() {
               </div>
 
               <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
-                style={{ padding: '14px 32px', background: boxtalSaving ? '#DDD' : 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: boxtalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(255,107,53,.25)' }}>
+                style={{ padding: '14px 32px', background: boxtalSaving ? '#DDD' : '#E30613', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: boxtalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(227,6,19,.2)' }}>
                 {boxtalSaving ? 'Sauvegarde...' : 'Sauvegarder'}
               </button>
             </div>
