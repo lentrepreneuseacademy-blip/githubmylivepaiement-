@@ -91,6 +91,36 @@ export default function Dashboard() {
   // New order form
   const [showNewOrder, setShowNewOrder] = useState(false)
   const [selectedOrderDetail, setSelectedOrderDetail] = useState(null)
+  const [editingOrder, setEditingOrder] = useState(null)
+  const [orderFilter, setOrderFilter] = useState('all')
+  const [selectedClient, setSelectedClient] = useState(null)
+
+  async function saveOrderEdit() {
+    if (!editingOrder) return
+    try {
+      await fetch('/api/orders/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_status', orderId: editingOrder.id, fields: {
+          reference: editingOrder.reference || '',
+          client_first_name: editingOrder.client_first_name || '',
+          client_last_name: editingOrder.client_last_name || '',
+          client_email: editingOrder.client_email || '',
+          client_phone: editingOrder.client_phone || '',
+          shipping_address: editingOrder.shipping_address || '',
+          shipping_zipcode: editingOrder.shipping_zipcode || '',
+          shipping_city: editingOrder.shipping_city || '',
+          total_amount: parseFloat(editingOrder.total_amount) || 0,
+          description: editingOrder.description || '',
+          status: editingOrder.status || 'pending',
+          tracking_number: editingOrder.tracking_number || '',
+        }})
+      })
+      setSelectedOrderDetail(editingOrder)
+      setEditingOrder(null)
+      loadData(shop.id)
+    } catch(e) { console.error('Save error:', e) }
+  }
   const [newOrder, setNewOrder] = useState({ reference: '', amount: '', description: '' })
 
   // Shipping / Boxtal
@@ -2344,72 +2374,161 @@ export default function Dashboard() {
         {/* ─── ORDERS ─── */}
         {activeTab === 'orders' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes ({orders.length})</h1>
               <button onClick={() => setShowNewOrder(!showNewOrder)} style={{ padding: '10px 18px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>+ Nouvelle</button>
+            </div>
+
+            {/* Status filter */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+              {[
+                { key: 'all', label: 'Toutes', count: orders.length },
+                { key: 'pending_payment', label: 'En attente', count: orders.filter(function(o){return o.status==='pending_payment'}).length, color: '#94A3B8' },
+                { key: 'paid', label: 'Payees', count: orders.filter(function(o){return o.status==='paid'}).length, color: '#F59E0B' },
+                { key: 'shipped', label: 'Expediees', count: orders.filter(function(o){return o.status==='shipped'}).length, color: '#8B5CF6' },
+                { key: 'delivered', label: 'Livrees', count: orders.filter(function(o){return o.status==='delivered'}).length, color: '#10B981' },
+              ].map(function(f) { return (
+                <button key={f.key} onClick={function(){setOrderFilter(f.key)}} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: orderFilter === f.key ? '#1A1A1A' : '#F5F4F2', color: orderFilter === f.key ? '#FFF' : '#777' }}>
+                  {f.label} ({f.count})
+                </button>
+              )})}
             </div>
 
             {showNewOrder && (
               <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 14, padding: 18, marginBottom: 20 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
-                  <input placeholder="Réf (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
+                  <input placeholder="Ref (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
                   <input placeholder="Montant €" type="number" step="0.01" required value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} style={inputStyle} />
                   <input placeholder="Description" value={newOrder.description} onChange={e => setNewOrder({...newOrder, description: e.target.value})} style={inputStyle} />
                 </div>
-                <button type="submit" style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Créer la commande</button>
+                <button type="submit" style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Creer la commande</button>
               </form>
             )}
 
-            {orders.map(o => (
-              <div key={o.id} onClick={() => setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedOrderDetail?.id === o.id ? '#F8F7F5' : '#FFF', border: selectedOrderDetail?.id === o.id ? '2px solid #1A1A1A' : '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', transition: 'all .2s', cursor: 'pointer' }}>
-                <div>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            {/* Order detail panel */}
+            {selectedOrderDetail && !editingOrder && (
+              <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#1A1A2E' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
+                    <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')} a {new Date(selectedOrderDetail.created_at).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={function() { setEditingOrder(Object.assign({}, selectedOrderDetail)) }} style={{ padding: '8px 16px', background: '#F5F4F2', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>✏️ Modifier</button>
+                    <button onClick={function() { setSelectedOrderDetail(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
+                  </div>
+                </div>
+
+                {/* Status badge */}
+                <div style={{ marginBottom: 20 }}>
+                  {(function() {
+                    var s = selectedOrderDetail.status
+                    var statuses = {
+                      'pending_payment': { l: 'En attente de paiement', c: '#94A3B8', bg: '#F1F5F9', icon: '⏳' },
+                      'paid': { l: 'Payee — a expedier', c: '#F59E0B', bg: '#FFFBEB', icon: '💰' },
+                      'shipped': { l: 'Expediee', c: '#8B5CF6', bg: '#F5F3FF', icon: '🚚' },
+                      'delivered': { l: 'Livree', c: '#10B981', bg: '#ECFDF5', icon: '✓' },
+                      'cancelled': { l: 'Annulee', c: '#EF4444', bg: '#FEF2F2', icon: '✕' },
+                    }
+                    var st = statuses[s] || { l: s, c: '#999', bg: '#F5F4F2', icon: '?' }
+                    return <span style={{ fontSize: 13, fontWeight: 700, padding: '6px 16px', borderRadius: 20, color: st.c, background: st.bg }}>{st.icon} {st.l}</span>
+                  })()}
+                  {selectedOrderDetail.tracking_number && <span style={{ marginLeft: 12, fontSize: 12, color: '#6366F1', fontWeight: 600 }}>Suivi: {selectedOrderDetail.tracking_number}</span>}
+                </div>
+
+                {/* Order info grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>CLIENT</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
+                    <div style={{ fontSize: 12, color: '#777', marginTop: 4 }}>{selectedOrderDetail.client_email || ''}</div>
+                    <div style={{ fontSize: 12, color: '#777' }}>{selectedOrderDetail.client_phone || ''}</div>
+                  </div>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>MONTANT</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: '#1A1A2E' }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div>
+                    {selectedOrderDetail.shipping_cost > 0 && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>dont {selectedOrderDetail.shipping_cost}€ livraison</div>}
+                  </div>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>ADRESSE</div>
+                    <div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_address || ''}</div>
+                    <div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_zipcode || ''} {selectedOrderDetail.shipping_city || ''}</div>
+                  </div>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>LIVRAISON</div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{selectedOrderDetail.shipping_method === 'relay' ? '📍 Mondial Relay' : selectedOrderDetail.shipping_method || '—'}</div>
+                    {selectedOrderDetail.relay_point && (function() { try { var rp = JSON.parse(selectedOrderDetail.relay_point); return <div style={{ fontSize: 12, color: '#6366F1', marginTop: 4 }}>{rp.name}<br/>{rp.address}, {rp.zipcode} {rp.city}</div> } catch(e) { return null } })()}
+                    {selectedOrderDetail.shipping_carrier && <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>{selectedOrderDetail.shipping_carrier}</div>}
+                  </div>
+                </div>
+                {selectedOrderDetail.description && <div style={{ fontSize: 12, color: '#777', marginBottom: 16 }}>Description: {selectedOrderDetail.description}</div>}
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, borderTop: '1px solid rgba(0,0,0,.06)' }}>
+                  {selectedOrderDetail.status === 'paid' && <button onClick={function() { setActiveTab('shipping'); startShipping(selectedOrderDetail); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🚚 Expedier</button>}
+                  {selectedOrderDetail.status === 'shipped' && <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: selectedOrderDetail.id, fields: { status: 'delivered', delivered_at: new Date().toISOString() } }) }); loadData(shop.id); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>✓ Marquer livree</button>}
+                  {selectedOrderDetail.tracking_number && <button onClick={function() { window.open('https://www.mondialrelay.fr/suivi-de-colis/?NumExp=' + selectedOrderDetail.tracking_number + '&cp=' + (selectedOrderDetail.shipping_zipcode || ''), '_blank') }} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>📦 Suivre le colis</button>}
+                </div>
+              </div>
+            )}
+
+            {/* Editing panel */}
+            {editingOrder && (
+              <div style={{ background: '#FFF', border: '2px solid #6366F1', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: '#6366F1' }}>✏️ Modifier la commande</div>
+                  <button onClick={function() { setEditingOrder(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Reference</div><input value={editingOrder.reference || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { reference: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Montant (€)</div><input type="number" step="0.01" value={editingOrder.total_amount || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { total_amount: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Prenom</div><input value={editingOrder.client_first_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_first_name: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Nom</div><input value={editingOrder.client_last_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_last_name: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Email</div><input value={editingOrder.client_email || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_email: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Telephone</div><input value={editingOrder.client_phone || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_phone: e.target.value })) }} style={inputStyle} /></div>
+                  <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Adresse</div><input value={editingOrder.shipping_address || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_address: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Code postal</div><input value={editingOrder.shipping_zipcode || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_zipcode: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Ville</div><input value={editingOrder.shipping_city || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_city: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Statut</div><select value={editingOrder.status || 'pending'} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { status: e.target.value })) }} style={Object.assign({}, inputStyle, { background: '#FFF' })}><option value="pending_payment">En attente paiement</option><option value="paid">Payee</option><option value="shipped">Expediee</option><option value="delivered">Livree</option><option value="cancelled">Annulee</option></select></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>N° suivi</div><input value={editingOrder.tracking_number || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { tracking_number: e.target.value })) }} style={inputStyle} /></div>
+                  <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Description</div><input value={editingOrder.description || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { description: e.target.value })) }} style={inputStyle} /></div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={saveOrderEdit} style={{ padding: '12px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>💾 Sauvegarder</button>
+                  <button onClick={function() { setEditingOrder(null) }} style={{ padding: '12px 24px', background: '#F5F4F2', color: '#777', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Annuler</button>
+                </div>
+              </div>
+            )}
+
+            {/* Orders list */}
+            {orders.filter(function(o) { return orderFilter === 'all' || o.status === orderFilter }).map(o => (
+              <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 6, background: selectedOrderDetail?.id === o.id ? '#F8F7F5' : '#FFF', border: selectedOrderDetail?.id === o.id ? '2px solid #1A1A1A' : '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', cursor: 'pointer', transition: 'all .15s' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
-                    <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? `${o.client_first_name} ${o.client_last_name}` : 'En attente'}</span>
+                    <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? (o.client_first_name + ' ' + o.client_last_name) : 'En attente'}</span>
                     {o.source === 'live_monitor' && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 8, background: '#EFF6FF', color: '#3B82F6' }}>LIVE</span>}
                   </div>
-                  {o.description && <div style={{ fontSize: 12, color: '#BBB', marginTop: 2 }}>{o.description}</div>}
+                  <div style={{ fontSize: 11, color: '#BBB', marginTop: 3 }}>{new Date(o.created_at).toLocaleDateString('fr-FR')} {o.shipping_city ? '· ' + o.shipping_city : ''} {o.description ? '· ' + o.description.substring(0, 40) : ''}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                   <span style={{
                     fontSize: 10, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
-                    color: o.status === 'paid' ? '#F59E0B' : o.status === 'shipped' ? '#8B5CF6' : o.status === 'delivered' ? '#10B981' : '#999',
-                    background: o.status === 'paid' ? '#FFFBEB' : o.status === 'shipped' ? '#F5F3FF' : o.status === 'delivered' ? '#ECFDF5' : '#F5F4F2',
+                    color: o.status === 'paid' ? '#F59E0B' : o.status === 'shipped' ? '#8B5CF6' : o.status === 'delivered' ? '#10B981' : o.status === 'cancelled' ? '#EF4444' : '#94A3B8',
+                    background: o.status === 'paid' ? '#FFFBEB' : o.status === 'shipped' ? '#F5F3FF' : o.status === 'delivered' ? '#ECFDF5' : o.status === 'cancelled' ? '#FEF2F2' : '#F1F5F9',
                   }}>
-                    {o.status === 'pending_payment' ? 'En attente paiement' : o.status === 'paid' ? 'Payée — à expédier' : o.status === 'shipped' ? 'Expédiée' : o.status === 'delivered' ? 'Livrée' : o.status}
+                    {o.status === 'pending_payment' ? 'En attente' : o.status === 'paid' ? 'Payee' : o.status === 'shipped' ? 'Expediee' : o.status === 'delivered' ? 'Livree' : o.status === 'cancelled' ? 'Annulee' : o.status}
                   </span>
                 </div>
               </div>
             ))}
 
-            {selectedOrderDetail && (
-              <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 20, marginBottom: 16, marginTop: -4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 18, fontWeight: 800 }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
-                  <button onClick={function() { setSelectedOrderDetail(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Client</div><div style={{ fontSize: 14, fontWeight: 600 }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div></div>
-                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Montant</div><div style={{ fontSize: 14, fontWeight: 700 }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div></div>
-                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Email</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.client_email || ''}</div></div>
-                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.client_phone || ''}</div></div>
-                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Adresse</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_address || ''}, {selectedOrderDetail.shipping_zipcode || ''} {selectedOrderDetail.shipping_city || ''}</div></div>
-                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Livraison</div><div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_method === 'relay' ? 'Mondial Relay' : selectedOrderDetail.shipping_method || ''}</div></div>
-                  {selectedOrderDetail.relay_point && (function() { try { var rp = JSON.parse(selectedOrderDetail.relay_point); return <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Point relais</div><div style={{ fontSize: 13, color: '#6366F1', fontWeight: 600 }}>📍 {rp.name} — {rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {selectedOrderDetail.status === 'paid' && <button onClick={function() { startShipping(selectedOrderDetail); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>🚚 Expedier</button>}
-                  <div style={{ fontSize: 11, color: '#999' }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')}</div>
-                </div>
-              </div>
-            )}
-
             {orders.length === 0 && (
               <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
                 <p style={{ fontSize: 15, fontWeight: 600 }}>Aucune commande pour l'instant</p>
-                <p style={{ fontSize: 13, marginTop: 4 }}>Lance un live ou crée une commande manuellement</p>
+                <p style={{ fontSize: 13, marginTop: 4 }}>Lance un live ou cree une commande manuellement</p>
               </div>
             )}
           </div>
@@ -2419,8 +2538,31 @@ export default function Dashboard() {
         {activeTab === 'clients' && (
           <div>
             <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Clients ({clients.length})</h1>
+
+            {selectedClient && (
+              <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 18, fontWeight: 800 }}>{selectedClient.first_name} {selectedClient.last_name}</div>
+                  <button onClick={function() { setSelectedClient(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Email</div><div style={{ fontSize: 13 }}>{selectedClient.email}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedClient.phone || '—'}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Ville</div><div style={{ fontSize: 13 }}>{selectedClient.city || '—'}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Commandes</div><div style={{ fontSize: 13, fontWeight: 700 }}>{selectedClient.order_count || 0}</div></div>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Commandes de ce client :</div>
+                {orders.filter(function(o) { return o.client_email && selectedClient.email && o.client_email.toLowerCase() === selectedClient.email.toLowerCase() }).map(function(o) { return (
+                  <div key={o.id} onClick={function() { setActiveTab('orders'); setSelectedOrderDetail(o); setSelectedClient(null) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, marginBottom: 4, background: '#FAFAF8', cursor: 'pointer', border: '1px solid rgba(0,0,0,.04)' }}>
+                    <div><span style={{ fontSize: 13, fontWeight: 700 }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: '#999' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
+                    <div><span style={{ fontSize: 13, fontWeight: 700 }}>{(o.total_amount || 0).toFixed(2)}€</span></div>
+                  </div>
+                )})}
+              </div>
+            )}
+
             {clients.map(c => (
-              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: '#FFF', border: '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', transition: 'all .2s' }}>
+              <div key={c.id} onClick={function() { setSelectedClient(selectedClient?.id === c.id ? null : c) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedClient?.id === c.id ? '#F8F7F5' : '#FFF', border: selectedClient?.id === c.id ? '2px solid #1A1A1A' : '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700 }}>{c.first_name} {c.last_name}</div>
                   <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{c.email} · {c.phone || '—'}</div>
@@ -2435,7 +2577,7 @@ export default function Dashboard() {
               <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
                 <p style={{ fontSize: 15, fontWeight: 600 }}>Aucun client pour l'instant</p>
-                <p style={{ fontSize: 13, marginTop: 4 }}>Les clients apparaîtront après leur premier paiement</p>
+                <p style={{ fontSize: 13, marginTop: 4 }}>Les clients apparaitront apres leur premier paiement</p>
               </div>
             )}
           </div>
