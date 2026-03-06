@@ -2819,6 +2819,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                  {msg.attachments && (function() { try { var files = JSON.parse(msg.attachments); return <div style={{ marginBottom: 12 }}>{files.map(function(f, fi) { return <a key={fi} href={f.url} target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#F5F4F2', borderRadius: 8, marginRight: 8, marginBottom: 4, fontSize: 12, color: '#6366F1', textDecoration: 'none', border: '1px solid rgba(0,0,0,.06)' }}>📄 {f.name} <span style={{ color: '#CCC', fontSize: 10 }}>{f.size ? (f.size/1024).toFixed(0) + 'KB' : ''}</span></a> })}</div> } catch(e) { return null } })()}
 
                   {msg.reply && (
                     <div style={{ background: '#F0FDF4', borderRadius: 12, padding: '12px 16px', marginBottom: 10 }}>
