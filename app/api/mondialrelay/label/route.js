@@ -49,9 +49,9 @@ export async function GET(request) {
       var match = xml.match(new RegExp('<' + patterns[i] + '>([^<]*)</' + patterns[i] + '>', 'i'))
       if (match && match[1].trim()) {
         var pdfPath = match[1].trim().replace(/&amp;/g, '&')
-        // Try multiple base URLs
-        pdfUrls.push('https://api.mondialrelay.com' + pdfPath)
+        // Try www first (confirmed working), then api, then connect
         pdfUrls.push('https://www.mondialrelay.com' + pdfPath)
+        pdfUrls.push('https://api.mondialrelay.com' + pdfPath)
         pdfUrls.push('https://connect.mondialrelay.com' + pdfPath)
         break
       }
