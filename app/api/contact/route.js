@@ -16,7 +16,7 @@ export async function POST(request) {
 
     // ─── SEND — Client envoie un message ───
     if (action === 'send') {
-      const { shopId, name, email, phone, subject, content } = body
+      const { shopId, name, email, phone, subject, content, attachments } = body
       if (!shopId || !content) {
         return NextResponse.json({ error: 'Message requis' }, { status: 400 })
       }
@@ -28,6 +28,7 @@ export async function POST(request) {
         subject: subject || 'Message depuis la page de paiement',
         content: content,
         status: 'new',
+        attachments: attachments ? JSON.stringify(attachments) : null,
       }).select().single()
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
       return NextResponse.json({ ok: true, id: data?.id })
