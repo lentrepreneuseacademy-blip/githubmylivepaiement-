@@ -183,6 +183,19 @@ export default function Dashboard() {
   const [aiLoading, setAiLoading] = useState(false)
   const aiScrollRef = useRef(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useEffect(function() {
+    function checkMobile() {
+      var mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) setSidebarCollapsed(true)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return function() { window.removeEventListener('resize', checkMobile) }
+  }, [])
 
   // Shop branding & legal
   const [shopLogo, setShopLogo] = useState(null)
@@ -1400,21 +1413,37 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: sf }}>
-      <style dangerouslySetInnerHTML={{ __html: 'button{transition:all .2s ease!important}button:hover{transform:translateY(-1px)!important;filter:brightness(1.08)!important}button:active{transform:translateY(0) scale(.98)!important}input:focus{border-color:#E94560!important;box-shadow:0 0 0 3px rgba(233,69,96,.1)!important}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}.card-hover:hover{box-shadow:0 8px 30px rgba(0,0,0,.08)!important;transform:translateY(-2px)!important}' }} />
+      <style dangerouslySetInnerHTML={{ __html: 'button{transition:all .2s ease!important}button:hover{transform:translateY(-1px)!important;filter:brightness(1.08)!important}button:active{transform:translateY(0) scale(.98)!important}input:focus{border-color:#E94560!important;box-shadow:0 0 0 3px rgba(233,69,96,.1)!important}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}.card-hover:hover{box-shadow:0 8px 30px rgba(0,0,0,.08)!important;transform:translateY(-2px)!important}@media(max-width:767px){.grid-4{grid-template-columns:repeat(2,1fr)!important}.grid-3{grid-template-columns:1fr!important}.grid-2{grid-template-columns:1fr!important}.grid-21{grid-template-columns:1fr!important}.grid-form{grid-template-columns:1fr!important}}@media(max-width:480px){.grid-4{grid-template-columns:1fr!important}}' }} />
+      {/* Mobile hamburger */}
+      {isMobile && !mobileMenuOpen && (
+        <button onClick={function() { setMobileMenuOpen(true) }} style={{ position: 'fixed', top: 12, left: 12, zIndex: 100, width: 44, height: 44, borderRadius: 12, background: '#1A1A2E', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>
+          <span style={{ color: '#FFF', fontSize: 20 }}>☰</span>
+        </button>
+      )}
+
+      {/* Mobile overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div onClick={function() { setMobileMenuOpen(false) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 98 }} />
+      )}
+
       {/* ═══ SIDEBAR PRO ═══ */}
-      <aside style={{ width: sidebarCollapsed ? 70 : 240, background: 'linear-gradient(180deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', padding: sidebarCollapsed ? '20px 10px' : '24px 16px', flexShrink: 0, display: 'flex', flexDirection: 'column', transition: 'width .3s ease', position: 'relative', boxShadow: '4px 0 24px rgba(0,0,0,.15)' }}>
+      <aside style={{ width: isMobile ? 260 : (sidebarCollapsed ? 70 : 240), background: 'linear-gradient(180deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', padding: isMobile ? '20px 16px' : (sidebarCollapsed ? '20px 10px' : '24px 16px'), flexShrink: 0, display: isMobile && !mobileMenuOpen ? 'none' : 'flex', flexDirection: 'column', transition: 'width .3s ease', position: isMobile ? 'fixed' : 'relative', top: 0, left: 0, bottom: 0, zIndex: 99, boxShadow: '4px 0 24px rgba(0,0,0,.15)', overflowY: 'auto' }}>
         
-        {/* Collapse button */}
+        {/* Collapse/Close button */}
+        {isMobile ? (
+          <button onClick={function() { setMobileMenuOpen(false) }} style={{ position: 'absolute', right: 12, top: 12, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 16, color: '#FFF', zIndex: 10 }}>✕</button>
+        ) : (
         <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ position: 'absolute', right: -12, top: 32, width: 24, height: 24, borderRadius: '50%', background: '#FFF', border: '2px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
           {sidebarCollapsed ? '→' : '←'}
         </button>
+        )}
         
         {/* Logo */}
         <div style={{ marginBottom: 32, padding: '0 4px', textAlign: sidebarCollapsed ? 'center' : 'left' }}>
           <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: sidebarCollapsed ? '0 auto' : '0', boxShadow: '0 4px 12px rgba(233,69,96,.3)' }}>
             <span style={{ color: '#FFF', fontSize: 14, fontWeight: 900, letterSpacing: 1 }}>ML</span>
           </div>
-          {!sidebarCollapsed && (
+          {(!sidebarCollapsed || isMobile) && (
             <div style={{ marginTop: 12 }}>
               <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>MY LIVE</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#FFF', letterSpacing: 1 }}>PAIEMENT</div>
@@ -1424,9 +1453,9 @@ export default function Dashboard() {
 
         {/* Navigation */}
         <nav style={{ flex: 1 }}>
-          {!sidebarCollapsed && <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 8, paddingLeft: 12 }}>MENU</div>}
+          {(!sidebarCollapsed || isMobile) && <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 8, paddingLeft: 12 }}>MENU</div>}
           {tabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isMobile) setMobileMenuOpen(false) }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: sidebarCollapsed ? 0 : 12, padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10, marginBottom: 2,
                 background: activeTab === tab.id ? 'rgba(233,69,96,.15)' : 'transparent',
@@ -1435,9 +1464,9 @@ export default function Dashboard() {
                 transition: 'all .2s ease', justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
               }}>
               <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{tab.icon}</span>
-              {!sidebarCollapsed && <span style={{ fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 400, color: activeTab === tab.id ? '#FFF' : 'rgba(255,255,255,.6)', transition: 'color .2s' }}>{tab.label}</span>}
+              {(!sidebarCollapsed || isMobile) && <span style={{ fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 400, color: activeTab === tab.id ? '#FFF' : 'rgba(255,255,255,.6)', transition: 'color .2s' }}>{tab.label}</span>}
               {tab.live && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', marginLeft: 'auto', animation: 'pulse 1.5s infinite', boxShadow: '0 0 8px rgba(239,68,68,.5)' }} />}
-              {!sidebarCollapsed && tab.badge > 0 && <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, color: '#FFF', background: '#E94560', borderRadius: 10, padding: '2px 7px', minWidth: 18, textAlign: 'center' }}>{tab.badge}</span>}
+              {(!sidebarCollapsed || isMobile) && tab.badge > 0 && <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, color: '#FFF', background: '#E94560', borderRadius: 10, padding: '2px 7px', minWidth: 18, textAlign: 'center' }}>{tab.badge}</span>}
             </button>
           ))}
         </nav>
@@ -1448,14 +1477,14 @@ export default function Dashboard() {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <span style={{ color: '#FFF', fontSize: 13, fontWeight: 700 }}>{(shop?.name || 'M').charAt(0).toUpperCase()}</span>
             </div>
-            {!sidebarCollapsed && (
+            {(!sidebarCollapsed || isMobile) && (
               <div style={{ overflow: 'hidden' }}>
                 <div style={{ fontSize: 13, color: '#FFF', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{shop?.name}</div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
               </div>
             )}
           </div>
-          {!sidebarCollapsed && (
+          {(!sidebarCollapsed || isMobile) && (
             <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())}
               style={{ marginTop: 12, width: '100%', fontSize: 12, color: 'rgba(255,255,255,.5)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontFamily: sf, transition: 'all .2s' }}>
               Déconnexion
@@ -1465,23 +1494,23 @@ export default function Dashboard() {
       </aside>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main style={{ flex: 1, padding: '28px 36px', background: '#F8F9FC', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: isMobile ? '16px 12px' : '28px 36px', paddingTop: isMobile ? 60 : 28, background: '#F8F9FC', overflowY: 'auto', minWidth: 0 }}>
 
         {/* ─── OVERVIEW ─── */}
         {activeTab === 'overview' && (
           <div>
             {/* Welcome banner */}
-            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', borderRadius: 20, padding: '28px 32px', marginBottom: 28, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', borderRadius: isMobile ? 14 : 20, padding: isMobile ? '20px 18px' : '28px 32px', marginBottom: isMobile ? 16 : 28, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', right: -20, top: -20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(233,69,96,.15)' }} />
               <div style={{ position: 'absolute', right: 40, bottom: -30, width: 100, height: 100, borderRadius: '50%', background: 'rgba(102,126,234,.1)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <h1 style={{ fontFamily: sf, fontSize: 26, fontWeight: 800, marginBottom: 4 }}>Bonjour, {shop?.name} !</h1>
+                <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 26, fontWeight: 800, marginBottom: 4 }}>Bonjour, {shop?.name} !</h1>
                 <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)' }}>Voici le résumé de ton activité</p>
               </div>
             </div>
 
             {/* Stats Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
                 { l: "Chiffre d'affaires", v: stats.revenue.toFixed(0) + '€', icon: '💰', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', shadow: 'rgba(102,126,234,.2)' },
                 { l: 'Commandes', v: stats.orderCount, icon: '📦', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', shadow: 'rgba(245,87,108,.2)' },
@@ -1538,7 +1567,7 @@ export default function Dashboard() {
             {/* New order form */}
             {showNewOrder && (
               <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 14, padding: 18, marginBottom: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
                   <input placeholder="Réf (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
                   <input placeholder="Montant €" type="number" step="0.01" required value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} style={inputStyle} />
                   <input placeholder="Description (optionnel)" value={newOrder.description} onChange={e => setNewOrder({...newOrder, description: e.target.value})} style={inputStyle} />
@@ -1804,7 +1833,7 @@ export default function Dashboard() {
                 <p style={{ fontSize: 14, color: '#999', marginBottom: 24 }}>{liveEnded.reason}</p>
 
                 {/* Session stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>{liveOrders.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
@@ -1939,7 +1968,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 800, color: '#EF4444' }}>{liveOrders.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
@@ -2117,7 +2146,7 @@ export default function Dashboard() {
             </div>
 
             {/* KPI Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
                 { l: 'CA 7 jours', v: statsData.totalRevenue7d.toFixed(0) + '€', icon: '💰', color: '#667eea' },
                 { l: 'Commandes 7j', v: statsData.totalOrders7d, icon: '📦', color: '#f5576c' },
@@ -2208,12 +2237,12 @@ export default function Dashboard() {
         {activeTab === 'orders' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes ({orders.length})</h1>
+              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes ({orders.length})</h1>
               <button onClick={() => setShowNewOrder(!showNewOrder)} style={{ padding: '10px 18px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>+ Nouvelle</button>
             </div>
 
             {/* Status filter */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', overflowX: isMobile ? 'auto' : 'visible' }}>
               {[
                 { key: 'all', label: 'Toutes', count: orders.length },
                 { key: 'pending_payment', label: 'En attente', count: orders.filter(function(o){return o.status==='pending_payment'}).length, color: '#94A3B8' },
@@ -2229,7 +2258,7 @@ export default function Dashboard() {
 
             {showNewOrder && (
               <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 14, padding: 18, marginBottom: 20 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
                   <input placeholder="Ref (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
                   <input placeholder="Montant €" type="number" step="0.01" required value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} style={inputStyle} />
                   <input placeholder="Description" value={newOrder.description} onChange={e => setNewOrder({...newOrder, description: e.target.value})} style={inputStyle} />
@@ -2243,7 +2272,7 @@ export default function Dashboard() {
               <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 24, marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#1A1A2E' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
+                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1A1A2E' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
                     <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')} a {new Date(selectedOrderDetail.created_at).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -2270,7 +2299,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Order info grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 20 }}>
                   <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
                     <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>CLIENT</div>
                     <div style={{ fontSize: 15, fontWeight: 700 }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
@@ -2297,7 +2326,7 @@ export default function Dashboard() {
                 {selectedOrderDetail.description && <div style={{ fontSize: 12, color: '#777', marginBottom: 16 }}>Description: {selectedOrderDetail.description}</div>}
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, borderTop: '1px solid rgba(0,0,0,.06)' }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, flexDirection: isMobile ? 'column' : 'row', borderTop: '1px solid rgba(0,0,0,.06)' }}>
                   {selectedOrderDetail.status === 'paid' && <button onClick={function() { setActiveTab('shipping'); startShipping(selectedOrderDetail); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🚚 Expedier</button>}
                   {selectedOrderDetail.status === 'shipped' && <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: selectedOrderDetail.id, fields: { status: 'delivered', delivered_at: new Date().toISOString() } }) }); loadData(shop.id); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>✓ Marquer livree</button>}
                   {selectedOrderDetail.tracking_number && <button onClick={function() { window.open('https://www.mondialrelay.fr/suivi-de-colis/?NumExp=' + selectedOrderDetail.tracking_number + '&cp=' + (selectedOrderDetail.shipping_zipcode || ''), '_blank') }} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>📦 Suivre le colis</button>}
@@ -2312,7 +2341,7 @@ export default function Dashboard() {
                   <div style={{ fontSize: 16, fontWeight: 800, color: '#6366F1' }}>✏️ Modifier la commande</div>
                   <button onClick={function() { setEditingOrder(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 12 }}>
                   <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Reference</div><input value={editingOrder.reference || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { reference: e.target.value })) }} style={inputStyle} /></div>
                   <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Montant (€)</div><input type="number" step="0.01" value={editingOrder.total_amount || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { total_amount: e.target.value })) }} style={inputStyle} /></div>
                   <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Prenom</div><input value={editingOrder.client_first_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_first_name: e.target.value })) }} style={inputStyle} /></div>
@@ -2335,7 +2364,7 @@ export default function Dashboard() {
 
             {/* Orders list */}
             {orders.filter(function(o) { return orderFilter === 'all' || o.status === orderFilter }).map(o => (
-              <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 6, background: selectedOrderDetail?.id === o.id ? '#F8F7F5' : '#FFF', border: selectedOrderDetail?.id === o.id ? '2px solid #1A1A1A' : '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', cursor: 'pointer', transition: 'all .15s' }}>
+              <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '12px 14px' : '14px 16px', borderRadius: 14, marginBottom: 6, gap: isMobile ? 8 : 0, background: selectedOrderDetail?.id === o.id ? '#F8F7F5' : '#FFF', border: selectedOrderDetail?.id === o.id ? '2px solid #1A1A1A' : '1px solid rgba(0,0,0,.03)', boxShadow: '0 1px 4px rgba(0,0,0,.03)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
@@ -2378,7 +2407,7 @@ export default function Dashboard() {
                   <div style={{ fontSize: 18, fontWeight: 800 }}>{selectedClient.first_name} {selectedClient.last_name}</div>
                   <button onClick={function() { setSelectedClient(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 16 }}>
                   <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Email</div><div style={{ fontSize: 13 }}>{selectedClient.email}</div></div>
                   <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedClient.phone || '—'}</div></div>
                   <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Ville</div><div style={{ fontSize: 13 }}>{selectedClient.city || '—'}</div></div>
@@ -2422,7 +2451,7 @@ export default function Dashboard() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Livraison</h1>
+                <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Livraison</h1>
                 <p style={{ fontSize: 13, color: '#999' }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
               </div>
               {shipStep !== 'list' && (
@@ -2447,7 +2476,7 @@ export default function Dashboard() {
                     </button>
                   </div>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.03)' }}>
                     <div style={{ fontSize: 24, fontWeight: 800, color: '#F59E0B' }}>{orders.filter(function(o) { return o.status === 'paid' }).length}</div>
                     <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>A expedier</div>
@@ -2523,7 +2552,7 @@ export default function Dashboard() {
 
                 <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.03)', marginBottom: 20 }}>
                   <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Informations du colis</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
                     <div>
                       <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Poids (kg)</label>
                       <input value={shipForm.weight} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { weight: e.target.value })) }}
@@ -2904,7 +2933,7 @@ export default function Dashboard() {
 
               {/* MR credentials */}
               <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8 }}>Identifiants API Mondial Relay</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 16 }}>
                 <div>
                   <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Code Enseigne</label>
                   <input value={boxtalConfig.mrEnseigne || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnseigne: e.target.value.toUpperCase().trim() })) }}
@@ -2921,7 +2950,7 @@ export default function Dashboard() {
 
               {/* Sender address */}
               <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,.06)' }}>Adresse d'expedition (ton adresse)</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
                 <div>
                   <input value={boxtalConfig.senderAddress || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderAddress: e.target.value })) }}
                     placeholder="Adresse (ex: 15 rue de la Paix)"
