@@ -421,7 +421,7 @@ export default function Dashboard() {
     if (!messageReply.trim()) return
     setMessageSending(true)
     try {
-      await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reply', messageId: msgId, reply: messageReply }) })
+      await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reply', messageId: msgId, reply: messageReply, shopName: shop ? shop.name : 'La boutique' }) })
       setMessageReply('')
       setMessageReplyId(null)
       loadMessages(shop.id)
