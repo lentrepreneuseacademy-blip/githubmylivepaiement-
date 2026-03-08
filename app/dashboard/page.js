@@ -2766,22 +2766,59 @@ export default function Dashboard() {
         {/* ─── SETTINGS ─── */}
         {activeTab === 'settings' && (
           <div>
-            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Paramètres</h1>
-
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Boutique</h3>
-              <div style={{ fontSize: 14, marginBottom: 6 }}><strong>Nom :</strong> {shop?.name}</div>
-              <div style={{ fontSize: 14, marginBottom: 6 }}><strong>Slug :</strong> {shop?.slug}</div>
-              <div style={{ fontSize: 14, marginBottom: 6 }}><strong>Email :</strong> {user?.email}</div>
-              <div style={{ fontSize: 14 }}><strong>Lien :</strong> {typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug}</div>
+            {/* Header */}
+            <div style={{ marginBottom: 28 }}>
+              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Parametres</h1>
+              <p style={{ fontSize: 13, color: '#999' }}>Configure ta boutique, tes paiements et ta livraison</p>
             </div>
 
-            {/* Logo */}
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Logo de ta boutique</h3>
-              <p style={{ fontSize: 13, color: '#999', marginBottom: 16 }}>Ce logo sera affiche sur ta page de paiement, visible par tes clientes</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                <div style={{ width: 80, height: 80, borderRadius: 16, border: '2px dashed rgba(0,0,0,.1)', background: '#FAFAF8', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+            {/* Quick status cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+              {[
+                { icon: '🏪', label: 'Boutique', status: shop?.name ? 'ok' : 'warn', text: shop?.name || 'Non configure' },
+                { icon: '📡', label: 'Live Monitor', status: shop?.subscription_status === 'active' ? 'ok' : 'off', text: shop?.subscription_status === 'active' ? 'VIP Actif' : 'Non actif' },
+                { icon: '💳', label: 'Stripe', status: stripeStatus?.chargesEnabled ? 'ok' : 'warn', text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer' },
+                { icon: '📦', label: 'Mondial Relay', status: boxtalConfig.mrEnseigne ? 'ok' : 'warn', text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer' },
+              ].map(function(c, i) {
+                var colors = { ok: { bg: '#F0FDF4', border: '#BBF7D0', dot: '#10B981' }, warn: { bg: '#FFF7ED', border: '#FED7AA', dot: '#F59E0B' }, off: { bg: '#F5F4F2', border: 'rgba(0,0,0,.06)', dot: '#CCC' } }
+                var col = colors[c.status]
+                return (
+                  <div key={i} style={{ background: col.bg, border: '1px solid ' + col.border, borderRadius: 14, padding: '14px 16px', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: col.dot }} />
+                    <div style={{ fontSize: 22, marginBottom: 6 }}>{c.icon}</div>
+                    <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: '#999', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>{c.label}</div>
+                    <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: '#1A1A2E' }}>{c.text}</div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* ══════════ SECTION 1: BOUTIQUE + LOGO ══════════ */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, marginBottom: 20, border: '1px solid rgba(0,0,0,.04)', boxShadow: '0 2px 16px rgba(0,0,0,.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(26,26,46,.2)' }}>
+                  <span style={{ color: '#FFF', fontSize: 20 }}>🏪</span>
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: sf, fontSize: 16, fontWeight: 700, margin: 0, color: '#1A1A2E' }}>Ma boutique</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#999', margin: 0 }}>Informations et identite visuelle</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                  <div style={{ fontFamily: sf, fontSize: 10, color: '#999', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Nom</div>
+                  <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{shop?.name}</div>
+                </div>
+                <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                  <div style={{ fontFamily: sf, fontSize: 10, color: '#999', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Lien de paiement</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, color: '#6366F1', cursor: 'pointer', wordBreak: 'break-all' }} onClick={function() { navigator.clipboard.writeText((typeof window !== 'undefined' ? window.location.origin : '') + '/pay/' + shop?.slug); alert('Lien copie !') }}>{typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug} 📋</div>
+                </div>
+              </div>
+
+              {/* Logo */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 20px', background: 'linear-gradient(135deg, #FAFAF8 0%, #F5F3FF 100%)', borderRadius: 14, border: '1px dashed rgba(0,0,0,.08)' }}>
+                <div style={{ width: 72, height: 72, borderRadius: 16, border: '2px solid rgba(0,0,0,.06)', background: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                   {shopLogo ? (
                     <img src={shopLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   ) : (
@@ -2789,277 +2826,237 @@ export default function Dashboard() {
                   )}
                 </div>
                 <div>
-                  <label style={{ display: 'inline-block', padding: '10px 20px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
-                    {logoUploading ? 'Upload...' : shopLogo ? 'Changer le logo' : 'Ajouter un logo'}
+                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Logo de ta boutique</div>
+                  <div style={{ fontFamily: sf, fontSize: 11, color: '#999', marginBottom: 10 }}>Visible sur ta page de paiement. PNG, JPG ou SVG.</div>
+                  <label style={{ display: 'inline-block', padding: '8px 18px', background: '#1A1A2E', color: '#FFF', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                    {logoUploading ? '⏳ Upload...' : shopLogo ? '🔄 Changer' : '➕ Ajouter'}
                     <input type="file" accept="image/*" onChange={uploadLogo} style={{ display: 'none' }} />
                   </label>
-                  <div style={{ fontSize: 11, color: '#BBB', marginTop: 6 }}>PNG, JPG ou SVG - Max 2MB</div>
                 </div>
               </div>
             </div>
 
-            {/* Live Monitor VIP Access */}
-            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', border: 'none', borderRadius: 20, padding: 28, marginBottom: 18, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(233,69,96,.15)' }} />
-              <div style={{ position: 'absolute', right: 50, bottom: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(102,126,234,.1)' }} />
+            {/* ══════════ SECTION 2: LIVE MONITOR VIP ══════════ */}
+            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', borderRadius: 20, padding: isMobile ? 22 : 28, marginBottom: 20, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(233,69,96,.12)' }} />
+              <div style={{ position: 'absolute', left: -20, bottom: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(102,126,234,.08)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                   <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(233,69,96,.3)' }}>
                     <span style={{ fontSize: 24 }}>📡</span>
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>LIVE MONITOR</h3>
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', margin: 0, letterSpacing: 2, textTransform: 'uppercase' }}>Exclusivite My Live Paiement</p>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0 }}>LIVE MONITOR</h3>
+                    <p style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.5)', margin: 0, letterSpacing: 2, textTransform: 'uppercase' }}>Exclusivite My Live Paiement</p>
                   </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', color: '#FFF', letterSpacing: 1 }}>VIP</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: '5px 14px', borderRadius: 20, background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', color: '#FFF', letterSpacing: 1.5 }}>VIP</span>
                 </div>
 
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', lineHeight: 1.7, marginBottom: 20 }}>
-                  Capte les commandes en direct pendant ton live TikTok. Le systeme detecte automatiquement les "je prends" et cree les commandes. Gestion complete de tes commandes en direct.
+                <p style={{ fontFamily: sf, fontSize: 13, color: 'rgba(255,255,255,.7)', lineHeight: 1.7, marginBottom: 20 }}>
+                  Capte les commandes en direct pendant ton live TikTok. Detection automatique des "je prends" et gestion complete de tes commandes en direct.
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
                   {[
-                    { icon: '🎯', title: 'Detection auto', desc: 'Les mots-cles "je prends", "jp" sont detectes en live' },
-                    { icon: '🖨️', title: 'Tickets thermiques', desc: 'Impression automatique des tickets de commande' },
-                    { icon: '📱', title: 'Multi-plateforme', desc: 'TikTok (actif) · Instagram (bientot)' },
+                    { icon: '🎯', title: 'Detection auto', desc: 'Mots-cles "je prends", "jp" detectes en temps reel' },
+                    { icon: '🖨️', title: 'Tickets auto', desc: 'Impression automatique sur imprimante thermique' },
+                    { icon: '📱', title: 'Multi-plateforme', desc: 'TikTok actif · Instagram bientot' },
                   ].map(function(f, i) { return (
-                    <div key={i} style={{ background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '14px 16px' }}>
+                    <div key={i} style={{ background: 'rgba(255,255,255,.06)', borderRadius: 12, padding: '14px 16px', border: '1px solid rgba(255,255,255,.06)', backdropFilter: 'blur(10px)' }}>
                       <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
-                      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 2 }}>{f.title}</div>
-                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', lineHeight: 1.5 }}>{f.desc}</div>
+                      <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 700, marginBottom: 3 }}>{f.title}</div>
+                      <div style={{ fontFamily: sf, fontSize: 10, color: 'rgba(255,255,255,.45)', lineHeight: 1.5 }}>{f.desc}</div>
                     </div>
                   )})}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  {shop?.subscription_status === 'active' ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, padding: '8px 20px', borderRadius: 12, background: '#10B981', color: '#FFF' }}>✓ Acces VIP actif</span>
-                      <button onClick={function() { setActiveTab('live') }} style={{ padding: '8px 20px', background: 'rgba(255,255,255,.15)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Ouvrir le Live Monitor</button>
+                {shop?.subscription_status === 'active' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, padding: '10px 24px', borderRadius: 12, background: '#10B981', color: '#FFF', boxShadow: '0 4px 14px rgba(16,185,129,.3)' }}>✓ Acces VIP actif</span>
+                    <button onClick={function() { setActiveTab('live') }} style={{ padding: '10px 24px', background: 'rgba(255,255,255,.12)', color: '#FFF', border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Ouvrir le Live Monitor →</button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 14 }}>
+                      <span style={{ fontFamily: sf, fontSize: 32, fontWeight: 900 }}>27€</span>
+                      <span style={{ fontFamily: sf, fontSize: 13, color: 'rgba(255,255,255,.45)' }}>/mois · 0% commission · sans engagement</span>
                     </div>
-                  ) : (
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
-                        <span style={{ fontSize: 28, fontWeight: 900 }}>27€</span>
-                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.5)' }}>/mois · 0% commission · sans engagement</span>
-                      </div>
-                      <button
-                        onClick={async () => {
-                          try {
-                            const res = await fetch('/api/create-subscription', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ shop_id: shop.id, email: user.email }),
-                            })
-                            const data = await res.json()
-                            if (data.url) window.location.href = data.url
-                            else alert(data.error || 'Erreur')
-                          } catch(e) { alert('Erreur de connexion') }
-                        }}
-                        style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 20px rgba(233,69,96,.35)', letterSpacing: 0.5 }}>
-                        🚀 Debloquer le Live Monitor — 27€/mois
-                      </button>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 8 }}>Annule quand tu veux. Le mode Demo reste gratuit.</div>
-                    </div>
-                  )}
-                </div>
+                    <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; else alert(data.error || 'Erreur'); } catch(e) { alert('Erreur de connexion') } }}
+                      style={{ padding: '16px 36px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 24px rgba(233,69,96,.4)', letterSpacing: 0.5 }}>
+                      🚀 Debloquer le Live Monitor — 27€/mois
+                    </button>
+                    <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 10 }}>Annule quand tu veux. Le mode Demo reste gratuit.</div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: '#FFF', fontSize: 18 }}>💳</span>
+            {/* ══════════ SECTION 3: STRIPE CONNECT ══════════ */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, marginBottom: 20, border: '1px solid rgba(0,0,0,.04)', boxShadow: '0 2px 16px rgba(0,0,0,.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(99,91,255,.2)' }}>
+                  <span style={{ color: '#FFF', fontSize: 20 }}>💳</span>
                 </div>
-                <div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Stripe Connect — Paiements</h3>
-                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Recois les paiements CB de tes clientes sur ton compte bancaire</p>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontFamily: sf, fontSize: 16, fontWeight: 700, margin: 0, color: '#1A1A2E' }}>Stripe Connect</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#999', margin: 0 }}>Recois les paiements CB sur ton compte bancaire</p>
                 </div>
+                {stripeStatus?.chargesEnabled && <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 8, background: '#F0FDF4', color: '#10B981' }}>✓ Actif</span>}
               </div>
 
               {stripeStatus?.connected && stripeStatus?.chargesEnabled ? (
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#F0FDF4', borderRadius: 12, border: '1px solid #BBF7D0', marginBottom: 12 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#10B981' }}>✓ Stripe connecte — paiements actifs</span>
+                  <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 14, padding: '16px 20px', border: '1px solid #BBF7D0', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#FFF', fontSize: 16 }}>✓</span></div>
+                    <div>
+                      <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#065F46' }}>Paiements actifs</div>
+                      {stripeStatus.email && <div style={{ fontFamily: sf, fontSize: 11, color: '#059669' }}>{stripeStatus.email}</div>}
+                    </div>
                   </div>
-                  {stripeStatus.email && <div style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>Compte : {stripeStatus.email}</div>}
-                  <button onClick={async function() {
-                    var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard', shopId: shop.id }) })
-                    var data = await res.json()
-                    if (data.url) window.open(data.url, '_blank')
-                  }} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
-                    📊 Voir mon dashboard Stripe
-                  </button>
+                  <button onClick={async function() { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.open(data.url, '_blank') }} style={{ padding: '12px 24px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>📊 Dashboard Stripe</button>
                 </div>
-              ) : stripeStatus?.connected && !stripeStatus?.chargesEnabled ? (
+              ) : stripeStatus?.connected ? (
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#FFF7ED', borderRadius: 12, border: '1px solid #FED7AA', marginBottom: 12 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#92400E' }}>⏳ Compte cree — finalise la verification pour activer les paiements</span>
+                  <div style={{ background: '#FFF7ED', borderRadius: 14, padding: '16px 20px', border: '1px solid #FED7AA', marginBottom: 16 }}>
+                    <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: '#92400E' }}>⏳ Finalise la verification pour activer les paiements</div>
                   </div>
-                  <button onClick={async function() {
-                    setStripeLoading(true)
-                    var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) })
-                    var data = await res.json()
-                    if (data.url) window.location.href = data.url
-                    setStripeLoading(false)
-                  }} disabled={stripeLoading} style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
+                  <button onClick={async function() { setStripeLoading(true); var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.location.href = data.url; setStripeLoading(false) }} disabled={stripeLoading} style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
                     {stripeLoading ? 'Chargement...' : 'Finaliser la verification'}
                   </button>
                 </div>
               ) : (
                 <div>
-                  <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.7 }}>
-                    <strong style={{ color: '#1A1A2E' }}>Comment ca marche ?</strong><br/>
-                    1. Clique sur "Connecter Stripe" ci-dessous<br/>
-                    2. Cree ton compte Stripe (gratuit) ou connecte-toi<br/>
-                    3. Renseigne ton <strong>IBAN</strong> pour recevoir les virements<br/>
-                    4. Valide ton identite (carte d'identite)<br/>
-                    5. C'est fait ! L'argent arrive sur ton compte sous 2-7 jours<br/><br/>
-                    <span style={{ fontSize: 11, color: '#999' }}>Stripe prend une commission de 1.5% + 0.25€ par transaction</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+                    {[
+                      { step: '1', text: 'Clique "Connecter Stripe"' },
+                      { step: '2', text: 'Renseigne ton IBAN + identite' },
+                      { step: '3', text: 'Argent sur ton compte en 2-7 jours' },
+                    ].map(function(s, i) { return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: '#FAFAF8', borderRadius: 12 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#635BFF', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
+                        <div style={{ fontFamily: sf, fontSize: 12, color: '#555' }}>{s.text}</div>
+                      </div>
+                    )})}
                   </div>
-                  <button onClick={async function() {
-                    setStripeLoading(true)
-                    try {
-                      var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) })
-                      var data = await res.json()
-                      if (data.url) window.location.href = data.url
-                      else if (data.error) alert('Erreur : ' + data.error)
-                    } catch(e) { alert('Erreur de connexion') }
-                    setStripeLoading(false)
-                  }} disabled={stripeLoading} style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
-                    {stripeLoading ? 'Chargement...' : '💳 Connecter Stripe'}
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                    <button onClick={async function() { setStripeLoading(true); try { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.location.href = data.url; else alert('Erreur : ' + (data.error || '')); } catch(e) { alert('Erreur de connexion') } setStripeLoading(false) }} disabled={stripeLoading} style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
+                      {stripeLoading ? 'Chargement...' : '💳 Connecter Stripe'}
+                    </button>
+                    <span style={{ fontFamily: sf, fontSize: 11, color: '#CCC' }}>Commission : 1.5% + 0.25€/transaction</span>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginTop: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#E30613', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: '#FFF', fontSize: 18 }}>📦</span>
+            {/* ══════════ SECTION 4: MONDIAL RELAY ══════════ */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, marginBottom: 20, border: '1px solid rgba(0,0,0,.04)', boxShadow: '0 2px 16px rgba(0,0,0,.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: '#E30613', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(227,6,19,.2)' }}>
+                  <span style={{ color: '#FFF', fontSize: 20 }}>📦</span>
                 </div>
-                <div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Mondial Relay — Expedition</h3>
-                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontFamily: sf, fontSize: 16, fontWeight: 700, margin: 0, color: '#1A1A2E' }}>Mondial Relay</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#999', margin: 0 }}>Etiquettes et expedition en 1 clic</p>
                 </div>
-                {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && (
-                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: '#ECFDF5', color: '#10B981' }}>Connecte</span>
-                )}
+                {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 8, background: '#F0FDF4', color: '#10B981' }}>✓ Connecte</span>}
               </div>
 
               {/* Status */}
               {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '12px 16px', background: '#F0FDF4', borderRadius: 12, border: '1px solid #BBF7D0' }}>
-                  <span style={{ color: '#10B981', fontWeight: 600, fontSize: 13 }}>✓ Mondial Relay connecte (Enseigne: {boxtalConfig.mrEnseigne})</span>
+                <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 14, padding: '14px 18px', border: '1px solid #BBF7D0', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ color: '#10B981', fontSize: 16 }}>✓</span>
+                  <span style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: '#065F46' }}>Mondial Relay connecte — Enseigne: {boxtalConfig.mrEnseigne}</span>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '12px 16px', background: '#FFF7ED', borderRadius: 12, border: '1px solid #FED7AA' }}>
-                  <span style={{ color: '#92400E', fontSize: 12 }}>Configure tes identifiants Mondial Relay pour generer les etiquettes automatiquement</span>
+                <div style={{ background: '#FFF7ED', borderRadius: 14, padding: '14px 18px', border: '1px solid #FED7AA', marginBottom: 20 }}>
+                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600, color: '#92400E', marginBottom: 8 }}>Configure tes identifiants pour generer les etiquettes</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: '#B45309', lineHeight: 1.7 }}>
+                    1. Va sur <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.mondialrelay.fr/connexion/', '_blank') }}>mondialrelay.fr</span> → Profil → Mes parametres de connexion<br/>
+                    2. Copie le <strong>Code Enseigne</strong> + la <strong>Cle Privee</strong> dans la section Webservices<br/>
+                    3. Colle-les ci-dessous
+                  </div>
                 </div>
               )}
 
-              {/* How to get credentials */}
-              <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.7 }}>
-                <strong style={{ color: '#1A1A2E' }}>Comment obtenir tes identifiants Mondial Relay ?</strong><br/><br/>
-                1. Va sur <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.mondialrelay.fr/connexion/', '_blank') }}>mondialrelay.fr</span> et connecte-toi a ton compte pro<br/>
-                2. Clique sur ton <strong>profil</strong> en haut a droite<br/>
-                3. Va dans l'onglet <strong>Mes parametres de connexion</strong><br/>
-                4. En bas tu verras la section <strong>Webservices (API, Module)</strong><br/>
-                5. Copie le <strong>Code Enseigne</strong> (8 caracteres, ex: CC23H7CX)<br/>
-                6. Copie la <strong>Cle Privee</strong> (ex: Diar0jh2)<br/>
-                7. Colle-les ci-dessous et clique Sauvegarder<br/><br/>
-                <span style={{ color: '#999', fontSize: 11 }}>Pas encore de compte ? <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer' }} onClick={function() { window.open('https://www.mondialrelay.fr/inscription/', '_blank') }}>Cree un compte pro gratuit</span></span>
-              </div>
-
-              {/* MR credentials */}
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8 }}>Identifiants API Mondial Relay</div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              {/* Credentials */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Code Enseigne</label>
+                  <label style={{ fontFamily: sf, fontSize: 11, fontWeight: 600, color: '#999', display: 'block', marginBottom: 4, letterSpacing: 1 }}>CODE ENSEIGNE</label>
                   <input value={boxtalConfig.mrEnseigne || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnseigne: e.target.value.toUpperCase().trim() })) }}
                     placeholder="Ex: CC23H7CX"
-                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 16, outline: 'none', letterSpacing: 2, fontWeight: 700, textTransform: 'uppercase' }} />
+                    style={{ width: '100%', padding: '14px 16px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 16, outline: 'none', letterSpacing: 3, fontWeight: 700, textTransform: 'uppercase', background: '#FAFAF8' }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Cle Privee</label>
+                  <label style={{ fontFamily: sf, fontSize: 11, fontWeight: 600, color: '#999', display: 'block', marginBottom: 4, letterSpacing: 1 }}>CLE PRIVEE</label>
                   <input value={boxtalConfig.mrPrivateKey || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrPrivateKey: e.target.value.trim() })) }}
                     placeholder="Ex: Diar0jh2"
-                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 16, outline: 'none', fontWeight: 600 }} />
+                    style={{ width: '100%', padding: '14px 16px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 16, outline: 'none', fontWeight: 600, background: '#FAFAF8' }} />
                 </div>
               </div>
 
               {/* Sender address */}
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 8, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,.06)' }}>Adresse d'expedition (ton adresse)</div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                <div>
+              <div style={{ padding: '16px 18px', background: '#FAFAF8', borderRadius: 14, marginBottom: 20 }}>
+                <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 700, color: '#777', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>📍 Adresse expediteur</div>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
                   <input value={boxtalConfig.senderAddress || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderAddress: e.target.value })) }}
-                    placeholder="Adresse (ex: 15 rue de la Paix)"
-                    style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
-                </div>
-                <div>
+                    placeholder="Adresse" style={{ width: '100%', padding: '11px 14px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
                   <input value={boxtalConfig.senderZip || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderZip: e.target.value })) }}
-                    placeholder="Code postal"
-                    style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
-                </div>
-                <div>
+                    placeholder="Code postal" style={{ width: '100%', padding: '11px 14px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
                   <input value={boxtalConfig.senderCity || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderCity: e.target.value })) }}
-                    placeholder="Ville"
-                    style={{ width: '100%', padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+                    placeholder="Ville" style={{ width: '100%', padding: '11px 14px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
                 </div>
-              </div>
-              <div style={{ marginBottom: 16 }}>
                 <input value={boxtalConfig.senderPhone || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderPhone: e.target.value })) }}
-                  placeholder="Telephone (ex: 0612345678)"
-                  style={{ width: 200, padding: '10px 12px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none' }} />
+                  placeholder="Telephone (ex: 0612345678)" style={{ width: isMobile ? '100%' : 200, padding: '11px 14px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
               </div>
 
               {/* Shipping price */}
-              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Tarif livraison (facture a tes clients)</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 14, border: '1px solid #BBF7D0', marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#065F46', marginBottom: 4 }}>💰 Tarif livraison client</div>
+                  <div style={{ fontFamily: sf, fontSize: 11, color: '#059669' }}>Prix affiche sur ta page de paiement. 0 = livraison offerte.</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', flexShrink: 0 }}>
                   <input value={boxtalConfig.shippingPrice || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { shippingPrice: e.target.value.replace(/[^0-9.,]/g, '') })) }}
                     placeholder="4.90"
-                    style={{ width: 100, padding: '12px 14px', border: '2px solid #BBF7D0', borderRadius: 10, fontFamily: sf, fontSize: 18, fontWeight: 700, outline: 'none', textAlign: 'center' }} />
-                  <span style={{ fontSize: 18, fontWeight: 700, color: '#166534' }}>€</span>
-                  <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>C'est le prix que tes clients verront sur la page de paiement. Mets 0 pour offrir la livraison.</span>
+                    style={{ width: 80, padding: '12px 14px', border: '2px solid #BBF7D0', borderRadius: 10, fontFamily: sf, fontSize: 20, fontWeight: 800, outline: 'none', textAlign: 'center', background: '#FFF' }} />
+                  <span style={{ fontFamily: sf, fontSize: 20, fontWeight: 800, color: '#065F46' }}>€</span>
                 </div>
               </div>
 
               <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
-                style={{ padding: '14px 32px', background: boxtalSaving ? '#DDD' : '#E30613', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: boxtalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(227,6,19,.2)' }}>
-                {boxtalSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+                style={{ padding: '14px 32px', background: boxtalSaving ? '#DDD' : '#E30613', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 700, cursor: boxtalSaving ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(227,6,19,.2)' }}>
+                {boxtalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder Mondial Relay'}
               </button>
             </div>
-            {/* Legal texts */}
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Informations legales</h3>
-              <p style={{ fontSize: 13, color: '#999', marginBottom: 16 }}>Ces textes seront affiches en bas de ta page de paiement</p>
 
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Conditions Generales de Vente (CGV)</label>
-                <textarea value={legalTexts.cgv || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { cgv: e.target.value })) }}
-                  rows={5} placeholder="Colle ici tes conditions generales de vente..."
-                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+            {/* ══════════ SECTION 5: LEGAL ══════════ */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, border: '1px solid rgba(0,0,0,.04)', boxShadow: '0 2px 16px rgba(0,0,0,.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: '#F5F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 20 }}>📜</span>
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: sf, fontSize: 16, fontWeight: 700, margin: 0, color: '#1A1A2E' }}>Informations legales</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#999', margin: 0 }}>Textes affiches en bas de ta page de paiement</p>
+                </div>
               </div>
 
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Mentions legales</label>
-                <textarea value={legalTexts.mentions || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { mentions: e.target.value })) }}
-                  rows={5} placeholder="Raison sociale, SIRET, adresse du siege..."
-                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
-              </div>
-
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Politique de confidentialite</label>
-                <textarea value={legalTexts.privacy || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { privacy: e.target.value })) }}
-                  rows={5} placeholder="Comment tu collectes et utilises les donnees personnelles..."
-                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
-              </div>
+              {[
+                { key: 'cgv', label: 'Conditions Generales de Vente', placeholder: 'Colle ici tes CGV...' },
+                { key: 'mentions', label: 'Mentions legales', placeholder: 'Raison sociale, SIRET, adresse...' },
+                { key: 'privacy', label: 'Politique de confidentialite', placeholder: 'Collecte et utilisation des donnees...' },
+              ].map(function(f) { return (
+                <div key={f.key} style={{ marginBottom: 16 }}>
+                  <label style={{ fontFamily: sf, fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>{f.label}</label>
+                  <textarea value={legalTexts[f.key] || ''} onChange={function(e) { var obj = {}; obj[f.key] = e.target.value; setLegalTexts(Object.assign({}, legalTexts, obj)) }}
+                    rows={4} placeholder={f.placeholder}
+                    style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.04)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', background: '#FAFAF8' }} />
+                </div>
+              )})}
 
               <button onClick={saveLegalTexts} disabled={legalSaving}
-                style={{ padding: '14px 32px', background: legalSaving ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: legalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
-                {legalSaving ? 'Sauvegarde...' : 'Sauvegarder les textes legaux'}
+                style={{ padding: '14px 32px', background: legalSaving ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 700, cursor: legalSaving ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
+                {legalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder les textes legaux'}
               </button>
             </div>
           </div>
