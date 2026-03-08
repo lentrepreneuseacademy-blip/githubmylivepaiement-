@@ -859,7 +859,7 @@ export default function PayPage() {
           action: 'send',
           shopId: shopData.id,
           name: (prenom || '') + ' ' + (nom || '') || loginEmail || '',
-          email: loginEmail || email || '',
+          email: loginEmail || activateEmail || email || '',
           phone: phone || '',
           content: clientReplyMsg,
           subject: 'Reponse client',
@@ -869,7 +869,7 @@ export default function PayPage() {
       setClientReplyMsg('')
       setAttachedFiles([])
       // Reload messages
-      const msgRes = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'client_messages', shopId: shopData.id, email: (loginEmail || email || '').toLowerCase().trim() }) })
+      const msgRes = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'client_messages', shopId: shopData.id, email: (loginEmail || activateEmail || email || '').toLowerCase().trim() }) })
       const msgResult = await msgRes.json()
       setClientMessages(msgResult.messages || [])
     } catch(e) { console.error('[Client] Reply error:', e) }
@@ -1487,7 +1487,7 @@ export default function PayPage() {
             {o.tracking && (o.status === "shipped" || o.status === "delivered") && (
               <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.06)", borderRadius: 16, padding: 20, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div><div style={{ fontFamily: sf, fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>{t.trackingNumber}</div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>{o.tracking}</div></div>
-                <button style={{ padding: "8px 16px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 8, fontFamily: sf, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{t.trackBtn}</button>
+                <button onClick={() => window.open('https://www.mondialrelay.fr/suivi-de-colis/?NumExp=' + o.tracking, '_blank')} style={{ padding: "8px 16px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 8, fontFamily: sf, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{t.trackBtn}</button>
               </div>
             )}
             <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.06)", borderRadius: 16, padding: 20 }}>
@@ -1518,7 +1518,7 @@ export default function PayPage() {
                 <div>
                   <h1 style={{ fontFamily: ss, fontSize: 32, fontWeight: 400, textAlign: "center", marginBottom: 6 }}>{t.loginTitle}</h1>
                   <p style={{ fontFamily: sf, fontSize: 13, color: "#999", textAlign: "center", marginBottom: 32 }}>{t.loginSub}</p>
-                  <form onSubmit={async (e) => { e.preventDefault(); await loadClientOrders(loginEmail); setClientView("dashboard"); }}>
+                  <form onSubmit={async (e) => { e.preventDefault(); await loadClientOrders(loginEmail); if (clientOrders.length === 0) { /* still go to dashboard, orders will load */ } setClientView("dashboard"); }}>
                     <div style={{ marginBottom: 12 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.email}</label><input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required style={{ width: "100%", padding: "14px 16px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 12, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
                     <div style={{ marginBottom: 20 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.password}</label><input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required style={{ width: "100%", padding: "14px 16px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 12, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
                     <button type="submit" style={{ width: "100%", padding: 16, background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t.login}</button>
@@ -1560,7 +1560,7 @@ export default function PayPage() {
         <header style={{ background: "#FFF", borderBottom: "1px solid rgba(0,0,0,.06)", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 36, height: 36, background: "#1A1A1A", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#FFF", fontFamily: sf, fontSize: 13, fontWeight: 700 }}>{ (loginEmail || "").substring(0,2).toUpperCase() || "CL" }</span></div>
-            <div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>{nom || prenom ? prenom + ' ' + nom : loginEmail}</div><div style={{ fontFamily: sf, fontSize: 11, color: "#999" }}>{loginEmail || email}</div></div>
+            <div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>{nom || prenom ? prenom + ' ' + nom : loginEmail}</div><div style={{ fontFamily: sf, fontSize: 11, color: "#999" }}>{loginEmail || activateEmail || email}</div></div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <LangPicker lang={lang} setLang={setLang} />
@@ -1676,7 +1676,7 @@ export default function PayPage() {
                 <h3 style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 20 }}>{t.myInfo}</h3>
                 <div style={{ marginBottom: 12 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.fullName}</label><input defaultValue={prenom ? prenom + ' ' + nom : ''} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.email}</label><input defaultValue={loginEmail || email || ''} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
+                  <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.email}</label><input defaultValue={loginEmail || activateEmail || email || ''} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
                   <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.phone}</label><input defaultValue={phone || ''} style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
                 </div>
                 <button style={{ padding: "12px 24px", background: "#1A1A1A", color: "#FFF", border: "none", borderRadius: 10, fontFamily: sf, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{t.save}</button>
