@@ -1301,7 +1301,7 @@ export default function Dashboard() {
       return '🏠 Tour du dashboard :\n\n📊 TABLEAU DE BORD — 4 chiffres cles + graphiques\n📡 LIVE MONITOR — capte les commandes en live\n📋 COMMANDES — gere, modifie, filtre par statut\n👥 CLIENTS — liste auto + total depense\n📦 LIVRAISON — etiquettes Mondial Relay 1 clic\n📈 STATISTIQUES — CA, graphiques, periodes\n💬 MESSAGES — reponds a tes clientes\n⚙️ PARAMETRES — MR, adresse, logo, tarifs\n🤖 IA ASSISTANT — c\'est moi !\n\nDemande le detail de n\'importe quelle section !'
     }
     if (q.match(/live|monitor|tiktok|instagram|direct|stream|capter|detect/)) {
-      return '📡 Guide Live Monitor :\n\n🔴 ETAPE 1 : Menu gauche > "Live Monitor"\n🔴 ETAPE 2 : Choisis TikTok ou Instagram\n🔴 ETAPE 3 : Mode Demo (tester) ou Mode Reel\n🔴 ETAPE 4 : Entre ton pseudo SANS le @\n → Ex: @maboutique → tape "maboutique"\n🔴 ETAPE 5 : Bouton rouge "Connecter au live"\n🔴 ETAPE 6 : Le systeme detecte les mots-cles !\n\n⚙️ MOTS-CLES :\n → Bons : "jp", "je prends", "pour moi"\n → Evite : "oui", "moi" (faux positifs)\n\n🖨️ TICKETS :\n → Bouton "Tickets" > "Auto-print"\n → Format 50.8mm pour MUNBYN\n\n💡 Teste en Mode Demo d\'abord !'
+      return '📡 Guide Live Monitor :\n\n🔴 ETAPE 1 : Menu gauche > "Live Monitor"\n🔴 ETAPE 2 : Choisis TikTok ou Instagram\n🔴 ETAPE 3 : Mode Demo (tester) ou Mode Reel\n🔴 ETAPE 4 : Entre ton pseudo SANS le @\n → Ex: @maboutique → tape "maboutique"\n🔴 ETAPE 5 : Bouton rouge "Connecter au live"\n🔴 ETAPE 6 : Le systeme detecte les mots-cles !\n\n⚙️ MOTS-CLES :\n → Bons : "jp", "je prends", "pour moi"\n → Evite : "oui", "moi" (faux positifs)\n\n🖨️ TICKETS :\n → Bouton "Tickets" > "Auto-print"\n → Format 50.8mm pour imprimante thermique\n\n💡 Teste en Mode Demo d\'abord !'
     }
     if (q.match(/commande|statut|status|en attente|payee|expediee|livree|gerer|modifier|editer/)) {
       return '📋 Commandes :\n\n📊 ⏳' + pending + ' en attente | 💰' + paid + ' payees | 🚚' + shipped + ' expediees | ✅' + delivered + ' livrees\n\n🔴 VOIR : Menu > Commandes > filtres par statut\n🔴 MODIFIER : Clic commande > "✏️ Modifier" > changer nom/adresse/montant/statut > "💾 Sauvegarder"\n🔴 EXPEDIER : Clic > "🚚 Expedier"\n🔴 SUIVI : Clic > "📦 Suivre le colis"\n\n📌 STATUTS :\n ⏳ Gris = pas paye\n 💰 Orange = paye, a expedier\n 🚚 Violet = en route\n ✅ Vert = livre\n ❌ Rouge = annule' + (pe > 0 ? '\n\n🚨 ' + pe + ' a expedier !' : '')
@@ -1327,7 +1327,7 @@ export default function Dashboard() {
       return '🔗 Ton lien :\n\n👉 githubmylivepaiement.vercel.app/pay/' + slug + '\n\n🔴 OU PARTAGER :\n → Bio TikTok/Instagram\n → Commentaire pendant le live\n → Message prive apres "je prends"\n → Story avec sticker lien\n → WhatsApp\n\n💡 Dis pendant le live : "Le lien est dans ma bio, entrez votre ref et payez par CB !"\n\n📱 La cliente : lien > ref > infos > relais > CB > fait !'
     }
     if (q.match(/imprim|ticket|munbyn|thermal|papier|format/)) {
-      return '🖨️ Impression tickets :\n\n🔴 1. Branche MUNBYN en USB\n🔴 2. Installe le driver\n🔴 3. Reglages imprimante PC :\n → Taille : 50.8mm x 50.8mm\n → Orientation : portrait\n → Marges : 0\n🔴 4. Live Monitor > "Tickets" > "Auto-print"\n🔴 5. Teste en Mode Demo\n\n💡 Si trop grand/petit, ajuste la taille papier'
+      return '🖨️ Impression tickets :\n\n🔴 1. Branche ton imprimante thermique en USB\n🔴 2. Installe le driver de l'imprimante\n🔴 3. Reglages imprimante PC :\n → Taille : 50.8mm x 50.8mm\n → Orientation : portrait\n → Marges : 0\n🔴 4. Live Monitor > "Tickets" > "Auto-print"\n🔴 5. Teste en Mode Demo\n\n💡 Si trop grand/petit, ajuste la taille papier'
     }
     if (q.match(/^(merci|thanks|salut|bonjour|hello|coucou|hey|bonsoir)/)) {
       var g = ['Avec plaisir ! 😊','De rien !','Hello ! 👋','Coucou ' + sn + ' ! 😊'][Math.floor(Math.random()*4)]
@@ -2798,38 +2798,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Legal texts */}
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Informations legales</h3>
-              <p style={{ fontSize: 13, color: '#999', marginBottom: 16 }}>Ces textes seront affiches en bas de ta page de paiement</p>
-
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Conditions Generales de Vente (CGV)</label>
-                <textarea value={legalTexts.cgv || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { cgv: e.target.value })) }}
-                  rows={5} placeholder="Colle ici tes conditions generales de vente..."
-                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
-              </div>
-
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Mentions legales</label>
-                <textarea value={legalTexts.mentions || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { mentions: e.target.value })) }}
-                  rows={5} placeholder="Raison sociale, SIRET, adresse du siege..."
-                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
-              </div>
-
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Politique de confidentialite</label>
-                <textarea value={legalTexts.privacy || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { privacy: e.target.value })) }}
-                  rows={5} placeholder="Comment tu collectes et utilises les donnees personnelles..."
-                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
-              </div>
-
-              <button onClick={saveLegalTexts} disabled={legalSaving}
-                style={{ padding: '14px 32px', background: legalSaving ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: legalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
-                {legalSaving ? 'Sauvegarde...' : 'Sauvegarder les textes legaux'}
-              </button>
-            </div>
-
             {/* Live Monitor VIP Access */}
             <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', border: 'none', borderRadius: 20, padding: 28, marginBottom: 18, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(233,69,96,.15)' }} />
@@ -2847,13 +2815,13 @@ export default function Dashboard() {
                 </div>
 
                 <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', lineHeight: 1.7, marginBottom: 20 }}>
-                  Capte les commandes en direct pendant ton live TikTok. Le systeme detecte automatiquement les "je prends" et cree les commandes. Impression thermique des tickets incluse.
+                  Capte les commandes en direct pendant ton live TikTok. Le systeme detecte automatiquement les "je prends" et cree les commandes. Gestion complete de tes commandes en direct.
                 </p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
                   {[
                     { icon: '🎯', title: 'Detection auto', desc: 'Les mots-cles "je prends", "jp" sont detectes en live' },
-                    { icon: '🖨️', title: 'Tickets thermiques', desc: 'Impression auto des tickets sur imprimante MUNBYN' },
+                    { icon: '🖨️', title: 'Tickets thermiques', desc: 'Impression automatique des tickets de commande' },
                     { icon: '📱', title: 'Multi-plateforme', desc: 'TikTok (actif) · Instagram (bientot)' },
                   ].map(function(f, i) { return (
                     <div key={i} style={{ background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '14px 16px' }}>
@@ -3061,6 +3029,37 @@ export default function Dashboard() {
               <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
                 style={{ padding: '14px 32px', background: boxtalSaving ? '#DDD' : '#E30613', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: boxtalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(227,6,19,.2)' }}>
                 {boxtalSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+              </button>
+            </div>
+            {/* Legal texts */}
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Informations legales</h3>
+              <p style={{ fontSize: 13, color: '#999', marginBottom: 16 }}>Ces textes seront affiches en bas de ta page de paiement</p>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Conditions Generales de Vente (CGV)</label>
+                <textarea value={legalTexts.cgv || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { cgv: e.target.value })) }}
+                  rows={5} placeholder="Colle ici tes conditions generales de vente..."
+                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Mentions legales</label>
+                <textarea value={legalTexts.mentions || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { mentions: e.target.value })) }}
+                  rows={5} placeholder="Raison sociale, SIRET, adresse du siege..."
+                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>Politique de confidentialite</label>
+                <textarea value={legalTexts.privacy || ''} onChange={function(e) { setLegalTexts(Object.assign({}, legalTexts, { privacy: e.target.value })) }}
+                  rows={5} placeholder="Comment tu collectes et utilises les donnees personnelles..."
+                  style={{ width: '100%', padding: '12px 14px', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical' }} />
+              </div>
+
+              <button onClick={saveLegalTexts} disabled={legalSaving}
+                style={{ padding: '14px 32px', background: legalSaving ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: legalSaving ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
+                {legalSaving ? 'Sauvegarde...' : 'Sauvegarder les textes legaux'}
               </button>
             </div>
           </div>
