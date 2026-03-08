@@ -2830,46 +2830,73 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Live Server Status */}
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>📡 Live Monitor</h3>
-              <div style={{ fontSize: 14, marginBottom: 6 }}>
-                <strong>Serveur Live :</strong>{' '}
-                {LIVE_SERVER_URL ? (
-                  <span style={{ color: '#10B981', fontWeight: 600 }}>✓ Configuré ({LIVE_SERVER_URL})</span>
-                ) : (
-                  <span style={{ color: '#F59E0B', fontWeight: 600 }}>⚠ Non configuré (mode démo uniquement)</span>
-                )}
-              </div>
-              <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-                Pour connecter le vrai live TikTok, déploie le serveur live et ajoute NEXT_PUBLIC_LIVE_SERVER_URL dans tes variables d'environnement.
-              </p>
-            </div>
+            {/* Live Monitor VIP Access */}
+            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', border: 'none', borderRadius: 20, padding: 28, marginBottom: 18, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(233,69,96,.15)' }} />
+              <div style={{ position: 'absolute', right: 50, bottom: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(102,126,234,.1)' }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(233,69,96,.3)' }}>
+                    <span style={{ fontSize: 24 }}>📡</span>
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>LIVE MONITOR</h3>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', margin: 0, letterSpacing: 2, textTransform: 'uppercase' }}>Exclusivite My Live Paiement</p>
+                  </div>
+                  <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', color: '#FFF', letterSpacing: 1 }}>VIP</span>
+                </div>
 
-            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, marginBottom: 18, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Abonnement</h3>
-              <div style={{ fontSize: 14, marginBottom: 10 }}>
-                <strong>Statut :</strong>{' '}
-                <span style={{ color: shop?.subscription_status === 'active' ? '#10B981' : '#F59E0B', fontWeight: 600 }}>
-                  {shop?.subscription_status === 'active' ? 'Actif' : 'Inactif'}
-                </span>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', lineHeight: 1.7, marginBottom: 20 }}>
+                  Capte les commandes en direct pendant ton live TikTok. Le systeme detecte automatiquement les "je prends" et cree les commandes. Impression thermique des tickets incluse.
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+                  {[
+                    { icon: '🎯', title: 'Detection auto', desc: 'Les mots-cles "je prends", "jp" sont detectes en live' },
+                    { icon: '🖨️', title: 'Tickets thermiques', desc: 'Impression auto des tickets sur imprimante MUNBYN' },
+                    { icon: '📱', title: 'Multi-plateforme', desc: 'TikTok (actif) · Instagram (bientot)' },
+                  ].map(function(f, i) { return (
+                    <div key={i} style={{ background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '14px 16px' }}>
+                      <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 2 }}>{f.title}</div>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', lineHeight: 1.5 }}>{f.desc}</div>
+                    </div>
+                  )})}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  {shop?.subscription_status === 'active' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, padding: '8px 20px', borderRadius: 12, background: '#10B981', color: '#FFF' }}>✓ Acces VIP actif</span>
+                      <button onClick={function() { setActiveTab('live') }} style={{ padding: '8px 20px', background: 'rgba(255,255,255,.15)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Ouvrir le Live Monitor</button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+                        <span style={{ fontSize: 28, fontWeight: 900 }}>27€</span>
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,.5)' }}>/mois · 0% commission · sans engagement</span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/create-subscription', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ shop_id: shop.id, email: user.email }),
+                            })
+                            const data = await res.json()
+                            if (data.url) window.location.href = data.url
+                            else alert(data.error || 'Erreur')
+                          } catch(e) { alert('Erreur de connexion') }
+                        }}
+                        style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 20px rgba(233,69,96,.35)', letterSpacing: 0.5 }}>
+                        🚀 Debloquer le Live Monitor — 27€/mois
+                      </button>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 8 }}>Annule quand tu veux. Le mode Demo reste gratuit.</div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div style={{ fontSize: 14, marginBottom: 14 }}>27€/mois · 0% commission · Sans engagement</div>
-              {shop?.subscription_status !== 'active' && (
-                <button
-                  onClick={async () => {
-                    const res = await fetch('/api/create-subscription', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ shop_id: shop.id, email: user.email }),
-                    })
-                    const data = await res.json()
-                    if (data.url) window.location.href = data.url
-                  }}
-                  style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
-                  S'abonner — 27€/mois
-                </button>
-              )}
             </div>
 
             <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
