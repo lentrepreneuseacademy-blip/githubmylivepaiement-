@@ -1447,8 +1447,8 @@ export default function Dashboard() {
         )}
         
         {/* Logo */}
-        <div style={{ marginBottom: 32, padding: '0 4px', textAlign: sidebarCollapsed ? 'center' : 'left' }}>
-          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: sidebarCollapsed ? '0 auto' : '0', boxShadow: '0 4px 12px rgba(233,69,96,.3)' }}>
+        <div style={{ marginBottom: 32, padding: '0 4px', textAlign: (sidebarCollapsed && !isMobile) ? 'center' : 'left' }}>
+          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: (sidebarCollapsed && !isMobile) ? '0 auto' : '0', boxShadow: '0 4px 12px rgba(233,69,96,.3)' }}>
             <span style={{ color: '#FFF', fontSize: 14, fontWeight: 900, letterSpacing: 1 }}>ML</span>
           </div>
           {(!sidebarCollapsed || isMobile) && (
@@ -1465,11 +1465,11 @@ export default function Dashboard() {
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isMobile) setMobileMenuOpen(false) }}
               style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: sidebarCollapsed ? 0 : 12, padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10, marginBottom: 2,
+                width: '100%', display: 'flex', alignItems: 'center', gap: (sidebarCollapsed && !isMobile) ? 0 : 12, padding: (sidebarCollapsed && !isMobile) ? '12px 0' : '11px 14px', borderRadius: 10, marginBottom: 2,
                 background: activeTab === tab.id ? 'rgba(233,69,96,.15)' : 'transparent',
                 border: 'none', cursor: 'pointer', fontFamily: sf, textAlign: 'left',
                 borderLeft: activeTab === tab.id ? '3px solid #E94560' : '3px solid transparent',
-                transition: 'all .2s ease', justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                transition: 'all .2s ease', justifyContent: (sidebarCollapsed && !isMobile) ? 'center' : 'flex-start',
               }}>
               <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{tab.icon}</span>
               {(!sidebarCollapsed || isMobile) && <span style={{ fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 400, color: activeTab === tab.id ? '#FFF' : 'rgba(255,255,255,.6)', transition: 'color .2s' }}>{tab.label}</span>}
@@ -1567,25 +1567,10 @@ export default function Dashboard() {
             {/* Quick create order */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: '#CCC' }}>Dernières commandes</div>
-              <button onClick={() => setShowNewOrder(true)} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+              <button onClick={() => { setActiveTab('orders'); setShowNewOrder(true) }} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                 + Nouvelle commande
               </button>
             </div>
-
-            {/* New order form */}
-            {showNewOrder && (
-              <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 14, padding: 18, marginBottom: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
-                  <input placeholder="Réf (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
-                  <input placeholder="Montant €" type="number" step="0.01" required value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} style={inputStyle} />
-                  <input placeholder="Description (optionnel)" value={newOrder.description} onChange={e => setNewOrder({...newOrder, description: e.target.value})} style={inputStyle} />
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="submit" style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Créer</button>
-                  <button type="button" onClick={() => setShowNewOrder(false)} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#777', border: '2px solid rgba(0,0,0,.06)', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Annuler</button>
-                </div>
-              </form>
-            )}
 
             {/* Orders list */}
             {orders.slice(0, 10).map(o => (
