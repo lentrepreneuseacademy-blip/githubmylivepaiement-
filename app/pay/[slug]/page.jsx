@@ -1439,6 +1439,7 @@ export default function PayPage() {
                     <span style={{ fontFamily: sf, fontSize: 11, color: "#BBB" }}>Visa, Mastercard, CB, Apple Pay, Google Pay</span>
                   </div>
                 </div>
+              </div>
 
               {/* Total */}
               <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.08)", borderRadius: 14, padding: "16px 20px", marginBottom: 16 }}>
