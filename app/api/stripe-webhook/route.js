@@ -41,10 +41,12 @@ export async function POST(request) {
           .single()
 
         if (order?.client_email) {
-          await supabase.rpc('increment_client_orders', {
-            p_shop_id: order.shop_id,
-            p_email: order.client_email,
-          })
+          try {
+            await supabase.rpc('increment_client_orders', {
+              p_shop_id: order.shop_id,
+              p_email: order.client_email,
+            })
+          } catch(e) { console.log('[Webhook] increment_client_orders skipped:', e.message) }
         }
       }
       break
