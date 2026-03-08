@@ -998,7 +998,7 @@ export default function PayPage() {
   const shippingCost = freeShipping ? 0 : customShippingPrice;
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
-  const canPay = nom && prenom && email && phone && adresse && cp && ville && cardNum.length >= 16 && cardExp && cardCvc && parsedAmount > 0;
+  const canPay = nom && prenom && email && phone && adresse && cp && ville && parsedAmount > 0 && (shippingMethod !== 'relay' || selectedRelay);
 
   // Auto-detect language on mount
   useEffect(() => {
@@ -1254,7 +1254,7 @@ export default function PayPage() {
                   const orderPayload = {
                     shop_id: shopData?.id,
                     reference: (orderData?.reference || orderData?.ref || ref.toUpperCase()),
-                    total_amount: parsedAmount,
+                    total_amount: parseFloat(totalAmount),
                     shipping_cost: shippingCost,
                     client_first_name: prenom,
                     client_last_name: nom,
@@ -1426,14 +1426,19 @@ export default function PayPage() {
               {/* Card */}
               <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 14 }}>{t.cardSection}</h2>
-                <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.08)", borderRadius: 14, padding: 18 }}>
-                  <div style={{ marginBottom: 10 }}><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.cardNumber}</label><input value={cardNum} onChange={(e) => setCardNum(e.target.value.replace(/\D/g, "").substring(0, 16))} placeholder="4242 4242 4242 4242" style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, letterSpacing: 2, outline: "none", background: "#FFF" }} /></div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.cardExpiry}</label><input value={cardExp} onChange={(e) => setCardExp(e.target.value)} placeholder="MM/AA" style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
-                    <div><label style={{ fontFamily: sf, fontSize: 11, color: "#BBB", display: "block", marginBottom: 4 }}>{t.cardCvc}</label><input value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").substring(0, 3))} placeholder="123" style={{ width: "100%", padding: "12px 14px", border: "1px solid rgba(0,0,0,.1)", borderRadius: 10, fontFamily: sf, fontSize: 14, outline: "none", background: "#FFF" }} /></div>
+                <div style={{ background: "#F8F9FC", borderRadius: 14, padding: 18, border: "1px solid rgba(0,0,0,.06)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 20 }}>🔒</span>
+                    <div>
+                      <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 600 }}>Paiement securise par Stripe</div>
+                      <div style={{ fontFamily: sf, fontSize: 11, color: "#999" }}>Tu seras redirigee vers la page de paiement securisee</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 22 }}>💳</span>
+                    <span style={{ fontFamily: sf, fontSize: 11, color: "#BBB" }}>Visa, Mastercard, CB, Apple Pay, Google Pay</span>
                   </div>
                 </div>
-              </div>
 
               {/* Total */}
               <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.08)", borderRadius: 14, padding: "16px 20px", marginBottom: 16 }}>
