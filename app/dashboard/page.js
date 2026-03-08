@@ -1327,7 +1327,7 @@ export default function Dashboard() {
       return '🔗 Ton lien :\n\n👉 githubmylivepaiement.vercel.app/pay/' + slug + '\n\n🔴 OU PARTAGER :\n → Bio TikTok/Instagram\n → Commentaire pendant le live\n → Message prive apres "je prends"\n → Story avec sticker lien\n → WhatsApp\n\n💡 Dis pendant le live : "Le lien est dans ma bio, entrez votre ref et payez par CB !"\n\n📱 La cliente : lien > ref > infos > relais > CB > fait !'
     }
     if (q.match(/imprim|ticket|munbyn|thermal|papier|format/)) {
-      return '🖨️ Impression tickets :\n\n🔴 1. Branche ton imprimante thermique en USB\n🔴 2. Installe le driver de l'imprimante\n🔴 3. Reglages imprimante PC :\n → Taille : 50.8mm x 50.8mm\n → Orientation : portrait\n → Marges : 0\n🔴 4. Live Monitor > "Tickets" > "Auto-print"\n🔴 5. Teste en Mode Demo\n\n💡 Si trop grand/petit, ajuste la taille papier'
+      return '🖨️ Impression tickets :\n\n🔴 1. Branche ton imprimante thermique en USB\n🔴 2. Installe le driver\n🔴 3. Reglages imprimante PC :\n → Taille : 50.8mm x 50.8mm\n → Orientation : portrait\n → Marges : 0\n🔴 4. Live Monitor > "Tickets" > "Auto-print"\n🔴 5. Teste en Mode Demo\n\n💡 Si trop grand/petit, ajuste la taille papier'
     }
     if (q.match(/^(merci|thanks|salut|bonjour|hello|coucou|hey|bonsoir)/)) {
       var g = ['Avec plaisir ! 😊','De rien !','Hello ! 👋','Coucou ' + sn + ' ! 😊'][Math.floor(Math.random()*4)]
