@@ -136,6 +136,8 @@ export default function Dashboard() {
   const [shipTrackingNumber, setShipTrackingNumber] = useState(null)
   const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90', mrEnseigne: '', mrPrivateKey: '' })
   const [boxtalSaving, setBoxtalSaving] = useState(false)
+  const [stripeStatus, setStripeStatus] = useState(null)
+  const [stripeLoading, setStripeLoading] = useState(false)
 
   // Statistics
   const [statsData, setStatsData] = useState({ daily: [], monthly: [], topProducts: [], conversionRate: 0, avgOrderValue: 0, totalRevenue7d: 0, totalOrders7d: 0 })
@@ -232,6 +234,12 @@ export default function Dashboard() {
             try { setLegalTexts(JSON.parse(shopData.legal_texts)) } catch(e) {}
           }
           loadMessages(shopData.id)
+          // Check Stripe status
+          try {
+            var stripeRes = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'status', shopId: shopData.id }) })
+            var stripeData = await stripeRes.json()
+            setStripeStatus(stripeData)
+          } catch(e) {}
         }
       }
       setLoading(false)
@@ -2880,16 +2888,69 @@ export default function Dashboard() {
             </div>
 
             <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.03)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Stripe Connect</h3>
-              <p style={{ fontSize: 13, color: '#999', marginBottom: 12 }}>Connecte ton compte Stripe pour recevoir les paiements de tes clientes directement sur ton compte bancaire.</p>
-              {shop?.stripe_account_id ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#10B981' }}>✓ Stripe connecté</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#FFF', fontSize: 18 }}>💳</span>
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Stripe Connect — Paiements</h3>
+                  <p style={{ fontSize: 12, color: '#999', margin: 0 }}>Recois les paiements CB de tes clientes sur ton compte bancaire</p>
+                </div>
+              </div>
+
+              {stripeStatus?.connected && stripeStatus?.chargesEnabled ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#F0FDF4', borderRadius: 12, border: '1px solid #BBF7D0', marginBottom: 12 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#10B981' }}>✓ Stripe connecte — paiements actifs</span>
+                  </div>
+                  {stripeStatus.email && <div style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>Compte : {stripeStatus.email}</div>}
+                  <button onClick={async function() {
+                    var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard', shopId: shop.id }) })
+                    var data = await res.json()
+                    if (data.url) window.open(data.url, '_blank')
+                  }} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                    📊 Voir mon dashboard Stripe
+                  </button>
+                </div>
+              ) : stripeStatus?.connected && !stripeStatus?.chargesEnabled ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#FFF7ED', borderRadius: 12, border: '1px solid #FED7AA', marginBottom: 12 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#92400E' }}>⏳ Compte cree — finalise la verification pour activer les paiements</span>
+                  </div>
+                  <button onClick={async function() {
+                    setStripeLoading(true)
+                    var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) })
+                    var data = await res.json()
+                    if (data.url) window.location.href = data.url
+                    setStripeLoading(false)
+                  }} disabled={stripeLoading} style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
+                    {stripeLoading ? 'Chargement...' : 'Finaliser la verification'}
+                  </button>
                 </div>
               ) : (
-                <button style={{ padding: '14px 28px', background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
-                  Connecter Stripe
-                </button>
+                <div>
+                  <div style={{ background: '#F8F9FC', borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 13, color: '#666', lineHeight: 1.7 }}>
+                    <strong style={{ color: '#1A1A2E' }}>Comment ca marche ?</strong><br/>
+                    1. Clique sur "Connecter Stripe" ci-dessous<br/>
+                    2. Cree ton compte Stripe (gratuit) ou connecte-toi<br/>
+                    3. Renseigne ton <strong>IBAN</strong> pour recevoir les virements<br/>
+                    4. Valide ton identite (carte d'identite)<br/>
+                    5. C'est fait ! L'argent arrive sur ton compte sous 2-7 jours<br/><br/>
+                    <span style={{ fontSize: 11, color: '#999' }}>Stripe prend une commission de 1.5% + 0.25€ par transaction</span>
+                  </div>
+                  <button onClick={async function() {
+                    setStripeLoading(true)
+                    try {
+                      var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) })
+                      var data = await res.json()
+                      if (data.url) window.location.href = data.url
+                      else if (data.error) alert('Erreur : ' + data.error)
+                    } catch(e) { alert('Erreur de connexion') }
+                    setStripeLoading(false)
+                  }} disabled={stripeLoading} style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(99,91,255,.25)' }}>
+                    {stripeLoading ? 'Chargement...' : '💳 Connecter Stripe'}
+                  </button>
+                </div>
               )}
             </div>
 
