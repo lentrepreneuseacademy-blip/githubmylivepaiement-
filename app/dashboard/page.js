@@ -1614,6 +1614,53 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             ))}
           </div>
+
+          {/* MY LIVE PAIEMENT */}
+          {shop?.subscription_status !== 'active' && (
+            <div style={{ position: 'relative', borderRadius: 24, padding: isMobile ? 20 : 32, marginTop: 24, background: 'linear-gradient(135deg, #FFF 0%, #FFF5F5 30%, #F5F3FF 70%, #F0FDF4 100%)', border: '1px solid rgba(233,69,96,.1)', overflow: 'hidden', boxShadow: '0 4px 24px rgba(233,69,96,.06)' }}>
+              <div style={{ position: 'absolute', top: -80, right: -80, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.05) 0%, transparent 70%)' }} />
+              <div style={{ position: 'absolute', bottom: -60, left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.04) 0%, transparent 70%)' }} />
+
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(233,69,96,.2)', fontSize: 24 }}>🚀</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: sf, fontSize: isMobile ? 17 : 20, fontWeight: 900, color: '#1A1A2E' }}>MY LIVE PAIEMENT</div>
+                    <div style={{ fontFamily: sf, fontSize: 11, color: '#E94560', fontWeight: 700, letterSpacing: 1 }}>Tout-en-un pour les vendeuses en live</div>
+                  </div>
+                </div>
+
+                <p style={{ fontFamily: sf, fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 20 }}>
+                  27€/mois, tout inclus. 0% de commission, pas de frais caches. Paiement CB + Live Monitor exclusif + etiquettes Mondial Relay + dashboard complet.
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+                  {[
+                    { icon: '💳', t: 'Paiement CB', c: '#635BFF' },
+                    { icon: '📡', t: 'Live Monitor', c: '#E94560' },
+                    { icon: '📦', t: 'Etiquettes', c: '#E30613' },
+                    { icon: '📊', t: 'Dashboard', c: '#1A1A2E' },
+                  ].map(function(f, i) { return (
+                    <div key={i} style={{ textAlign: 'center', padding: '12px 8px', background: '#FFF', borderRadius: 12, border: '1px solid rgba(0,0,0,.04)' }}>
+                      <div style={{ fontSize: 22, marginBottom: 4 }}>{f.icon}</div>
+                      <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: f.c }}>{f.t}</div>
+                    </div>
+                  )})}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
+                    style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: '0 6px 24px rgba(233,69,96,.2)' }}>
+                    🚀 Activer — 27€/mois
+                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#F0FDF4', color: '#059669' }}>0% commission</span>
+                    <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#F0FDF4', color: '#059669' }}>Sans engagement</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         )}
 
         {/* ══════════════════════════════════════════ */}
