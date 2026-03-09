@@ -1465,7 +1465,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
         <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ position: 'absolute', right: -12, top: 32, width: 24, height: 24, borderRadius: '50%', background: '#FFF', border: '2px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
           {sidebarCollapsed ? '→' : '←'}
         </button>
-          </div>
         )}
         
         {/* Logo */}
