@@ -1,0 +1,21 @@
+{
+  "name": "MY LIVE PAIEMENT",
+  "short_name": "MLP",
+  "description": "Paiement live shopping TikTok & Instagram. 0% commission.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F5F7",
+  "theme_color": "#007AFF",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

@@ -146,6 +146,7 @@ export default function LandingPage() {
             <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: .5 }}>MY LIVE PAIEMENT</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <a href="/blog" style={{ padding: '9px 18px', color: '#1A1A1A', textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>Blog</a>
             <a href="/dashboard" style={{ padding: '9px 18px', color: '#1A1A1A', textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>Se connecter</a>
             <a href="/dashboard" style={{ padding: '10px 22px', background: '#1A1A1A', color: '#FFF', textDecoration: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600 }}>Commencer ✦</a>
           </div>
@@ -609,6 +610,7 @@ export default function LandingPage() {
         <div style={{ fontSize: 12, color: '#999', marginBottom: 14 }}>© 2026 MY LIVE PAIEMENT · mylivepaiement.com</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
           <a href="https://www.instagram.com/mylivepaiement" target="_blank" rel="noopener" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Instagram</a>
+          <a href="/blog" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Blog</a>
           <a href="mailto:contact@mylivepaiement.com" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Contact</a>
         </div>
       </footer>
