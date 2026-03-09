@@ -1502,7 +1502,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
         {/* User section */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', paddingTop: 16, marginTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: ''#5856D6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#5856D6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <span style={{ color: '#FFF', fontSize: 13, fontWeight: 700 }}>{(shop?.name || 'M').charAt(0).toUpperCase()}</span>
             </div>
             {(!sidebarCollapsed || isMobile) && (
@@ -1905,7 +1905,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                   )}
                   {liveOrders.length > 0 && (
                     <button onClick={function() { setShowPaymentTracking(!showPaymentTracking) }}
-                      style={{ padding: '12px 24px', background: showPaymentTracking ? '#10B981' : ''#5856D6', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, boxShadow: '0 4px 12px rgba(102,126,234,.25)', fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                      style={{ padding: '12px 24px', background: showPaymentTracking ? '#10B981' : '#5856D6', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, boxShadow: '0 4px 12px rgba(102,126,234,.25)', fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
                       💰 Suivi paiements
                     </button>
                   )}
@@ -2773,10 +2773,10 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 return (
                   <div key={i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', marginBottom: 12, animation: 'fadeSlide .3s ease-out' }}>
                     <div style={{ display: 'flex', gap: 10, maxWidth: '80%', flexDirection: isUser ? 'row-reverse' : 'row' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 10, background: isUser ? ''#5856D6' : '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: isUser ? '#5856D6' : '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <span style={{ color: '#FFF', fontSize: 14 }}>{isUser ? '👤' : '🤖'}</span>
                       </div>
-                      <div style={{ padding: '12px 16px', borderRadius: 14, background: isUser ? ''#5856D6' : '#F8F9FA', color: isUser ? '#FFF' : '#333', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                      <div style={{ padding: '12px 16px', borderRadius: 14, background: isUser ? '#5856D6' : '#F8F9FA', color: isUser ? '#FFF' : '#333', fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                         {msg.content}
                       </div>
                     </div>
