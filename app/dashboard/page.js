@@ -2856,55 +2856,55 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             </div>
 
             {/* ══════ MY LIVE PAIEMENT VIP ══════ */}
-            <div style={{ position: 'relative', zIndex: 1, borderRadius: 24, padding: isMobile ? 24 : 36, marginBottom: 24, background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 40%, #16213E 70%, #0F3460 100%)', color: '#FFF', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15,15,26,.4)' }}>
-              <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.2) 0%, transparent 70%)', animation: 'float 6s ease-in-out infinite' }} />
-              <div style={{ position: 'absolute', bottom: -40, left: '30%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.15) 0%, transparent 70%)', animation: 'float 8s ease-in-out infinite reverse' }} />
+            <div style={{ position: 'relative', zIndex: 1, borderRadius: 24, padding: isMobile ? 24 : 36, marginBottom: 24, background: 'linear-gradient(135deg, #FFF 0%, #FFF5F5 40%, #F5F3FF 100%)', border: '1px solid rgba(233,69,96,.1)', overflow: 'hidden', boxShadow: '0 4px 24px rgba(233,69,96,.06)' }}>
+              <div style={{ position: 'absolute', top: -80, right: -80, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.06) 0%, transparent 70%)' }} />
+              <div style={{ position: 'absolute', bottom: -60, left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.05) 0%, transparent 70%)' }} />
 
               <div style={{ position: 'relative', zIndex: 2 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(233,69,96,.4)', fontSize: 26 }}>🚀</div>
+                  <div style={{ width: 52, height: 52, borderRadius: 16, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(233,69,96,.25)', fontSize: 26 }}>🚀</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: sf, fontSize: 20, fontWeight: 900, color: '#FFF', letterSpacing: -0.5 }}>MY LIVE PAIEMENT</div>
-                    <div style={{ fontFamily: sf, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,.5)' }}>Tout-en-un pour les vendeuses en live</div>
+                    <div style={{ fontFamily: sf, fontSize: 20, fontWeight: 900, color: '#1A1A2E', letterSpacing: -0.5 }}>MY LIVE PAIEMENT</div>
+                    <div style={{ fontFamily: sf, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: '#E94560' }}>Tout-en-un pour les vendeuses en live</div>
                   </div>
-                  <div style={{ padding: '6px 16px', borderRadius: 20, background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', fontFamily: sf, fontSize: 10, fontWeight: 900, color: '#FFF', letterSpacing: 2, boxShadow: '0 4px 14px rgba(233,69,96,.4)' }}>VIP</div>
+                  <div style={{ padding: '6px 16px', borderRadius: 20, background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', fontFamily: sf, fontSize: 10, fontWeight: 900, color: '#FFF', letterSpacing: 2, boxShadow: '0 4px 14px rgba(233,69,96,.25)' }}>VIP</div>
                 </div>
 
-                <p style={{ fontFamily: sf, fontSize: 14, color: 'rgba(255,255,255,.7)', lineHeight: 1.8, marginBottom: 28, maxWidth: 600 }}>
+                <p style={{ fontFamily: sf, fontSize: 14, color: '#666', lineHeight: 1.8, marginBottom: 28, maxWidth: 600 }}>
                   Ta boutique de paiement en ligne, la detection automatique des commandes en live (exclusivite), les etiquettes Mondial Relay en 1 clic et un dashboard complet pour gerer ton business.
                 </p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 28 }}>
                   {[
-                    { icon: '💳', title: 'Paiement CB', desc: 'Tes clientes paient par carte via Stripe' },
-                    { icon: '📡', title: 'Live Monitor', desc: 'Detection auto des "je prends" — exclusif' },
-                    { icon: '📦', title: 'Etiquettes MR', desc: 'Genere et imprime en 1 clic' },
-                    { icon: '📊', title: 'Dashboard pro', desc: 'Stats, clients, messages, IA' },
+                    { icon: '💳', title: 'Paiement CB', desc: 'Tes clientes paient par carte via Stripe', color: '#635BFF', bg: '#F5F3FF' },
+                    { icon: '📡', title: 'Live Monitor', desc: 'Detection auto des "je prends" — exclusif', color: '#E94560', bg: '#FFF5F5' },
+                    { icon: '📦', title: 'Etiquettes MR', desc: 'Genere et imprime en 1 clic', color: '#E30613', bg: '#FFF5F5' },
+                    { icon: '📊', title: 'Dashboard pro', desc: 'Stats, clients, messages, IA', color: '#1A1A2E', bg: '#F4F5FA' },
                   ].map(function(f, i) { return (
-                    <div key={i} style={{ background: 'rgba(255,255,255,.08)', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(255,255,255,.08)' }}>
+                    <div key={i} style={{ background: f.bg, borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(0,0,0,.04)' }}>
                       <div style={{ fontSize: 24, marginBottom: 10 }}>{f.icon}</div>
-                      <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 800, color: '#FFF', marginBottom: 4 }}>{f.title}</div>
-                      <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.45)', lineHeight: 1.6 }}>{f.desc}</div>
+                      <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 800, color: f.color, marginBottom: 4 }}>{f.title}</div>
+                      <div style={{ fontFamily: sf, fontSize: 11, color: '#999', lineHeight: 1.6 }}>{f.desc}</div>
                     </div>
                   )})}
                 </div>
 
                 {shop?.subscription_status === 'active' ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                    <div style={{ padding: '12px 28px', borderRadius: 14, background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#FFF', boxShadow: '0 8px 24px rgba(16,185,129,.3)' }}>✓ Abonnement actif</div>
-                    <button onClick={function() { setActiveTab('live') }} style={{ padding: '12px 28px', background: 'rgba(255,255,255,.1)', color: '#FFF', border: '1px solid rgba(255,255,255,.15)', borderRadius: 14, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Ouvrir le Live Monitor →</button>
+                    <div style={{ padding: '12px 28px', borderRadius: 14, background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#FFF', boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>✓ Abonnement actif</div>
+                    <button onClick={function() { setActiveTab('live') }} style={{ padding: '12px 28px', background: '#FFF', color: '#1A1A2E', border: '1px solid rgba(0,0,0,.1)', borderRadius: 14, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Ouvrir le Live Monitor →</button>
                   </div>
                 ) : (
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
-                      <span style={{ fontFamily: sf, fontSize: 40, fontWeight: 900, color: '#FFF' }}>27€</span>
-                      <span style={{ fontFamily: sf, fontSize: 14, color: 'rgba(255,255,255,.4)' }}>/mois · 0% commission</span>
+                      <span style={{ fontFamily: sf, fontSize: 40, fontWeight: 900, color: '#1A1A2E' }}>27€</span>
+                      <span style={{ fontFamily: sf, fontSize: 14, color: '#999' }}>/mois · 0% commission</span>
                     </div>
                     <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
-                      style={{ padding: '18px 40px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 16, fontFamily: sf, fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: '0 8px 32px rgba(233,69,96,.4)', letterSpacing: 0.5 }}>
+                      style={{ padding: '18px 40px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 16, fontFamily: sf, fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: '0 8px 32px rgba(233,69,96,.25)', letterSpacing: 0.5 }}>
                       🚀 Activer My Live Paiement — 27€/mois
                     </button>
-                    <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 12 }}>Sans engagement · Annule quand tu veux · Mode Demo gratuit</div>
+                    <div style={{ fontFamily: sf, fontSize: 11, color: '#BBB', marginTop: 12 }}>Sans engagement · Annule quand tu veux · Mode Demo gratuit</div>
                   </div>
                 )}
               </div>
