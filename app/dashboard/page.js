@@ -2810,6 +2810,7 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
                 Envoyer
               </button>
             </div>
+          </div>
         )}
 
         {/* ─── SETTINGS ─── */}
@@ -3114,6 +3115,7 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
                 {legalSaving ? '⏳ ...' : '💾 Sauvegarder'}
               </button>
             </div>
+          </div>
         )}
       </main>
     </div>
