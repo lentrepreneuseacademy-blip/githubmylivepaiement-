@@ -2274,7 +2274,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
               </div>
             )}
           </div>
-          </div>
         )}
 
         {/* ─── ORDERS ─── */}
@@ -2438,7 +2437,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
               </div>
             )}
           </div>
-          </div>
         )}
 
         {/* ─── CLIENTS ─── */}
@@ -2488,7 +2486,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
                 <p style={{ fontSize: 13, marginTop: 4 }}>Les clients apparaitront apres leur premier paiement</p>
               </div>
             )}
-          </div>
           </div>
         )}
 
@@ -2660,7 +2657,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
               </div>
             )}
           </div>
-          </div>
         )}
 
         {/* ─── MESSAGES ─── */}
@@ -2741,7 +2737,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
               )
             })}
           </div>
-          </div>
         )}
 
         {/* ─── AI ASSISTANT ─── */}
@@ -2815,8 +2810,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
                 Envoyer
               </button>
             </div>
-          </div>
-          </div>
         )}
 
         {/* ─── SETTINGS ─── */}
@@ -3121,8 +3114,6 @@ input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shado
                 {legalSaving ? '⏳ ...' : '💾 Sauvegarder'}
               </button>
             </div>
-          </div>
-          </div>
         )}
       </main>
     </div>
