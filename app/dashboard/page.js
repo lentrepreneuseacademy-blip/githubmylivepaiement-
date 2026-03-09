@@ -1598,11 +1598,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {orders.slice(0, 10).map(o => (
               <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, marginBottom: 4, background: '#FFF' }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>{o.reference || o.ref}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || o.ref}</span>
                   <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? `${o.client_first_name} ${o.client_last_name}` : '—'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                   <span style={{
                     fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
                     color: o.status === 'paid' ? '#F59E0B' : o.status === 'shipped' ? '#8B5CF6' : o.status === 'delivered' ? '#10B981' : '#999',
@@ -1650,7 +1650,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                         transition: 'border-color .2s, transform .2s',
                       }}>
                       <div style={{ fontSize: 36, marginBottom: 8 }}>{p.icon}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700 }}>{p.label}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{p.label}</div>
                       {!p.available && <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>Bientôt disponible</div>}
                     </button>
                   ))}
@@ -1850,11 +1850,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 {/* Session stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800 }}>{liveOrders.length}</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1A1A2E' }}>{liveOrders.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800 }}>{allComments.length}</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1A1A2E' }}>{allComments.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commentaires</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
@@ -1989,7 +1989,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                     <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800 }}>{allComments.length}</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1A1A2E' }}>{allComments.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commentaires</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
@@ -2027,7 +2027,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       <div>
                         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
                           <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#ECFDF5' }}>
-                            <div style={{ fontSize: 22, fontWeight: 800, color: '#059669' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: '#047857' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
                             <div style={{ fontSize: 10, color: '#059669', fontWeight: 600 }}>Payees</div>
                           </div>
                           <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#FEF2F2' }}>
@@ -2089,12 +2089,12 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       )}
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700 }}>@{c.user}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#1A1A2E' }}>@{c.user}</span>
                           {c.isPurchase && <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 10, background: '#F59E0B', color: '#FFF' }}>COMMANDE</span>}
                           {c.isGift && <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 10, background: '#EC4899', color: '#FFF' }}>CADEAU</span>}
                           <span style={{ fontSize: 10, color: '#CCC', marginLeft: 'auto' }}>{c.time}</span>
                         </div>
-                        <div style={{ fontSize: 13, color: c.isPurchase ? '#555' : c.isGift ? '#BE185D' : '#999', marginTop: 2 }}>{c.text}</div>
+                        <div style={{ fontSize: 13, color: c.isPurchase ? '#333' : c.isGift ? '#BE185D' : '#555', marginTop: 2 }}>{c.text}</div>
                       </div>
                     </div>
                   ))}
@@ -2317,7 +2317,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 20 }}>
                   <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
                     <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>CLIENT</div>
-                    <div style={{ fontSize: 15, fontWeight: 700 }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
                     <div style={{ fontSize: 12, color: '#777', marginTop: 4 }}>{selectedOrderDetail.client_email || ''}</div>
                     <div style={{ fontSize: 12, color: '#777' }}>{selectedOrderDetail.client_phone || ''}</div>
                   </div>
@@ -2382,14 +2382,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '12px 14px' : '14px 16px', borderRadius: 14, marginBottom: 6, gap: isMobile ? 8 : 0, background: selectedOrderDetail?.id === o.id ? 'rgba(233,69,96,.04)' : 'rgba(255,255,255,.03)', border: selectedOrderDetail?.id === o.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || o.ref}</span>
                     <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? (o.client_first_name + ' ' + o.client_last_name) : 'En attente'}</span>
                     {o.source === 'live_monitor' && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 8, background: '#EFF6FF', color: '#3B82F6' }}>LIVE</span>}
                   </div>
                   <div style={{ fontSize: 11, color: '#BBB', marginTop: 3 }}>{new Date(o.created_at).toLocaleDateString('fr-FR')} {o.shipping_city ? '· ' + o.shipping_city : ''} {o.description ? '· ' + o.description.substring(0, 40) : ''}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                   <span style={{
                     fontSize: 10, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
                     color: o.status === 'paid' ? '#F59E0B' : o.status === 'shipped' ? '#8B5CF6' : o.status === 'delivered' ? '#10B981' : o.status === 'cancelled' ? '#EF4444' : '#94A3B8',
@@ -2432,7 +2432,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Commandes de ce client :</div>
                 {orders.filter(function(o) { return o.client_email && selectedClient.email && o.client_email.toLowerCase() === selectedClient.email.toLowerCase() }).map(function(o) { return (
                   <div key={o.id} onClick={function() { setActiveTab('orders'); setSelectedOrderDetail(o); setSelectedClient(null) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, marginBottom: 4, background: '#FAFAF8', cursor: 'pointer', border: '1px solid rgba(0,0,0,.04)' }}>
-                    <div><span style={{ fontSize: 13, fontWeight: 700 }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: '#999' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
+                    <div><span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: '#999' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
                     <div><span style={{ fontSize: 13, fontWeight: 700 }}>{(o.total_amount || 0).toFixed(2)}€</span></div>
                   </div>
                 )})}
@@ -2442,7 +2442,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {clients.map(c => (
               <div key={c.id} onClick={function() { setSelectedClient(selectedClient?.id === c.id ? null : c) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedClient?.id === c.id ? 'rgba(233,69,96,.04)' : 'rgba(255,255,255,.03)', border: selectedClient?.id === c.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{c.first_name} {c.last_name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{c.first_name} {c.last_name}</div>
                   <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{c.email} · {c.phone || '—'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -2513,7 +2513,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                             <span style={{ fontSize: 15, fontWeight: 800 }}>{o.reference || '#'}</span>
                             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#FFFBEB', color: '#92400E' }}>A expedier</span>
-                            <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                           </div>
                           <div style={{ fontSize: 12, color: '#777' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
                           {o.shipping_address && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
@@ -2533,7 +2533,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || '#'}</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || '#'}</span>
                             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#F5F3FF', color: '#8B5CF6' }}>Expedie</span>
                           </div>
                           <div style={{ fontSize: 12, color: '#999' }}>{o.shipping_carrier || ''} {o.tracking_number ? '- Suivi: ' + o.tracking_number : ''}</div>
