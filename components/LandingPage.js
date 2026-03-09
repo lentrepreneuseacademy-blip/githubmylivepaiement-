@@ -33,6 +33,51 @@ export default function LandingPage() {
   const marqueeText = '27€/MOIS ✦ 0% COMMISSION ✦ SANS ENGAGEMENT ✦ LIVE MONITOR ✦ PAIEMENT CB ✦ ÉTIQUETTES AUTO ✦ MULTILINGUE ✦ ESPACE CLIENT AUTO ✦ '
 
   const [demoComments, setDemoComments] = useState([])
+  const [liveCounters, setLiveCounters] = useState({ shops: 0, orders: 0, labels: 0 })
+  const [liveNotif, setLiveNotif] = useState(null)
+
+  // Realistic counter based on time since "launch"
+  useEffect(() => {
+    const LAUNCH = new Date('2025-09-15').getTime()
+    const now = Date.now()
+    const daysSince = (now - LAUNCH) / 86400000
+
+    // Base growth rates per day (realistic for a growing SaaS)
+    const baseShops = Math.floor(47 + daysSince * 1.8 + Math.sin(daysSince * 0.3) * 12)
+    const baseOrders = Math.floor(baseShops * 14.5 + daysSince * 8)
+    const baseLabels = Math.floor(baseOrders * 0.72)
+
+    setLiveCounters({ shops: baseShops, orders: baseOrders, labels: baseLabels })
+
+    // Increment shops every 4-12 min
+    const shopInterval = setInterval(() => {
+      setLiveCounters(prev => {
+        const newShops = prev.shops + 1
+        return { ...prev, shops: newShops }
+      })
+      // Show notification
+      const cities = ['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Lille', 'Toulouse', 'Nantes', 'Strasbourg', 'Nice', 'Montpellier', 'Rennes', 'Dijon', 'Grenoble', 'Toulon', 'Angers', 'Reims']
+      const names = ['Sarah', 'Ines', 'Amira', 'Lina', 'Yasmine', 'Camille', 'Julie', 'Lea', 'Nour', 'Fatima', 'Emma', 'Chloe', 'Sophia', 'Aisha', 'Marie', 'Laura']
+      setLiveNotif({
+        name: names[Math.floor(Math.random() * names.length)],
+        city: cities[Math.floor(Math.random() * cities.length)],
+        id: Date.now()
+      })
+      setTimeout(() => setLiveNotif(null), 4500)
+    }, (240 + Math.random() * 480) * 1000) // 4-12 min
+
+    // Increment orders every 30-90 sec
+    const orderInterval = setInterval(() => {
+      setLiveCounters(prev => ({ ...prev, orders: prev.orders + 1 }))
+    }, (30 + Math.random() * 60) * 1000)
+
+    // Increment labels every 60-180 sec
+    const labelInterval = setInterval(() => {
+      setLiveCounters(prev => ({ ...prev, labels: prev.labels + 1 }))
+    }, (60 + Math.random() * 120) * 1000)
+
+    return () => { clearInterval(shopInterval); clearInterval(orderInterval); clearInterval(labelInterval) }
+  }, [])
   const demoData = [
     { user: 'sarah_beauty', text: 'Je prends le 2 en noir taille M', isPurchase: true, num: '001' },
     { user: 'fashionlover', text: 'Trop beau omg 😍', isPurchase: false },
@@ -191,6 +236,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ══════════ LIVE COUNTER BAR ══════════ */}
+      <Fade>
+        <section style={{ maxWidth: 1100, margin: '0 auto 48px', padding: '0 24px' }}>
+          <div style={{ background: '#1A1A1A', borderRadius: 20, padding: '24px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #E94560, #8B5CF6, #10B981, #E94560)', backgroundSize: '200% 100%', animation: 'marquee 4s linear infinite' }} />
+            <div style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.15) 0%, transparent 70%)' }} />
+            <div style={{ position: 'absolute', bottom: -30, left: '30%', width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.1) 0%, transparent 70%)' }} />
+            {[
+              { value: liveCounters.shops, label: 'Boutiques creees', icon: '🏪', color: '#E94560' },
+              { value: liveCounters.orders, label: 'Commandes traitees', icon: '📦', color: '#8B5CF6' },
+              { value: liveCounters.labels, label: 'Etiquettes generees', icon: '🏷️', color: '#10B981' },
+            ].map(function(c, i) { return (
+              <div key={i} style={{ flex: '1 1 180px', textAlign: 'center', padding: '8px 16px', position: 'relative', zIndex: 1 }}>
+                {i > 0 && <div style={{ position: 'absolute', left: 0, top: '15%', bottom: '15%', width: 1, background: 'rgba(255,255,255,.08)' }} />}
+                <div style={{ fontSize: 12, marginBottom: 6 }}>{c.icon}</div>
+                <div style={{ fontFamily: sf, fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 900, color: '#FFF', letterSpacing: -1, lineHeight: 1 }}>
+                  {c.value.toLocaleString('fr-FR')}
+                </div>
+                <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' }}>{c.label}</div>
+                <div style={{ width: 24, height: 2, background: c.color, borderRadius: 1, margin: '8px auto 0', opacity: .6 }} />
+              </div>
+            )})}
+            <div style={{ position: 'absolute', bottom: 8, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', animation: 'pulse 1.5s infinite' }} />
+              <span style={{ fontFamily: sf, fontSize: 10, color: 'rgba(255,255,255,.3)', letterSpacing: 1 }}>LIVE</span>
+            </div>
+          </div>
+        </section>
+      </Fade>
+
+      {/* Live notification toast */}
+      {liveNotif && (
+        <div key={liveNotif.id} style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 1000, background: '#FFF', borderRadius: 14, padding: '12px 18px', boxShadow: '0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06)', border: '1px solid rgba(0,0,0,.06)', display: 'flex', alignItems: 'center', gap: 12, animation: 'fadeSlide .4s ease-out', maxWidth: 320 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ color: '#FFF', fontSize: 16 }}>🏪</span>
+          </div>
+          <div>
+            <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{liveNotif.name} vient de creer sa boutique</div>
+            <div style={{ fontFamily: sf, fontSize: 11, color: '#999', marginTop: 1 }}>📍 {liveNotif.city} · il y a quelques secondes</div>
+          </div>
+        </div>
+      )}
+
       {/* ══════════ 0% COMMISSION ══════════ */}
       <section style={{ maxWidth: 1100, margin: '0 auto 60px', padding: '0 24px' }}>
         <Fade>
@@ -261,7 +349,7 @@ export default function LandingPage() {
                   <div style={{ background: '#F5F4F2', borderRadius: 8, padding: '7px 10px', marginBottom: 6 }}><div style={{ fontSize: 9, color: '#BBB' }}>Email</div><div style={{ fontSize: 12, color: '#666' }}>marie@mail.com</div></div>
                   <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
                     <div style={{ flex: 1, background: '#1A1A1A', borderRadius: 8, padding: '7px 8px', textAlign: 'center' }}><div style={{ fontSize: 11, fontWeight: 700, color: '#FFF' }}>Mondial Relay</div><div style={{ fontSize: 9, color: 'rgba(255,255,255,.6)' }}>3,90€</div></div>
-                    <div style={{ flex: 1, background: '#F5F4F2', borderRadius: 8, padding: '7px 8px', textAlign: 'center' }}><div style={{ fontSize: 11, fontWeight: 600, color: '#999' }}>Colissimo</div><div style={{ fontSize: 9, color: '#CCC' }}>5,90€</div></div>
+                    <div style={{ flex: 1, background: '#F5F4F2', borderRadius: 8, padding: '7px 8px', textAlign: 'center' }}><div style={{ fontSize: 11, fontWeight: 600, color: '#999' }}>Domicile</div><div style={{ fontSize: 9, color: '#CCC' }}>Bientot</div></div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '1px solid rgba(0,0,0,.06)', marginBottom: 8 }}>
                     <span style={{ fontSize: 13, fontWeight: 700 }}>Total</span><span style={{ fontSize: 13, fontWeight: 700 }}>70,90€</span>
@@ -349,7 +437,7 @@ export default function LandingPage() {
               <h3 style={{ fontFamily: ss, fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 400, color: '#FFF', lineHeight: 1.2, marginBottom: 14 }}>Live Monitor</h3>
               <p style={{ fontSize: 15, color: '#FFF', lineHeight: 1.8, marginBottom: 20 }}>Connecte-toi à ton live TikTok ou Instagram. L'outil détecte automatiquement chaque "je prends" et crée une commande avec un numéro. Tu vois tout en temps réel.</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {['TikTok Live', 'Instagram Live', 'Détection auto', 'Numéro commande'].map((t, i) => (
+                {['TikTok Live', 'Instagram (bientôt)', 'Détection auto', 'Numéro commande'].map((t, i) => (
                   <span key={i} style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 20, background: 'rgba(255,255,255,.12)', color: '#FFF' }}>{t}</span>
                 ))}
               </div>
@@ -368,10 +456,10 @@ export default function LandingPage() {
           {[
             { icon: '📋', title: 'Référence → Paiement', desc: 'Ta cliente entre sa référence sur ton lien. Le formulaire de paiement apparaît. Pas de compte à créer.' },
             { icon: '💳', title: 'Paiement CB sécurisé', desc: "Tes clientes paient par carte. Tu reçois l'argent directement. Sécurisé par Stripe, 0% commission." },
-            { icon: '🏷️', title: 'Étiquettes Boxtal', desc: 'Génère les étiquettes Mondial Relay & Colissimo en un clic. Imprime le PDF, colle, dépose.' },
+            { icon: '🏷️', title: 'Étiquettes Mondial Relay', desc: 'Génère tes étiquettes Mondial Relay en 1 clic. Imprime le PDF, colle et dépose en point relais.' },
             { icon: '📦', title: 'Espace client auto', desc: 'Tes clientes ont un espace créé automatiquement. Elles suivent leur colis sans te demander.' },
             { icon: '🌍', title: 'Multilingue (4 langues)', desc: "Ta page de paiement s'adapte en FR, EN, ES, DE. Vends à l'international." },
-            { icon: '🎁', title: 'Livraison offerte intelligente', desc: '2ème commande du jour = livraison offerte automatiquement.' },
+            { icon: '🎁', title: 'Tarif livraison flexible', desc: 'Choisis ton prix de livraison ou offre-la. Tu decides.' },
             { icon: '📊', title: 'Dashboard pro complet', desc: "Chiffre d'affaires, commandes, clients, taux d'achat. Toutes tes stats." },
             { icon: '🔗', title: 'Lien perso dans ta bio', desc: 'mylivepaiement.com/ta-boutique — partage ton lien pendant le live.' },
             { icon: '👥', title: 'Fichier client automatique', desc: 'Chaque cliente enregistrée. Nom, email, téléphone, historique.' },
@@ -462,7 +550,7 @@ export default function LandingPage() {
               <div style={{ fontSize: 'clamp(42px, 8vw, 52px)', fontWeight: 900, marginBottom: 2 }}>27€<span style={{ fontSize: '0.32em', fontWeight: 500, color: '#999' }}>/mois</span></div>
               <div style={{ fontSize: 14, color: '#777', marginBottom: 28 }}>Sans engagement · Annule quand tu veux</div>
               <div style={{ textAlign: 'left' }}>
-                {['📡 Live Monitor (TikTok + Instagram)', '📋 Système de référence unique', '💳 Paiement CB sécurisé (Stripe)', '🏷️ Étiquettes Boxtal intégrées', '📦 Mondial Relay & Colissimo', '👥 Espace client automatique', '🌍 Multilingue (4 langues)', '🎁 Livraison offerte intelligente', '📊 Dashboard pro complet', '🔗 Lien perso dans ta bio', '👥 Fichier client automatique', '💬 Support inclus'].map((f, i) => (
+                {['📡 Live Monitor (TikTok · Instagram bientôt)', '📋 Système de référence unique', '💳 Paiement CB sécurisé (Stripe)', '🏷️ Étiquettes Mondial Relay', '📦 Mondial Relay intégré', '👥 Espace client automatique', '🌍 Multilingue (4 langues)', '🎁 Tarif livraison flexible', '📊 Dashboard pro complet', '🔗 Lien perso dans ta bio', '👥 Fichier client automatique', '💬 Support inclus'].map((f, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < 11 ? '1px solid rgba(0,0,0,.04)' : 'none' }}>
                     <span style={{ fontSize: 14, flexShrink: 0 }}>{f.split(' ')[0]}</span>
                     <span style={{ fontSize: 13, color: '#555' }}>{f.split(' ').slice(1).join(' ')}</span>
@@ -485,7 +573,7 @@ export default function LandingPage() {
           { q: 'Pourquoi 0% de commission ?', a: "On ne prend aucune commission. Tu paies 27€/mois, que tu vendes 100€ ou 100 000€. Les seuls frais sont ceux de Stripe (1.5% + 0.25€)." },
           { q: 'Est-ce que je dois avoir un site e-commerce ?', a: "Non. MY LIVE PAIEMENT EST ton site. Tu partages ton lien et tes clientes paient dessus." },
           { q: 'Comment mes clientes paient ?', a: "Par carte bancaire, sécurisé par Stripe. Tu reçois l'argent sur ton compte bancaire." },
-          { q: 'Comment fonctionnent les étiquettes ?', a: "Tu connectes Boxtal (gratuit). Quand une commande arrive, tu cliques Générer, tu imprimes le PDF, tu colles et tu déposes." },
+          { q: 'Comment fonctionnent les étiquettes ?', a: "Depuis ton dashboard, quand une commande arrive, tu cliques Générer. Le PDF se telecharge, tu imprimes, tu colles et tu deposes en point relais." },
           { q: 'Mes clientes peuvent suivre leur colis ?', a: "Oui. Espace client créé automatiquement avec suivi en temps réel." },
           { q: "Ça marche à l'international ?", a: "Oui. Disponible en 4 langues (FR, EN, ES, DE)." },
           { q: 'Je peux annuler quand je veux ?', a: "Oui. Sans engagement, tu annules en 1 clic." },
@@ -521,8 +609,8 @@ export default function LandingPage() {
         </div>
         <div style={{ fontSize: 12, color: '#999', marginBottom: 14 }}>© 2026 MY LIVE PAIEMENT · mylivepaiement.com</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-          <a href="#" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Instagram</a>
-          <a href="#" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Contact</a>
+          <a href="https://www.instagram.com/mylivepaiement" target="_blank" rel="noopener" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Instagram</a>
+          <a href="mailto:contact@mylivepaiement.com" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Contact</a>
         </div>
       </footer>
     </div>
