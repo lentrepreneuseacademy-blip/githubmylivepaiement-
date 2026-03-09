@@ -1613,10 +1613,9 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 </div>
               </div>
             ))}
-          </div>
 
-          {/* MY LIVE PAIEMENT */}
-          {shop?.subscription_status !== 'active' && (
+            {/* MY LIVE PAIEMENT */}
+            {shop?.subscription_status !== 'active' && (
             <div style={{ position: 'relative', borderRadius: 24, padding: isMobile ? 20 : 32, marginTop: 24, background: 'linear-gradient(135deg, #FFF 0%, #FFF5F5 30%, #F5F3FF 70%, #F0FDF4 100%)', border: '1px solid rgba(233,69,96,.1)', overflow: 'hidden', boxShadow: '0 4px 24px rgba(233,69,96,.06)' }}>
               <div style={{ position: 'absolute', top: -80, right: -80, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.05) 0%, transparent 70%)' }} />
               <div style={{ position: 'absolute', bottom: -60, left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.04) 0%, transparent 70%)' }} />
@@ -1661,6 +1660,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             </div>
           )}
+          </div>
         )}
 
         {/* ══════════════════════════════════════════ */}
