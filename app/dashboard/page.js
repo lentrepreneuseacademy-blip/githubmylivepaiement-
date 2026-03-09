@@ -1348,15 +1348,15 @@ export default function Dashboard() {
   }, [aiMessages])
 
   const inputStyle = {
-    width: '100%', padding: '12px 14px', border: '1px solid rgba(255,255,255,.08)',
-    borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.04)',
+    width: '100%', padding: '12px 14px', border: '1px solid rgba(0,0,0,.08)',
+    borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF',
   }
 
   // ═══ LOADING ═══
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf }}>
-        <div style={{ width: 40, height: 40, border: '3px solid rgba(0,0,0,.1)', borderTopColor: '#E94560', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <div style={{ width: 40, height: 40, border: '3px solid rgba(0,0,0,.1)', borderTopColor: '#1A1A1A', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       </div>
     )
   }
@@ -1367,11 +1367,11 @@ export default function Dashboard() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, padding: 24 }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{ width: 52, height: 52, background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+            <div style={{ width: 52, height: 52, background: '#1A1A1A', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
               <span style={{ color: '#FFF', fontSize: 16, fontWeight: 800 }}>ML</span>
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 700 }}>MY LIVE PAIEMENT</h1>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,.45)', marginTop: 4 }}>{isSignup ? 'Crée ta boutique' : 'Connecte-toi'}</p>
+            <p style={{ fontSize: 14, color: '#999', marginTop: 4 }}>{isSignup ? 'Crée ta boutique' : 'Connecte-toi'}</p>
           </div>
 
           {!isSignup ? (
@@ -1379,25 +1379,25 @@ export default function Dashboard() {
               <input type="email" placeholder="Email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required style={{ ...inputStyle, marginBottom: 10 }} />
               <input type="password" placeholder="Mot de passe" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required style={{ ...inputStyle, marginBottom: 16 }} />
               {loginError && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{loginError}</p>}
-              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Se connecter</button>
-              <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: 'rgba(255,255,255,.45)' }}>
-                Pas encore de compte ? <button type="button" onClick={() => setIsSignup(true)} style={{ color: '#E94560', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>S'inscrire</button>
+              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Se connecter</button>
+              <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#999' }}>
+                Pas encore de compte ? <button type="button" onClick={() => setIsSignup(true)} style={{ color: '#1A1A1A', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>S'inscrire</button>
               </p>
             </form>
           ) : (
             <form onSubmit={handleSignup}>
               <input placeholder="Nom de ta boutique" value={signupData.shopName} onChange={e => setSignupData({...signupData, shopName: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-')})} required style={{ ...inputStyle, marginBottom: 10 }} />
               <div style={{ position: 'relative', marginBottom: 10 }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(255,255,255,.45)' }}>mylivepaiement.com/</span>
+                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: '#999' }}>mylivepaiement.com/</span>
                 <input value={signupData.slug} onChange={e => setSignupData({...signupData, slug: e.target.value})} required
                   style={{ ...inputStyle, paddingLeft: 170 }} />
               </div>
               <input type="email" placeholder="Email" value={signupData.email} onChange={e => setSignupData({...signupData, email: e.target.value})} required style={{ ...inputStyle, marginBottom: 10 }} />
               <input type="password" placeholder="Mot de passe (min 6 car.)" value={signupData.password} onChange={e => setSignupData({...signupData, password: e.target.value})} required minLength={6} style={{ ...inputStyle, marginBottom: 16 }} />
               {loginError && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{loginError}</p>}
-              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Créer ma boutique</button>
-              <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: 'rgba(255,255,255,.45)' }}>
-                Déjà un compte ? <button type="button" onClick={() => setIsSignup(false)} style={{ color: '#E94560', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>Se connecter</button>
+              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Créer ma boutique</button>
+              <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#999' }}>
+                Déjà un compte ? <button type="button" onClick={() => setIsSignup(false)} style={{ color: '#1A1A1A', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>Se connecter</button>
               </p>
             </form>
           )}
@@ -1420,16 +1420,33 @@ export default function Dashboard() {
   ]
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: sf, background: '#0A0A12' }}>
-      <style dangerouslySetInnerHTML={{ __html: '*{box-sizing:border-box}button{transition:all .3s cubic-bezier(.22,1,.36,1)!important}button:hover{transform:translateY(-2px) scale(1.01)!important;filter:brightness(1.1)!important}button:active{transform:translateY(0) scale(.97)!important}input:focus,textarea:focus{border-color:rgba(233,69,96,.4)!important;box-shadow:0 0 0 4px rgba(233,69,96,.08),0 0 20px rgba(233,69,96,.05)!important}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes fadeSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}@keyframes glowPulse{0%,100%{box-shadow:0 0 20px rgba(233,69,96,.1)}50%{box-shadow:0 0 50px rgba(233,69,96,.25)}}@keyframes meshMove{0%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.1)}66%{transform:translate(-20px,15px) scale(.9)}100%{transform:translate(0,0) scale(1)}}@keyframes borderGlow{0%{border-color:rgba(99,91,255,.15)}50%{border-color:rgba(233,69,96,.25)}100%{border-color:rgba(99,91,255,.15)}}@keyframes cardAppear{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}.dcard{background:rgba(255,255,255,.03);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.06);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05);transition:all .4s cubic-bezier(.22,1,.36,1);animation:cardAppear .5s ease-out both}.dcard:hover{box-shadow:0 20px 60px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);transform:translateY(-4px);border-color:rgba(255,255,255,.1)}.dcard-light{background:rgba(255,255,255,.06);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.15);transition:all .3s ease}.dcard-glow{position:relative;overflow:hidden}.dcard-glow::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(233,69,96,.04),transparent,rgba(99,91,255,.04),transparent);animation:spin 12s linear infinite;z-index:0}.dtag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px}.mesh-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.5}@media(max-width:767px){.grid-4{grid-template-columns:repeat(2,1fr)!important}.grid-3{grid-template-columns:1fr!important}.grid-2{grid-template-columns:1fr!important}.grid-21{grid-template-columns:1fr!important}.grid-form{grid-template-columns:1fr!important}}@media(max-width:480px){.grid-4{grid-template-columns:1fr!important}}' }} />
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: sf, background: '#F4F5FA' }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+*{box-sizing:border-box}
+::selection{background:rgba(233,69,96,.12);color:#1A1A2E}
+button{transition:all .25s cubic-bezier(.22,1,.36,1)!important}
+button:hover{transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(0,0,0,.08)!important}
+button:active{transform:translateY(0) scale(.98)!important}
+input,textarea,select{transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shadow:0 0 0 3px rgba(233,69,96,.08)!important;outline:none!important}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes glowPulse{0%,100%{box-shadow:0 4px 30px rgba(233,69,96,.08)}50%{box-shadow:0 4px 40px rgba(233,69,96,.16)}}
+@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+@media(max-width:767px){.grid-4{grid-template-columns:repeat(2,1fr)!important}.grid-3{grid-template-columns:1fr!important}.grid-2{grid-template-columns:1fr!important}.grid-21{grid-template-columns:1fr!important}.grid-form{grid-template-columns:1fr!important}}
+@media(max-width:480px){.grid-4{grid-template-columns:1fr!important}}
+` }} />
 
-      {/* Ambient mesh gradient orbs */}
-      <div className="mesh-orb" style={{ top: '5%', right: '10%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(233,69,96,.08) 0%, transparent 70%)', animation: 'meshMove 20s ease-in-out infinite' }} />
-      <div className="mesh-orb" style={{ bottom: '10%', left: '15%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(99,91,255,.06) 0%, transparent 70%)', animation: 'meshMove 25s ease-in-out infinite reverse' }} />
-      <div className="mesh-orb" style={{ top: '40%', right: '30%', width: 200, height: 200, background: 'radial-gradient(circle, rgba(16,185,129,.05) 0%, transparent 70%)', animation: 'meshMove 15s ease-in-out infinite 3s' }} />
       {/* Mobile hamburger */}
       {isMobile && !mobileMenuOpen && (
-        <button onClick={function() { setMobileMenuOpen(true) }} style={{ position: 'fixed', top: 12, left: 12, zIndex: 100, width: 44, height: 44, borderRadius: 12, background: 'rgba(233,69,96,.9)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>
+        <button onClick={function() { setMobileMenuOpen(true) }} style={{ position: 'fixed', top: 12, left: 12, zIndex: 100, width: 44, height: 44, borderRadius: 12, background: '#1A1A2E', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>
           <span style={{ color: '#FFF', fontSize: 20 }}>☰</span>
         </button>
       )}
@@ -1446,7 +1463,7 @@ export default function Dashboard() {
         {isMobile ? (
           <button onClick={function() { setMobileMenuOpen(false) }} style={{ position: 'absolute', right: 12, top: 12, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 16, color: '#FFF', zIndex: 10 }}>✕</button>
         ) : (
-        <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ position: 'absolute', right: -12, top: 32, width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,.04)', border: '2px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
+        <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ position: 'absolute', right: -12, top: 32, width: 24, height: 24, borderRadius: '50%', background: '#FFF', border: '2px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
           {sidebarCollapsed ? '→' : '←'}
         </button>
         )}
@@ -1458,7 +1475,7 @@ export default function Dashboard() {
           </div>
           {(!sidebarCollapsed || isMobile) && (
             <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>MY LIVE</div>
+              <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#AAA', marginBottom: 2 }}>MY LIVE</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#FFF', letterSpacing: 1 }}>PAIEMENT</div>
             </div>
           )}
@@ -1466,7 +1483,7 @@ export default function Dashboard() {
 
         {/* Navigation */}
         <nav style={{ flex: 1 }}>
-          {(!sidebarCollapsed || isMobile) && <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 8, paddingLeft: 12 }}>MENU</div>}
+          {(!sidebarCollapsed || isMobile) && <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#CCC', marginBottom: 8, paddingLeft: 12 }}>MENU</div>}
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isMobile) setMobileMenuOpen(false) }}
               style={{
@@ -1499,7 +1516,7 @@ export default function Dashboard() {
           </div>
           {(!sidebarCollapsed || isMobile) && (
             <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())}
-              style={{ marginTop: 12, width: '100%', fontSize: 12, color: 'rgba(255,255,255,.5)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontFamily: sf, transition: 'all .2s' }}>
+              style={{ marginTop: 12, width: '100%', fontSize: 12, color: '#777', background: '#FFF', border: '1px solid rgba(0,0,0,.08)', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontFamily: sf, transition: 'all .2s' }}>
               Déconnexion
             </button>
           )}
@@ -1507,7 +1524,7 @@ export default function Dashboard() {
       </aside>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main style={{ flex: 1, padding: isMobile ? '16px 12px' : '32px 40px', paddingTop: isMobile ? 60 : 32, background: 'transparent', overflowY: 'auto', minWidth: 0, position: 'relative', zIndex: 1, color: '#E8E8F0' }}>
+      <main style={{ flex: 1, padding: isMobile ? '16px 14px' : '32px 40px', paddingTop: isMobile ? 64 : 32, background: '#F4F5FA', overflowY: 'auto', minWidth: 0 }}>
 
         {/* ─── OVERVIEW ─── */}
         {activeTab === 'overview' && (
@@ -1518,7 +1535,7 @@ export default function Dashboard() {
               <div style={{ position: 'absolute', right: 40, bottom: -30, width: 100, height: 100, borderRadius: '50%', background: 'rgba(102,126,234,.1)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 26, fontWeight: 800, marginBottom: 4 }}>Bonjour, {shop?.name} !</h1>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)' }}>Voici le résumé de ton activité</p>
+                <p style={{ fontSize: 14, color: '#555' }}>Voici le résumé de ton activité</p>
               </div>
             </div>
 
@@ -1530,15 +1547,15 @@ export default function Dashboard() {
                 { l: 'A expedier', v: stats.pendingShip, icon: '🚚', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', shadow: 'rgba(79,172,254,.2)', alert: stats.pendingShip > 0 },
                 { l: 'Clients', v: stats.clientCount, icon: '👥', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', shadow: 'rgba(67,233,123,.2)' },
               ].map((s, i) => (
-                <div key={i} className="card-hover" style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)', cursor: 'default', transition: 'all .3s ease', position: 'relative', overflow: 'hidden' }}>
+                <div key={i} className="card-hover" style={{ background: '#FFF', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', cursor: 'default', transition: 'all .3s ease', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', right: -8, top: -8, width: 56, height: 56, borderRadius: '50%', background: s.gradient, opacity: 0.1 }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: s.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px ' + s.shadow }}>
                       <span style={{ fontSize: 18 }}>{s.icon}</span>
                     </div>
                   </div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: '#E8E8F0', marginBottom: 2 }}>{s.v}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', letterSpacing: 0.5, fontWeight: 500 }}>{s.l}</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A2E', marginBottom: 2 }}>{s.v}</div>
+                  <div style={{ fontSize: 11, color: '#999', letterSpacing: 0.5, fontWeight: 500 }}>{s.l}</div>
                   {s.alert && <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 8px rgba(245,158,11,.5)' }} />}
                 </div>
               ))}
@@ -1546,24 +1563,24 @@ export default function Dashboard() {
 
             {/* Pending alert */}
             {stats.pendingShip > 0 && (
-              <div style={{ background: 'rgba(245,158,11,.12)', border: '1px solid #FDE68A', borderRadius: 14, padding: '14px 18px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 14, padding: '14px 18px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#F59E0B' }}>⏳ {stats.pendingShip} commande{stats.pendingShip > 1 ? 's' : ''} en attente d'expédition</div>
-                  <div style={{ fontSize: 12, color: '#FBBF24' }}>Génère les étiquettes pour expédier</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#92400E' }}>⏳ {stats.pendingShip} commande{stats.pendingShip > 1 ? 's' : ''} en attente d'expédition</div>
+                  <div style={{ fontSize: 12, color: '#B45309' }}>Génère les étiquettes pour expédier</div>
                 </div>
                 <button onClick={() => setActiveTab('shipping')} style={{ padding: '8px 16px', background: '#92400E', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>Voir</button>
               </div>
             )}
 
             {/* Payment link */}
-            <div style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.04)', borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 8 }}>Ton lien de paiement</div>
+            <div style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: '#BBB', marginBottom: 8 }}>Ton lien de paiement</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, background: 'rgba(255,255,255,.02)', borderRadius: 8, padding: '12px 14px', fontSize: 14, fontWeight: 600 }}>
+                <div style={{ flex: 1, background: '#FAFAF8', borderRadius: 8, padding: '12px 14px', fontSize: 14, fontWeight: 600 }}>
                   {typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug}
                 </div>
                 <button onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/pay/${shop?.slug}`)}
-                  style={{ padding: '14px 24px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+                  style={{ padding: '14px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                   Copier
                 </button>
               </div>
@@ -1571,18 +1588,18 @@ export default function Dashboard() {
 
             {/* Quick create order */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)' }}>Dernières commandes</div>
-              <button onClick={() => { setActiveTab('orders'); setShowNewOrder(true) }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: '#CCC' }}>Dernières commandes</div>
+              <button onClick={() => { setActiveTab('orders'); setShowNewOrder(true) }} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                 + Nouvelle commande
               </button>
             </div>
 
             {/* Orders list */}
             {orders.slice(0, 10).map(o => (
-              <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, marginBottom: 4, background: 'rgba(255,255,255,.04)' }}>
+              <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, marginBottom: 4, background: '#FFF' }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <span style={{ fontSize: 13, fontWeight: 700 }}>{o.reference || o.ref}</span>
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>{o.client_last_name ? `${o.client_first_name} ${o.client_last_name}` : '—'}</span>
+                  <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? `${o.client_first_name} ${o.client_last_name}` : '—'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
@@ -1609,11 +1626,11 @@ export default function Dashboard() {
             {!liveConnected && !liveConnecting && !livePlatform && !liveEnded && (
               <div style={{ maxWidth: 560, margin: '40px auto', textAlign: 'center' }}>
                 <h2 style={{ fontFamily: ss, fontSize: 30, fontWeight: 400, marginBottom: 8 }}>Live Monitor</h2>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.45)', marginBottom: 32 }}>Connecte-toi à ton live pour détecter les commandes automatiquement</p>
+                <p style={{ fontSize: 14, color: '#999', marginBottom: 32 }}>Connecte-toi à ton live pour détecter les commandes automatiquement</p>
 
                 {/* Error display */}
                 {liveError && (
-                  <div style={{ background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.2)', borderRadius: 14, padding: '14px 18px', marginBottom: 20, textAlign: 'left' }}>
+                  <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 14, padding: '14px 18px', marginBottom: 20, textAlign: 'left' }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#EF4444', marginBottom: 4 }}>Erreur de connexion</div>
                     <div style={{ fontSize: 13, color: '#991B1B' }}>{liveError}</div>
                     <button onClick={() => setLiveError(null)} style={{ marginTop: 8, fontSize: 12, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf, fontWeight: 600 }}>✕ Fermer</button>
@@ -1627,25 +1644,25 @@ export default function Dashboard() {
                   ].map(p => (
                     <button key={p.id} onClick={() => { if (p.available) { setLivePlatform(p.id); setLiveMode(LIVE_SERVER_URL ? 'real' : 'demo'); setLiveError(null); } }}
                       style={{
-                        flex: 1, padding: '32px 24px', background: 'rgba(255,255,255,.04)', borderRadius: 20, cursor: p.available ? 'pointer' : 'not-allowed', fontFamily: sf,
+                        flex: 1, padding: '32px 24px', background: '#FFF', borderRadius: 20, cursor: p.available ? 'pointer' : 'not-allowed', fontFamily: sf,
                         border: p.available ? '2px solid rgba(0,0,0,.06)' : '2px dashed rgba(0,0,0,.08)',
                         opacity: p.available ? 1 : 0.5,
                         transition: 'border-color .2s, transform .2s',
                       }}>
                       <div style={{ fontSize: 36, marginBottom: 8 }}>{p.icon}</div>
                       <div style={{ fontSize: 15, fontWeight: 700 }}>{p.label}</div>
-                      {!p.available && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginTop: 4 }}>Bientôt disponible</div>}
+                      {!p.available && <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>Bientôt disponible</div>}
                     </button>
                   ))}
                 </div>
 
                 {/* Demo button */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 20 }}>
+                <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 20 }}>
                   <button onClick={() => { setLivePlatform('tiktok'); setLiveMode('demo'); setLiveError(null); }}
-                    style={{ padding: '10px 24px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.5)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                    style={{ padding: '10px 24px', background: '#F5F4F2', color: '#777', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
                     🎮 Mode démo (sans connexion)
                   </button>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,.25)', marginTop: 8 }}>Teste le Live Monitor avec des commentaires simulés</p>
+                  <p style={{ fontSize: 11, color: '#CCC', marginTop: 8 }}>Teste le Live Monitor avec des commentaires simulés</p>
                 </div>
               </div>
             )}
@@ -1653,7 +1670,7 @@ export default function Dashboard() {
             {/* ── STEP 2: Enter username ── */}
             {livePlatform && !liveConnected && !liveConnecting && !liveEnded && (
               <div style={{ maxWidth: 440, margin: '40px auto', textAlign: 'center' }}>
-                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#E8E8F0', marginBottom: 6 }}>
+                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 6 }}>
                   {liveMode === 'demo' ? 'Mode Démo' : `Connecte-toi à ${livePlatform === 'tiktok' ? 'TikTok' : 'Instagram'}`}
                 </h2>
 
@@ -1670,7 +1687,7 @@ export default function Dashboard() {
 
                 {/* Error display */}
                 {liveError && (
-                  <div style={{ background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.2)', borderRadius: 14, padding: '14px 18px', marginBottom: 16, textAlign: 'left' }}>
+                  <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 14, padding: '14px 18px', marginBottom: 16, textAlign: 'left' }}>
                     <div style={{ fontSize: 13, color: '#991B1B' }}>{liveError}</div>
                     <button onClick={() => setLiveError(null)} style={{ marginTop: 6, fontSize: 12, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf, fontWeight: 600 }}>✕ Fermer</button>
                   </div>
@@ -1678,7 +1695,7 @@ export default function Dashboard() {
 
                 {/* Username input */}
                 <div style={{ position: 'relative', marginBottom: 16 }}>
-                  <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 15, color: 'rgba(255,255,255,.45)' }}>@</span>
+                  <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 15, color: '#999' }}>@</span>
                   <input value={liveUsername} onChange={e => setLiveUsername(e.target.value)} placeholder={liveMode === 'demo' ? 'ton_username (optionnel)' : 'ton_username'}
                     style={{ ...inputStyle, paddingLeft: 36, fontSize: 16, fontWeight: 600, textAlign: 'center' }}
                     onKeyDown={e => { if (e.key === 'Enter' && (liveMode === 'demo' || liveUsername.trim())) handleStartLive() }}
@@ -1700,14 +1717,14 @@ export default function Dashboard() {
                 {/* ── KEYWORD CONFIG ── */}
                 <div style={{ marginTop: 20 }}>
                   <button onClick={() => setShowKeywordConfig(!showKeywordConfig)}
-                    style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.6)', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, padding: '10px 16px', cursor: 'pointer', fontFamily: sf }}>
+                    style={{ fontSize: 13, fontWeight: 600, color: '#555', background: '#F5F4F2', border: '1px solid rgba(0,0,0,.06)', borderRadius: 12, padding: '10px 16px', cursor: 'pointer', fontFamily: sf }}>
                     {showKeywordConfig ? '▾' : '▸'} ⚙️ Mots-clés de détection ({keywords.length})
                   </button>
 
                   {showKeywordConfig && (
-                    <div style={{ marginTop: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14, padding: 16, textAlign: 'left' }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.6)', marginBottom: 4 }}>Mots-clés qui déclenchent une commande :</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginBottom: 12 }}>Quand un commentaire contient un de ces mots, une commande est créée automatiquement.</div>
+                    <div style={{ marginTop: 12, background: '#FFF', border: '1px solid rgba(0,0,0,.08)', borderRadius: 14, padding: 16, textAlign: 'left' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4 }}>Mots-clés qui déclenchent une commande :</div>
+                      <div style={{ fontSize: 11, color: '#999', marginBottom: 12 }}>Quand un commentaire contient un de ces mots, une commande est créée automatiquement.</div>
 
                       {/* Add new keyword */}
                       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
@@ -1719,7 +1736,7 @@ export default function Dashboard() {
                           style={{ ...inputStyle, fontSize: 13, padding: '8px 12px' }}
                         />
                         <button onClick={() => addKeyword(newKeyword)}
-                          style={{ padding: '8px 14px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, whiteSpace: 'nowrap' }}>
+                          style={{ padding: '8px 14px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, whiteSpace: 'nowrap' }}>
                           + Ajouter
                         </button>
                       </div>
@@ -1735,12 +1752,12 @@ export default function Dashboard() {
                         if (catKeywords.length === 0) return null
                         return (
                           <div key={ci} style={{ marginBottom: 10 }}>
-                            <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.3)', letterSpacing: 1, marginBottom: 4 }}>{cat.label}</div>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: '#BBB', letterSpacing: 1, marginBottom: 4 }}>{cat.label}</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {catKeywords.map(k => (
-                                <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,.06)', fontSize: 11, color: 'rgba(255,255,255,.6)' }}>
+                                <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, background: '#F5F4F2', fontSize: 11, color: '#555' }}>
                                   {k}
-                                  <button onClick={() => removeKeyword(k)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.25)', fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
+                                  <button onClick={() => removeKeyword(k)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#CCC', fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                                 </span>
                               ))}
                             </div>
@@ -1759,10 +1776,10 @@ export default function Dashboard() {
                         if (custom.length === 0) return null
                         return (
                           <div style={{ marginBottom: 10 }}>
-                            <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.3)', letterSpacing: 1, marginBottom: 4 }}>✏️ TES MOTS-CLÉS PERSO</div>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: '#BBB', letterSpacing: 1, marginBottom: 4 }}>✏️ TES MOTS-CLÉS PERSO</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {custom.map(k => (
-                                <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, background: 'rgba(59,130,246,.12)', fontSize: 11, color: '#3B82F6', fontWeight: 600 }}>
+                                <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, background: '#EFF6FF', fontSize: 11, color: '#3B82F6', fontWeight: 600 }}>
                                   {k}
                                   <button onClick={() => removeKeyword(k)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93C5FD', fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                                 </span>
@@ -1773,9 +1790,9 @@ export default function Dashboard() {
                       })()}
 
                       {/* Reset */}
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 10, marginTop: 6 }}>
+                      <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 10, marginTop: 6 }}>
                         <button onClick={() => setKeywords(DEFAULT_KEYWORDS)}
-                          style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>
+                          style={{ fontSize: 11, color: '#999', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>
                           ↺ Rétablir les mots-clés par défaut
                         </button>
                       </div>
@@ -1786,7 +1803,7 @@ export default function Dashboard() {
                 {/* Mode switcher */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16 }}>
                   <button onClick={() => setLivePlatform(null)}
-                    style={{ fontSize: 13, color: 'rgba(255,255,255,.45)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>
+                    style={{ fontSize: 13, color: '#999', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>
                     ← Retour
                   </button>
                   {LIVE_SERVER_URL && (
@@ -1798,8 +1815,8 @@ export default function Dashboard() {
                 </div>
 
                 {liveMode === 'real' && (
-                  <div style={{ marginTop: 20, padding: 16, background: 'rgba(16,185,129,.08)', borderRadius: 12, border: '1px solid rgba(16,185,129,.2)' }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#10B981', marginBottom: 4 }}>💡 Mode réel</div>
+                  <div style={{ marginTop: 20, padding: 16, background: '#F0FDF4', borderRadius: 12, border: '1px solid #BBF7D0' }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#059669', marginBottom: 4 }}>💡 Mode réel</div>
                     <div style={{ fontSize: 12, color: '#15803D', lineHeight: 1.5 }}>
                       Le Live Monitor va se connecter directement au live TikTok de @{liveUsername || '...'} et capter tous les commentaires en temps réel. Assure-toi que le live est déjà lancé.
                     </div>
@@ -1815,7 +1832,7 @@ export default function Dashboard() {
                 <p style={{ fontSize: 15, fontWeight: 600 }}>
                   {liveMode === 'demo' ? 'Lancement de la démo...' : `Connexion à @${liveUsername}...`}
                 </p>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)', marginTop: 6 }}>
+                <p style={{ fontSize: 13, color: '#999', marginTop: 6 }}>
                   {liveMode === 'demo' ? 'Préparation des commentaires simulés' : 'Recherche du live en cours sur TikTok'}
                 </p>
               </div>
@@ -1824,27 +1841,27 @@ export default function Dashboard() {
             {/* ── LIVE ENDED SCREEN ── */}
             {liveEnded && !liveConnected && !liveConnecting && (
               <div style={{ maxWidth: 440, margin: '60px auto', textAlign: 'center' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F5F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <span style={{ fontSize: 28 }}>📡</span>
                 </div>
-                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#E8E8F0', marginBottom: 8 }}>Live terminé</h2>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.45)', marginBottom: 24 }}>{liveEnded.reason}</p>
+                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Live terminé</h2>
+                <p style={{ fontSize: 14, color: '#999', marginBottom: 24 }}>{liveEnded.reason}</p>
 
                 {/* Session stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(255,255,255,.04)' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>{liveOrders.length}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Commandes</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(255,255,255,.04)' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>{allComments.length}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Commentaires</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Commentaires</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(255,255,255,.04)' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>
                       {liveEnded.duration ? `${Math.floor(liveEnded.duration / 60)}m` : '—'}
                     </div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Durée</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Durée</div>
                   </div>
                 </div>
 
@@ -1866,25 +1883,25 @@ export default function Dashboard() {
                     </button>
                   )}
                   <button onClick={() => { setActiveTab('orders'); loadData(shop.id); }}
-                    style={{ padding: '12px 24px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.6)', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                    style={{ padding: '12px 24px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
                     Voir les commandes
                   </button>
                 </div>
 
                 {/* ═══ PAYMENT TRACKING VIEW ═══ */}
                 {showPaymentTracking && liveOrders.length > 0 && (
-                  <div style={{ marginTop: 24, background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)' }}>
+                  <div style={{ marginTop: 24, background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                       <div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: '#E8E8F0' }}>Suivi des paiements</div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>Croise les tickets live avec les commandes payees</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A2E' }}>Suivi des paiements</div>
+                        <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Croise les tickets live avec les commandes payees</div>
                       </div>
                       <div style={{ display: 'flex', gap: 12 }}>
-                        <div style={{ textAlign: 'center', padding: '8px 16px', borderRadius: 10, background: 'rgba(16,185,129,.12)' }}>
-                          <div style={{ fontSize: 20, fontWeight: 800, color: '#10B981' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
-                          <div style={{ fontSize: 10, color: '#10B981', fontWeight: 600 }}>Payees</div>
+                        <div style={{ textAlign: 'center', padding: '8px 16px', borderRadius: 10, background: '#ECFDF5' }}>
+                          <div style={{ fontSize: 20, fontWeight: 800, color: '#059669' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                          <div style={{ fontSize: 10, color: '#059669', fontWeight: 600 }}>Payees</div>
                         </div>
-                        <div style={{ textAlign: 'center', padding: '8px 16px', borderRadius: 10, background: 'rgba(239,68,68,.12)' }}>
+                        <div style={{ textAlign: 'center', padding: '8px 16px', borderRadius: 10, background: '#FEF2F2' }}>
                           <div style={{ fontSize: 20, fontWeight: 800, color: '#EF4444' }}>{liveOrders.filter(function(lo) { return !orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
                           <div style={{ fontSize: 10, color: '#EF4444', fontWeight: 600 }}>Non payees</div>
                         </div>
@@ -1906,16 +1923,16 @@ export default function Dashboard() {
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <span style={{ fontSize: 14, fontWeight: 800 }}>#{lo.orderNum}</span>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.6)' }}>@{lo.user}</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
                               </div>
-                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>{lo.text}</div>
+                              <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{lo.text}</div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <div style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: isPaid ? '#10B981' : '#F59E0B', color: '#FFF' }}>
                                 {isPaid ? 'PAYE' : 'NON PAYE'}
                               </div>
-                              {matchedOrder && <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginTop: 4 }}>{matchedOrder.reference} — {matchedOrder.status === 'paid' ? 'A expedier' : matchedOrder.status === 'shipped' ? 'Expedie' : matchedOrder.status === 'delivered' ? 'Livre' : 'En attente'}</div>}
-                              {!isPaid && <div style={{ fontSize: 10, color: '#F59E0B', marginTop: 4 }}>Relancer</div>}
+                              {matchedOrder && <div style={{ fontSize: 10, color: '#999', marginTop: 4 }}>{matchedOrder.reference} — {matchedOrder.status === 'paid' ? 'A expedier' : matchedOrder.status === 'shipped' ? 'Expedie' : matchedOrder.status === 'delivered' ? 'Livre' : 'En attente'}</div>}
+                              {!isPaid && <div style={{ fontSize: 10, color: '#92400E', marginTop: 4 }}>Relancer</div>}
                             </div>
                           </div>
                         )
@@ -1934,9 +1951,9 @@ export default function Dashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#EF4444', animation: 'pulse 1.5s infinite' }} />
                     <span style={{ fontSize: 16, fontWeight: 700 }}>Live Monitor</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>@{liveUsername || 'demo'} · {livePlatform === 'tiktok' ? 'TikTok' : 'Instagram'}</span>
+                    <span style={{ fontSize: 13, color: '#999' }}>@{liveUsername || 'demo'} · {livePlatform === 'tiktok' ? 'TikTok' : 'Instagram'}</span>
                     {liveMode === 'demo' && (
-                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, padding: '2px 8px', borderRadius: 8, background: 'rgba(245,158,11,.08)', color: '#F59E0B', border: '1px solid rgba(245,158,11,.2)' }}>DÉMO</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, padding: '2px 8px', borderRadius: 8, background: '#FFF7ED', color: '#92400E', border: '1px solid #FED7AA' }}>DÉMO</span>
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1959,7 +1976,7 @@ export default function Dashboard() {
                       {autoPrintEnabled ? '🔴 Auto-print ON' : 'Auto-print'}
                     </button>
                     <button onClick={() => { stopLive(); resetLive(); }}
-                      style={{ padding: '8px 16px', background: 'rgba(255,255,255,.04)', color: '#EF4444', border: '2px solid #FECACA', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+                      style={{ padding: '8px 16px', background: '#FFF', color: '#EF4444', border: '2px solid #FECACA', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
                       Déconnecter
                     </button>
                   </div>
@@ -1967,28 +1984,28 @@ export default function Dashboard() {
 
                 {/* Stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 800, color: '#EF4444' }}>{liveOrders.length}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Commandes</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>{allComments.length}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Commentaires</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Commentaires</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>{allComments.length > 0 ? Math.round((liveOrders.length / allComments.length) * 100) : 0}%</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Taux d'achat</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Taux d'achat</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 800 }}>👁 {liveViewers}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)' }}>Viewers</div>
+                    <div style={{ fontSize: 10, color: '#999' }}>Viewers</div>
                   </div>
                 </div>
 
                 {/* Filter + Auto-scroll */}
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12, justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => setLiveFilter('all')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'all' ? 'rgba(233,69,96,.8)' : 'rgba(255,255,255,.06)', color: liveFilter === 'all' ? '#FFF' : '#999' }}>Tous ({allComments.length})</button>
+                    <button onClick={() => setLiveFilter('all')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'all' ? '#E94560' : '#FFF', color: liveFilter === 'all' ? '#FFF' : '#777' }}>Tous ({allComments.length})</button>
                     <button onClick={() => setLiveFilter('orders')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'orders' ? '#F59E0B' : '#F5F4F2', color: liveFilter === 'orders' ? '#FFF' : '#999' }}>🛒 Commandes ({liveOrders.length})</button>
                     <button onClick={() => setLiveFilter('payments')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'payments' ? '#10B981' : '#F5F4F2', color: liveFilter === 'payments' ? '#FFF' : '#999' }}>💰 Suivi paiements</button>
                   </div>
@@ -2000,24 +2017,24 @@ export default function Dashboard() {
 
                 {/* Payment tracking view */}
                 {liveFilter === 'payments' && (
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 20, maxHeight: 500, overflowY: 'auto' }}>
+                  <div style={{ background: '#FFF', borderRadius: 16, padding: 20, maxHeight: 500, overflowY: 'auto' }}>
                     {liveOrders.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,.25)' }}>
+                      <div style={{ textAlign: 'center', padding: 40, color: '#CCC' }}>
                         <div style={{ fontSize: 36, marginBottom: 8 }}>💰</div>
                         <p style={{ fontSize: 13 }}>Aucune commande live pour le moment</p>
                       </div>
                     ) : (
                       <div>
                         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: 'rgba(16,185,129,.12)' }}>
-                            <div style={{ fontSize: 22, fontWeight: 800, color: '#10B981' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
-                            <div style={{ fontSize: 10, color: '#10B981', fontWeight: 600 }}>Payees</div>
+                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#ECFDF5' }}>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: '#059669' }}>{liveOrders.filter(function(lo) { return orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
+                            <div style={{ fontSize: 10, color: '#059669', fontWeight: 600 }}>Payees</div>
                           </div>
-                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: 'rgba(239,68,68,.12)' }}>
+                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#FEF2F2' }}>
                             <div style={{ fontSize: 22, fontWeight: 800, color: '#EF4444' }}>{liveOrders.filter(function(lo) { return !orders.some(function(o) { return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1 }) }).length}</div>
                             <div style={{ fontSize: 10, color: '#EF4444', fontWeight: 600 }}>Non payees</div>
                           </div>
-                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: 'rgba(139,92,246,.12)' }}>
+                          <div style={{ flex: 1, textAlign: 'center', padding: '10px', borderRadius: 12, background: '#F5F3FF' }}>
                             <div style={{ fontSize: 22, fontWeight: 800, color: '#7C3AED' }}>{liveOrders.length}</div>
                             <div style={{ fontSize: 10, color: '#7C3AED', fontWeight: 600 }}>Total tickets</div>
                           </div>
@@ -2037,9 +2054,9 @@ export default function Dashboard() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                   <span style={{ fontSize: 13, fontWeight: 800 }}>#{lo.orderNum}</span>
-                                  <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.6)' }}>@{lo.user}</span>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
                                 </div>
-                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)' }}>{lo.text} — {lo.time}</div>
+                                <div style={{ fontSize: 11, color: '#999' }}>{lo.text} — {lo.time}</div>
                               </div>
                               <div style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: isPaid ? '#10B981' : '#F59E0B', color: '#FFF' }}>
                                 {isPaid ? 'PAYE' : 'NON PAYE'}
@@ -2054,7 +2071,7 @@ export default function Dashboard() {
 
                 {/* Comments feed */}
                 {liveFilter !== 'payments' && (
-                <div ref={liveScrollRef} style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 16, maxHeight: 500, overflowY: 'auto' }}>
+                <div ref={liveScrollRef} style={{ background: '#FFF', borderRadius: 16, padding: 16, maxHeight: 500, overflowY: 'auto' }}>
                   {(liveFilter === 'orders' ? allComments.filter(c => c.isPurchase) : allComments).map(c => (
                     <div key={c.id} style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, marginBottom: 4,
@@ -2063,7 +2080,7 @@ export default function Dashboard() {
                       animation: 'fadeSlide .3s ease-out',
                     }}>
                       {c.isPurchase && (
-                        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 8, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <span style={{ fontSize: 11, fontWeight: 800, color: '#FFF' }}>#{c.orderNum}</span>
                         </div>
                       )}
@@ -2075,14 +2092,14 @@ export default function Dashboard() {
                           <span style={{ fontSize: 12, fontWeight: 700 }}>@{c.user}</span>
                           {c.isPurchase && <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 10, background: '#F59E0B', color: '#FFF' }}>COMMANDE</span>}
                           {c.isGift && <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 10, background: '#EC4899', color: '#FFF' }}>CADEAU</span>}
-                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,.25)', marginLeft: 'auto' }}>{c.time}</span>
+                          <span style={{ fontSize: 10, color: '#CCC', marginLeft: 'auto' }}>{c.time}</span>
                         </div>
                         <div style={{ fontSize: 13, color: c.isPurchase ? '#555' : c.isGift ? '#BE185D' : '#999', marginTop: 2 }}>{c.text}</div>
                       </div>
                     </div>
                   ))}
                   {allComments.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,.25)' }}>
+                    <div style={{ textAlign: 'center', padding: 40, color: '#CCC' }}>
                       <div style={{ fontSize: 32, marginBottom: 8 }}>📡</div>
                       <p style={{ fontSize: 14 }}>En attente de commentaires...</p>
                       <p style={{ fontSize: 12, marginTop: 4 }}>
@@ -2095,11 +2112,11 @@ export default function Dashboard() {
 
                 {/* Orders summary (collapsible) */}
                 {liveOrders.length > 0 && (
-                  <div style={{ marginTop: 16, background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 16, border: '2px solid #FDE68A' }}>
+                  <div style={{ marginTop: 16, background: '#FFF', borderRadius: 16, padding: 16, border: '2px solid #FDE68A' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: '#F59E0B' }}>🛒 RÉCAP COMMANDES DU LIVE ({liveOrders.length})</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: '#92400E' }}>🛒 RÉCAP COMMANDES DU LIVE ({liveOrders.length})</div>
                       <button onClick={printLiveOrders}
-                        style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, display: 'flex', alignItems: 'center', gap: 4 }}>
                         🖨️ Imprimer
                       </button>
                     </div>
@@ -2109,11 +2126,11 @@ export default function Dashboard() {
                           <span style={{ fontSize: 12, fontWeight: 800, color: '#E94560' }}>#{o.orderNum}</span>
                           <span style={{ fontSize: 12, fontWeight: 600 }}>@{o.user}</span>
                         </div>
-                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{o.text}</span>
+                        <span style={{ fontSize: 12, color: '#777' }}>{o.text}</span>
                       </div>
                     ))}
                     {liveOrders.length > 5 && (
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginTop: 6, textAlign: 'center' }}>+ {liveOrders.length - 5} autres commandes</div>
+                      <div style={{ fontSize: 11, color: '#999', marginTop: 6, textAlign: 'center' }}>+ {liveOrders.length - 5} autres commandes</div>
                     )}
                   </div>
                 )}
@@ -2128,8 +2145,8 @@ export default function Dashboard() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#E8E8F0', marginBottom: 4 }}>Statistiques</h1>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>Analyse de tes performances</p>
+                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Statistiques</h1>
+                <p style={{ fontSize: 13, color: '#999' }}>Analyse de tes performances</p>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {['7d', '30d', '6m'].map(function(p) {
@@ -2152,30 +2169,30 @@ export default function Dashboard() {
                 { l: 'Taux conversion', v: statsData.conversionRate + '%', icon: '📊', color: '#43e97b' },
               ].map(function(s, i) {
                 return (
-                  <div key={i} style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)' }}>
+                  <div key={i} style={{ background: '#FFF', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                       <span style={{ fontSize: 20 }}>{s.icon}</span>
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', fontWeight: 500 }}>{s.l}</span>
+                      <span style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>{s.l}</span>
                     </div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#E8E8F0' }}>{s.v}</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A2E' }}>{s.v}</div>
                   </div>
                 )
               })}
             </div>
 
             {/* Revenue Chart */}
-            <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)', marginBottom: 20 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#E8E8F0', marginBottom: 4 }}>Chiffre d'affaires</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginBottom: 20 }}>{statsPeriod === '6m' ? '6 derniers mois' : statsPeriod === '30d' ? '30 derniers jours' : '7 derniers jours'}</div>
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Chiffre d'affaires</div>
+              <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>{statsPeriod === '6m' ? '6 derniers mois' : statsPeriod === '30d' ? '30 derniers jours' : '7 derniers jours'}</div>
               <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 180, padding: '0 4px' }}>
                 {(statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(d, i) {
                   var maxRev = Math.max.apply(null, (statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(x) { return x.revenue }))
                   var h = maxRev > 0 ? Math.max((d.revenue / maxRev) * 150, 4) : 4
                   return (
                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#E8E8F0' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '€' : ''}</div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '€' : ''}</div>
                       <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)', transition: 'height .5s ease' }} />
-                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', fontWeight: 500 }}>{d.name}</div>
+                      <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
                     </div>
                   )
                 })}
@@ -2183,18 +2200,18 @@ export default function Dashboard() {
             </div>
 
             {/* Orders Chart */}
-            <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)', marginBottom: 20 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#E8E8F0', marginBottom: 4 }}>Commandes</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginBottom: 20 }}>Nombre de commandes par periode</div>
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Commandes</div>
+              <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>Nombre de commandes par periode</div>
               <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 140, padding: '0 4px' }}>
                 {(statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(d, i) {
                   var maxOrd = Math.max.apply(null, (statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(x) { return x.orders }))
                   var h = maxOrd > 0 ? Math.max((d.orders / maxOrd) * 110, 4) : 4
                   return (
                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#E8E8F0' }}>{d.orders > 0 ? d.orders : ''}</div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.orders > 0 ? d.orders : ''}</div>
                       <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #f093fb 0%, #f5576c 100%)', transition: 'height .5s ease' }} />
-                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', fontWeight: 500 }}>{d.name}</div>
+                      <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
                     </div>
                   )
                 })}
@@ -2202,14 +2219,14 @@ export default function Dashboard() {
             </div>
 
             {/* Status distribution */}
-            <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#E8E8F0', marginBottom: 16 }}>Repartition des commandes</div>
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 16 }}>Repartition des commandes</div>
               <div style={{ display: 'flex', gap: 16 }}>
                 {[
                   { label: 'En attente', count: orders.filter(function(o) { return o.status === 'pending_payment' }).length, color: '#94A3B8', bg: '#F1F5F9' },
-                  { label: 'Payees', count: orders.filter(function(o) { return o.status === 'paid' }).length, color: '#F59E0B', bg: '#FFFBEB' },
+                  { label: 'Payees', count: orders.filter(function(o) { return o.status === 'paid' }).length, color: '#92400E', bg: '#FFFBEB' },
                   { label: 'Expediees', count: orders.filter(function(o) { return o.status === 'shipped' }).length, color: '#8B5CF6', bg: '#F5F3FF' },
-                  { label: 'Livrees', count: orders.filter(function(o) { return o.status === 'delivered' }).length, color: '#10B981', bg: '#ECFDF5' },
+                  { label: 'Livrees', count: orders.filter(function(o) { return o.status === 'delivered' }).length, color: '#059669', bg: '#ECFDF5' },
                 ].map(function(s, i) {
                   return (
                     <div key={i} style={{ flex: 1, textAlign: 'center', padding: 16, borderRadius: 12, background: s.bg }}>
@@ -2222,10 +2239,10 @@ export default function Dashboard() {
             </div>
 
             {orders.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,.25)' }}>
+              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>📈</div>
-                <p style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.45)' }}>Pas encore de donnees</p>
-                <p style={{ fontSize: 13, marginTop: 4, color: 'rgba(255,255,255,.3)' }}>Les statistiques apparaitront des ta premiere commande</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Pas encore de donnees</p>
+                <p style={{ fontSize: 13, marginTop: 4, color: '#BBB' }}>Les statistiques apparaitront des ta premiere commande</p>
               </div>
             )}
           </div>
@@ -2235,8 +2252,8 @@ export default function Dashboard() {
         {activeTab === 'orders' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#E8E8F0' }}>Commandes ({orders.length})</h1>
-              <button onClick={() => setShowNewOrder(!showNewOrder)} style={{ padding: '10px 18px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>+ Nouvelle</button>
+              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes ({orders.length})</h1>
+              <button onClick={() => setShowNewOrder(!showNewOrder)} style={{ padding: '10px 18px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>+ Nouvelle</button>
             </div>
 
             {/* Status filter */}
@@ -2244,38 +2261,38 @@ export default function Dashboard() {
               {[
                 { key: 'all', label: 'Toutes', count: orders.length },
                 { key: 'pending_payment', label: 'En attente', count: orders.filter(function(o){return o.status==='pending_payment'}).length, color: '#94A3B8' },
-                { key: 'paid', label: 'Payees', count: orders.filter(function(o){return o.status==='paid'}).length, color: '#F59E0B' },
+                { key: 'paid', label: 'Payees', count: orders.filter(function(o){return o.status==='paid'}).length, color: '#92400E' },
                 { key: 'shipped', label: 'Expediees', count: orders.filter(function(o){return o.status==='shipped'}).length, color: '#8B5CF6' },
-                { key: 'delivered', label: 'Livrees', count: orders.filter(function(o){return o.status==='delivered'}).length, color: '#10B981' },
+                { key: 'delivered', label: 'Livrees', count: orders.filter(function(o){return o.status==='delivered'}).length, color: '#059669' },
               ].map(function(f) { return (
-                <button key={f.key} onClick={function(){setOrderFilter(f.key)}} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: orderFilter === f.key ? 'rgba(233,69,96,.8)' : 'rgba(255,255,255,.06)', color: orderFilter === f.key ? '#FFF' : '#777' }}>
+                <button key={f.key} onClick={function(){setOrderFilter(f.key)}} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: orderFilter === f.key ? '#E94560' : '#FFF', color: orderFilter === f.key ? '#FFF' : '#777' }}>
                   {f.label} ({f.count})
                 </button>
               )})}
             </div>
 
             {showNewOrder && (
-              <form onSubmit={handleCreateOrder} style={{ background: 'rgba(255,255,255,.04)', border: '2px solid rgba(233,69,96,.5)', borderRadius: 14, padding: 18, marginBottom: 20 }}>
+              <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #E94560', borderRadius: 14, padding: 18, marginBottom: 20 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
                   <input placeholder="Ref (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
                   <input placeholder="Montant €" type="number" step="0.01" required value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} style={inputStyle} />
                   <input placeholder="Description" value={newOrder.description} onChange={e => setNewOrder({...newOrder, description: e.target.value})} style={inputStyle} />
                 </div>
-                <button type="submit" style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Creer la commande</button>
+                <button type="submit" style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Creer la commande</button>
               </form>
             )}
 
             {/* Order detail panel */}
             {selectedOrderDetail && !editingOrder && (
-              <div style={{ background: 'rgba(255,255,255,.04)', border: '2px solid rgba(233,69,96,.5)', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+              <div style={{ background: '#FFF', border: '2px solid #E94560', borderRadius: 16, padding: 24, marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <div>
-                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#E8E8F0' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')} a {new Date(selectedOrderDetail.created_at).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</div>
+                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1A1A2E' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
+                    <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')} a {new Date(selectedOrderDetail.created_at).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={function() { setEditingOrder(Object.assign({}, selectedOrderDetail)) }} style={{ padding: '8px 16px', background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>✏️ Modifier</button>
-                    <button onClick={function() { setSelectedOrderDetail(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: 'rgba(255,255,255,.45)' }}>✕</button>
+                    <button onClick={function() { setEditingOrder(Object.assign({}, selectedOrderDetail)) }} style={{ padding: '8px 16px', background: '#F5F4F2', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>✏️ Modifier</button>
+                    <button onClick={function() { setSelectedOrderDetail(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
                   </div>
                 </div>
 
@@ -2298,78 +2315,78 @@ export default function Dashboard() {
 
                 {/* Order info grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                  <div style={{ background: 'rgba(255,255,255,.02)', borderRadius: 12, padding: '12px 16px' }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>CLIENT</div>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>CLIENT</div>
                     <div style={{ fontSize: 15, fontWeight: 700 }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 4 }}>{selectedOrderDetail.client_email || ''}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{selectedOrderDetail.client_phone || ''}</div>
+                    <div style={{ fontSize: 12, color: '#777', marginTop: 4 }}>{selectedOrderDetail.client_email || ''}</div>
+                    <div style={{ fontSize: 12, color: '#777' }}>{selectedOrderDetail.client_phone || ''}</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.02)', borderRadius: 12, padding: '12px 16px' }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>MONTANT</div>
-                    <div style={{ fontSize: 24, fontWeight: 900, color: '#E8E8F0' }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div>
-                    {selectedOrderDetail.shipping_cost > 0 && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>dont {selectedOrderDetail.shipping_cost}€ livraison</div>}
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>MONTANT</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: '#1A1A2E' }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div>
+                    {selectedOrderDetail.shipping_cost > 0 && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>dont {selectedOrderDetail.shipping_cost}€ livraison</div>}
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.02)', borderRadius: 12, padding: '12px 16px' }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>ADRESSE</div>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>ADRESSE</div>
                     <div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_address || ''}</div>
                     <div style={{ fontSize: 13 }}>{selectedOrderDetail.shipping_zipcode || ''} {selectedOrderDetail.shipping_city || ''}</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.02)', borderRadius: 12, padding: '12px 16px' }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>LIVRAISON</div>
+                  <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>LIVRAISON</div>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{selectedOrderDetail.shipping_method === 'relay' ? '📍 Mondial Relay' : selectedOrderDetail.shipping_method || '—'}</div>
                     {selectedOrderDetail.relay_point && (function() { try { var rp = JSON.parse(selectedOrderDetail.relay_point); return <div style={{ fontSize: 12, color: '#6366F1', marginTop: 4 }}>{rp.name}<br/>{rp.address}, {rp.zipcode} {rp.city}</div> } catch(e) { return null } })()}
-                    {selectedOrderDetail.shipping_carrier && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginTop: 4 }}>{selectedOrderDetail.shipping_carrier}</div>}
+                    {selectedOrderDetail.shipping_carrier && <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>{selectedOrderDetail.shipping_carrier}</div>}
                   </div>
                 </div>
-                {selectedOrderDetail.description && <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 16 }}>Description: {selectedOrderDetail.description}</div>}
+                {selectedOrderDetail.description && <div style={{ fontSize: 12, color: '#777', marginBottom: 16 }}>Description: {selectedOrderDetail.description}</div>}
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, flexDirection: isMobile ? 'column' : 'row', borderTop: '1px solid rgba(255,255,255,.06)' }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, flexDirection: isMobile ? 'column' : 'row', borderTop: '1px solid rgba(0,0,0,.06)' }}>
                   {selectedOrderDetail.status === 'paid' && <button onClick={function() { setActiveTab('shipping'); startShipping(selectedOrderDetail); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🚚 Expedier</button>}
                   {selectedOrderDetail.status === 'shipped' && <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: selectedOrderDetail.id, fields: { status: 'delivered', delivered_at: new Date().toISOString() } }) }); loadData(shop.id); setSelectedOrderDetail(null) }} style={{ padding: '10px 20px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>✓ Marquer livree</button>}
-                  {selectedOrderDetail.tracking_number && <button onClick={function() { window.open('https://www.mondialrelay.fr/suivi-de-colis/?NumExp=' + selectedOrderDetail.tracking_number + '&cp=' + (selectedOrderDetail.shipping_zipcode || ''), '_blank') }} style={{ padding: '10px 20px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.6)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>📦 Suivre le colis</button>}
+                  {selectedOrderDetail.tracking_number && <button onClick={function() { window.open('https://www.mondialrelay.fr/suivi-de-colis/?NumExp=' + selectedOrderDetail.tracking_number + '&cp=' + (selectedOrderDetail.shipping_zipcode || ''), '_blank') }} style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>📦 Suivre le colis</button>}
                 </div>
               </div>
             )}
 
             {/* Editing panel */}
             {editingOrder && (
-              <div style={{ background: 'rgba(255,255,255,.04)', border: '2px solid rgba(99,91,255,.5)', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+              <div style={{ background: '#FFF', border: '2px solid #6366F1', borderRadius: 16, padding: 24, marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 16, fontWeight: 800, color: '#6366F1' }}>✏️ Modifier la commande</div>
-                  <button onClick={function() { setEditingOrder(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: 'rgba(255,255,255,.45)' }}>✕</button>
+                  <button onClick={function() { setEditingOrder(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Reference</div><input value={editingOrder.reference || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { reference: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Montant (€)</div><input type="number" step="0.01" value={editingOrder.total_amount || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { total_amount: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Prenom</div><input value={editingOrder.client_first_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_first_name: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Nom</div><input value={editingOrder.client_last_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_last_name: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Email</div><input value={editingOrder.client_email || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_email: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Telephone</div><input value={editingOrder.client_phone || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_phone: e.target.value })) }} style={inputStyle} /></div>
-                  <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Adresse</div><input value={editingOrder.shipping_address || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_address: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Code postal</div><input value={editingOrder.shipping_zipcode || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_zipcode: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Ville</div><input value={editingOrder.shipping_city || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_city: e.target.value })) }} style={inputStyle} /></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Statut</div><select value={editingOrder.status || 'pending'} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { status: e.target.value })) }} style={Object.assign({}, inputStyle, { background: 'rgba(255,255,255,.04)' })}><option value="pending_payment">En attente paiement</option><option value="paid">Payee</option><option value="shipped">Expediee</option><option value="delivered">Livree</option><option value="cancelled">Annulee</option></select></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>N° suivi</div><input value={editingOrder.tracking_number || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { tracking_number: e.target.value })) }} style={inputStyle} /></div>
-                  <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', marginBottom: 3 }}>Description</div><input value={editingOrder.description || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { description: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Reference</div><input value={editingOrder.reference || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { reference: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Montant (€)</div><input type="number" step="0.01" value={editingOrder.total_amount || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { total_amount: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Prenom</div><input value={editingOrder.client_first_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_first_name: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Nom</div><input value={editingOrder.client_last_name || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_last_name: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Email</div><input value={editingOrder.client_email || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_email: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Telephone</div><input value={editingOrder.client_phone || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { client_phone: e.target.value })) }} style={inputStyle} /></div>
+                  <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Adresse</div><input value={editingOrder.shipping_address || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_address: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Code postal</div><input value={editingOrder.shipping_zipcode || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_zipcode: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Ville</div><input value={editingOrder.shipping_city || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { shipping_city: e.target.value })) }} style={inputStyle} /></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Statut</div><select value={editingOrder.status || 'pending'} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { status: e.target.value })) }} style={Object.assign({}, inputStyle, { background: '#FFF' })}><option value="pending_payment">En attente paiement</option><option value="paid">Payee</option><option value="shipped">Expediee</option><option value="delivered">Livree</option><option value="cancelled">Annulee</option></select></div>
+                  <div><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>N° suivi</div><input value={editingOrder.tracking_number || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { tracking_number: e.target.value })) }} style={inputStyle} /></div>
+                  <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, color: '#999', marginBottom: 3 }}>Description</div><input value={editingOrder.description || ''} onChange={function(e) { setEditingOrder(Object.assign({}, editingOrder, { description: e.target.value })) }} style={inputStyle} /></div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={saveOrderEdit} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #E94560 0%, #C62354 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>💾 Sauvegarder</button>
-                  <button onClick={function() { setEditingOrder(null) }} style={{ padding: '12px 24px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.5)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Annuler</button>
+                  <button onClick={saveOrderEdit} style={{ padding: '12px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>💾 Sauvegarder</button>
+                  <button onClick={function() { setEditingOrder(null) }} style={{ padding: '12px 24px', background: '#F5F4F2', color: '#777', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Annuler</button>
                 </div>
               </div>
             )}
 
             {/* Orders list */}
             {orders.filter(function(o) { return orderFilter === 'all' || o.status === orderFilter }).map(o => (
-              <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '12px 14px' : '14px 16px', borderRadius: 14, marginBottom: 6, gap: isMobile ? 8 : 0, background: selectedOrderDetail?.id === o.id ? 'rgba(233,69,96,.08)' : 'rgba(255,255,255,.03)', border: selectedOrderDetail?.id === o.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.2)', cursor: 'pointer', transition: 'all .15s' }}>
+              <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '12px 14px' : '14px 16px', borderRadius: 14, marginBottom: 6, gap: isMobile ? 8 : 0, background: selectedOrderDetail?.id === o.id ? 'rgba(233,69,96,.04)' : 'rgba(255,255,255,.03)', border: selectedOrderDetail?.id === o.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || o.ref}</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>{o.client_last_name ? (o.client_first_name + ' ' + o.client_last_name) : 'En attente'}</span>
-                    {o.source === 'live_monitor' && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 8, background: 'rgba(59,130,246,.12)', color: '#3B82F6' }}>LIVE</span>}
+                    <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? (o.client_first_name + ' ' + o.client_last_name) : 'En attente'}</span>
+                    {o.source === 'live_monitor' && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 8, background: '#EFF6FF', color: '#3B82F6' }}>LIVE</span>}
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 3 }}>{new Date(o.created_at).toLocaleDateString('fr-FR')} {o.shipping_city ? '· ' + o.shipping_city : ''} {o.description ? '· ' + o.description.substring(0, 40) : ''}</div>
+                  <div style={{ fontSize: 11, color: '#BBB', marginTop: 3 }}>{new Date(o.created_at).toLocaleDateString('fr-FR')} {o.shipping_city ? '· ' + o.shipping_city : ''} {o.description ? '· ' + o.description.substring(0, 40) : ''}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
@@ -2385,7 +2402,7 @@ export default function Dashboard() {
             ))}
 
             {orders.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,.25)' }}>
+              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
                 <p style={{ fontSize: 15, fontWeight: 600 }}>Aucune commande pour l'instant</p>
                 <p style={{ fontSize: 13, marginTop: 4 }}>Lance un live ou cree une commande manuellement</p>
@@ -2397,25 +2414,25 @@ export default function Dashboard() {
         {/* ─── CLIENTS ─── */}
         {activeTab === 'clients' && (
           <div>
-            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#E8E8F0', marginBottom: 24 }}>Clients ({clients.length})</h1>
+            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Clients ({clients.length})</h1>
 
             {selectedClient && (
-              <div style={{ background: 'rgba(255,255,255,.04)', border: '2px solid rgba(233,69,96,.5)', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+              <div style={{ background: '#FFF', border: '2px solid #E94560', borderRadius: 16, padding: 24, marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 18, fontWeight: 800 }}>{selectedClient.first_name} {selectedClient.last_name}</div>
-                  <button onClick={function() { setSelectedClient(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: 'rgba(255,255,255,.45)' }}>✕</button>
+                  <button onClick={function() { setSelectedClient(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 2 }}>Email</div><div style={{ fontSize: 13 }}>{selectedClient.email}</div></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedClient.phone || '—'}</div></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 2 }}>Ville</div><div style={{ fontSize: 13 }}>{selectedClient.city || '—'}</div></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 2 }}>Commandes</div><div style={{ fontSize: 13, fontWeight: 700 }}>{selectedClient.order_count || 0}</div></div>
-                  <div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 2 }}>Total depense</div><div style={{ fontSize: 13, fontWeight: 700, color: '#10B981' }}>{(selectedClient.total_spent || 0).toFixed(2)}€</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Email</div><div style={{ fontSize: 13 }}>{selectedClient.email}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Telephone</div><div style={{ fontSize: 13 }}>{selectedClient.phone || '—'}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Ville</div><div style={{ fontSize: 13 }}>{selectedClient.city || '—'}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Commandes</div><div style={{ fontSize: 13, fontWeight: 700 }}>{selectedClient.order_count || 0}</div></div>
+                  <div><div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 2 }}>Total depense</div><div style={{ fontSize: 13, fontWeight: 700, color: '#059669' }}>{(selectedClient.total_spent || 0).toFixed(2)}€</div></div>
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Commandes de ce client :</div>
                 {orders.filter(function(o) { return o.client_email && selectedClient.email && o.client_email.toLowerCase() === selectedClient.email.toLowerCase() }).map(function(o) { return (
-                  <div key={o.id} onClick={function() { setActiveTab('orders'); setSelectedOrderDetail(o); setSelectedClient(null) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, marginBottom: 4, background: 'rgba(255,255,255,.02)', cursor: 'pointer', border: '1px solid rgba(255,255,255,.04)' }}>
-                    <div><span style={{ fontSize: 13, fontWeight: 700 }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: 'rgba(255,255,255,.45)' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
+                  <div key={o.id} onClick={function() { setActiveTab('orders'); setSelectedOrderDetail(o); setSelectedClient(null) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, marginBottom: 4, background: '#FAFAF8', cursor: 'pointer', border: '1px solid rgba(0,0,0,.04)' }}>
+                    <div><span style={{ fontSize: 13, fontWeight: 700 }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: '#999' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
                     <div><span style={{ fontSize: 13, fontWeight: 700 }}>{(o.total_amount || 0).toFixed(2)}€</span></div>
                   </div>
                 )})}
@@ -2423,19 +2440,19 @@ export default function Dashboard() {
             )}
 
             {clients.map(c => (
-              <div key={c.id} onClick={function() { setSelectedClient(selectedClient?.id === c.id ? null : c) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedClient?.id === c.id ? 'rgba(233,69,96,.08)' : 'rgba(255,255,255,.03)', border: selectedClient?.id === c.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.2)', cursor: 'pointer', transition: 'all .15s' }}>
+              <div key={c.id} onClick={function() { setSelectedClient(selectedClient?.id === c.id ? null : c) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedClient?.id === c.id ? 'rgba(233,69,96,.04)' : 'rgba(255,255,255,.03)', border: selectedClient?.id === c.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700 }}>{c.first_name} {c.last_name}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>{c.email} · {c.phone || '—'}</div>
+                  <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{c.email} · {c.phone || '—'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{c.order_count || 0} commande{(c.order_count || 0) > 1 ? 's' : ''}</div>
-                  <div style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>{(c.total_spent || 0).toFixed(0)}€</div>
+                  <div style={{ fontSize: 11, color: '#059669', fontWeight: 600 }}>{(c.total_spent || 0).toFixed(0)}€</div>
                 </div>
               </div>
             ))}
             {clients.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,.25)' }}>
+              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
                 <p style={{ fontSize: 15, fontWeight: 600 }}>Aucun client pour l'instant</p>
                 <p style={{ fontSize: 13, marginTop: 4 }}>Les clients apparaitront apres leur premier paiement</p>
@@ -2449,12 +2466,12 @@ export default function Dashboard() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#E8E8F0', marginBottom: 4 }}>Livraison</h1>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
+                <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Livraison</h1>
+                <p style={{ fontSize: 13, color: '#999' }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
               </div>
               {shipStep !== 'list' && (
                 <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null); setShipError(null) }}
-                  style={{ padding: '10px 20px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.6)', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                  style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
                   ← Retour
                 </button>
               )}
@@ -2463,10 +2480,10 @@ export default function Dashboard() {
             {shipStep === 'list' && (
               <div>
                 {(!boxtalConfig.user || !boxtalConfig.pass) && (
-                  <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', border: '1px solid rgba(245,158,11,.2)', borderRadius: 14, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', border: '1px solid #FED7AA', borderRadius: 14, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#F59E0B' }}>Configure Mondial Relay dans Parametres</div>
-                      <div style={{ fontSize: 12, color: '#FBBF24', marginTop: 2 }}>Va dans Parametres, entre ton Code Enseigne et Cle Privee Mondial Relay</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#92400E' }}>Configure Mondial Relay dans Parametres</div>
+                      <div style={{ fontSize: 12, color: '#B45309', marginTop: 2 }}>Va dans Parametres, entre ton Code Enseigne et Cle Privee Mondial Relay</div>
                     </div>
                     <button onClick={function() { setActiveTab('settings') }}
                       style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, whiteSpace: 'nowrap' }}>
@@ -2475,31 +2492,31 @@ export default function Dashboard() {
                   </div>
                 )}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(255,255,255,.04)' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#F59E0B' }}>{orders.filter(function(o) { return o.status === 'paid' }).length}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', fontWeight: 500 }}>A expedier</div>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.04)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#92400E' }}>{orders.filter(function(o) { return o.status === 'paid' }).length}</div>
+                    <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>A expedier</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(255,255,255,.04)' }}>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ fontSize: 24, fontWeight: 800, color: '#8B5CF6' }}>{orders.filter(function(o) { return o.status === 'shipped' }).length}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', fontWeight: 500 }}>En transit</div>
+                    <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>En transit</div>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(255,255,255,.04)' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#10B981' }}>{orders.filter(function(o) { return o.status === 'delivered' }).length}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', fontWeight: 500 }}>Livrees</div>
+                  <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 18px', border: '1px solid rgba(0,0,0,.04)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: '#059669' }}>{orders.filter(function(o) { return o.status === 'delivered' }).length}</div>
+                    <div style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>Livrees</div>
                   </div>
                 </div>
                 {orders.filter(function(o) { return o.status === 'paid' }).map(function(o) {
                   return (
-                    <div key={o.id} style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.04)', borderRadius: 16, padding: '18px 20px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)' }}>
+                    <div key={o.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 16, padding: '18px 20px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                             <span style={{ fontSize: 15, fontWeight: 800 }}>{o.reference || '#'}</span>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: 'rgba(245,158,11,.12)', color: '#F59E0B' }}>A expedier</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#FFFBEB', color: '#92400E' }}>A expedier</span>
                             <span style={{ fontSize: 14, fontWeight: 700 }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                           </div>
-                          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
-                          {o.shipping_address && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
+                          <div style={{ fontSize: 12, color: '#777' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
+                          {o.shipping_address && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
                           {o.relay_point && (function() { try { var rp = JSON.parse(o.relay_point); return <div style={{ fontSize: 11, color: '#6366F1', marginTop: 3, fontWeight: 600 }}>📍 Point relais : {rp.name} — {rp.address}, {rp.zipcode} {rp.city}</div> } catch(e) { return null } })()}
                         </div>
                         <button onClick={function() { startShipping(o) }}
@@ -2512,17 +2529,17 @@ export default function Dashboard() {
                 })}
                 {orders.filter(function(o) { return o.status === 'shipped' }).map(function(o) {
                   return (
-                    <div key={o.id} style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.04)', borderRadius: 14, padding: '14px 18px', marginBottom: 8 }}>
+                    <div key={o.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 14, padding: '14px 18px', marginBottom: 8 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                             <span style={{ fontSize: 14, fontWeight: 700 }}>{o.reference || '#'}</span>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: 'rgba(139,92,246,.12)', color: '#8B5CF6' }}>Expedie</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#F5F3FF', color: '#8B5CF6' }}>Expedie</span>
                           </div>
-                          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{o.shipping_carrier || ''} {o.tracking_number ? '- Suivi: ' + o.tracking_number : ''}</div>
+                          <div style={{ fontSize: 12, color: '#999' }}>{o.shipping_carrier || ''} {o.tracking_number ? '- Suivi: ' + o.tracking_number : ''}</div>
                         </div>
                         <div style={{ display: 'flex', gap: 8 }}>
-                          {o.shipping_label_url && <button onClick={function() { window.open(o.shipping_label_url, '_blank') }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Etiquette</button>}
+                          {o.shipping_label_url && <button onClick={function() { window.open(o.shipping_label_url, '_blank') }} style={{ padding: '8px 14px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Etiquette</button>}
                           <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: o.id, fields: { status: 'delivered' } }) }); loadData(shop.id) }} style={{ padding: '8px 14px', background: '#10B981', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Livre</button>
                         </div>
                       </div>
@@ -2530,9 +2547,9 @@ export default function Dashboard() {
                   )
                 })}
                 {orders.filter(function(o) { return o.status === 'paid' || o.status === 'shipped' }).length === 0 && (
-                  <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,.25)' }}>
+                  <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                     <div style={{ fontSize: 48, marginBottom: 12 }}>✓</div>
-                    <p style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.45)' }}>Tout est a jour !</p>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Tout est a jour !</p>
                   </div>
                 )}
               </div>
@@ -2540,52 +2557,52 @@ export default function Dashboard() {
 
             {shipStep === 'form' && shipSelectedOrder && (
               <div>
-                <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)', marginBottom: 20 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: 'rgba(255,255,255,.45)', marginBottom: 12 }}>COMMANDE</div>
+                <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: '#999', marginBottom: 12 }}>COMMANDE</div>
                   <div style={{ fontSize: 16, fontWeight: 800 }}>{shipSelectedOrder.reference || '#'} — {(shipSelectedOrder.total_amount || shipSelectedOrder.total || shipSelectedOrder.amount || 0).toFixed(2)}€</div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', marginTop: 4 }}>{shipSelectedOrder.client_first_name || ''} {shipSelectedOrder.client_last_name || ''}</div>
-                  {shipSelectedOrder.shipping_address && <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 4 }}>{shipSelectedOrder.shipping_address}, {shipSelectedOrder.shipping_zipcode} {shipSelectedOrder.shipping_city}</div>}
-                  {shipSelectedOrder.relay_point && (function() { try { var rp = JSON.parse(shipSelectedOrder.relay_point); return <div style={{ marginTop: 8, padding: '10px 14px', background: 'rgba(99,91,255,.1)', border: '1px solid rgba(99,91,255,.2)', borderRadius: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#818CF8' }}>📍 Point relais choisi par le client :</div><div style={{ fontSize: 13, fontWeight: 600, color: '#E8E8F0', marginTop: 2 }}>{rp.name}</div><div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 1 }}>{rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
+                  <div style={{ fontSize: 13, color: '#777', marginTop: 4 }}>{shipSelectedOrder.client_first_name || ''} {shipSelectedOrder.client_last_name || ''}</div>
+                  {shipSelectedOrder.shipping_address && <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{shipSelectedOrder.shipping_address}, {shipSelectedOrder.shipping_zipcode} {shipSelectedOrder.shipping_city}</div>}
+                  {shipSelectedOrder.relay_point && (function() { try { var rp = JSON.parse(shipSelectedOrder.relay_point); return <div style={{ marginTop: 8, padding: '10px 14px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#818CF8' }}>📍 Point relais choisi par le client :</div><div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A2E', marginTop: 2 }}>{rp.name}</div><div style={{ fontSize: 12, color: '#777', marginTop: 1 }}>{rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
                 </div>
 
-                <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)', marginBottom: 20 }}>
+                <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
                   <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Informations du colis</div>
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
                     <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', display: 'block', marginBottom: 4 }}>Poids (kg)</label>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Poids (kg)</label>
                       <input value={shipForm.weight} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { weight: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.05)', color: '#E8E8F0' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
                     </div>
                     <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', display: 'block', marginBottom: 4 }}>Longueur (cm)</label>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Longueur (cm)</label>
                       <input value={shipForm.length} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { length: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.05)', color: '#E8E8F0' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
                     </div>
                     <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', display: 'block', marginBottom: 4 }}>Largeur (cm)</label>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Largeur (cm)</label>
                       <input value={shipForm.width} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { width: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.05)', color: '#E8E8F0' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
                     </div>
                     <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', display: 'block', marginBottom: 4 }}>Hauteur (cm)</label>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Hauteur (cm)</label>
                       <input value={shipForm.height} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { height: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.05)', color: '#E8E8F0' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
                     </div>
                   </div>
                   <div style={{ marginBottom: 16 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', display: 'block', marginBottom: 4 }}>Contenu</label>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Contenu</label>
                     <input value={shipForm.description} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { description: e.target.value })) }}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.05)', color: '#E8E8F0' }} placeholder="Vetements, Accessoires..." />
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} placeholder="Vetements, Accessoires..." />
                   </div>
 
-                  {shipError && <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.2)', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#EF4444' }}>{shipError}</div>}
+                  {shipError && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#EF4444' }}>{shipError}</div>}
 
                   <button onClick={function() { generateLabel(shipSelectedOrder) }} disabled={shipOrderLoading}
                     style={{ width: '100%', padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>
                     {shipOrderLoading ? 'Generation en cours...' : '🏷️ Generer l\'etiquette d\'expedition'}
                   </button>
                   <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: shipSelectedOrder.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }); loadData(shop.id); setShipStep('label') }}
-                    style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: 'rgba(255,255,255,.45)', border: '1px dashed rgba(255,255,255,.08)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
+                    style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', color: '#999', border: '1px dashed rgba(0,0,0,.08)', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
                     Marquer expediee manuellement
                   </button>
                 </div>
@@ -2598,16 +2615,16 @@ export default function Dashboard() {
                 <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(16,185,129,.25)' }}>
                   <span style={{ fontSize: 36, color: '#FFF' }}>✓</span>
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#E8E8F0', marginBottom: 8 }}>Expedition creee !</h2>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Expedition creee !</h2>
+                <p style={{ fontSize: 14, color: '#777', marginBottom: 6 }}>
                   {shipTrackingNumber ? <span>Numero de suivi : <strong style={{ fontSize: 18, letterSpacing: 2 }}>{shipTrackingNumber}</strong></span> : 'Mondial Relay — Point Relais'}
                 </p>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)', marginBottom: 24 }}>
+                <p style={{ fontSize: 13, color: '#999', marginBottom: 24 }}>
                   Telecharge l'etiquette sur Mondial Relay Connect, imprime-la et colle-la sur ton colis.
                 </p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
                   <button onClick={function() { window.open('/api/mondialrelay/label?expedition=' + (shipTrackingNumber || '') + '&ens=' + (boxtalConfig.mrEnseigne || '') + '&key=' + encodeURIComponent(boxtalConfig.mrPrivateKey || ''), '_blank') }} style={{ padding: '14px 28px', background: '#E30613', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>🏷️ Imprimer l'etiquette</button>
-                  <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null) }} style={{ padding: '14px 28px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.6)', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Retour</button>
+                  <button onClick={function() { setShipStep('list'); setShipSelectedOrder(null) }} style={{ padding: '14px 28px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Retour</button>
                 </div>
               </div>
             )}
@@ -2619,20 +2636,20 @@ export default function Dashboard() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#E8E8F0', marginBottom: 4 }}>Messages</h1>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>Messages de tes clientes depuis la page de paiement</p>
+                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Messages</h1>
+                <p style={{ fontSize: 13, color: '#999' }}>Messages de tes clientes depuis la page de paiement</p>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{messages.filter(function(m) { return m.status !== 'replied' }).length} non lus</span>
-                <button onClick={function() { loadMessages(shop.id) }} style={{ padding: '8px 14px', background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Actualiser</button>
+                <span style={{ fontSize: 12, color: '#999' }}>{messages.filter(function(m) { return m.status !== 'replied' }).length} non lus</span>
+                <button onClick={function() { loadMessages(shop.id) }} style={{ padding: '8px 14px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>Actualiser</button>
               </div>
             </div>
 
             {messages.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 60, color: 'rgba(255,255,255,.25)' }}>
+              <div style={{ textAlign: 'center', padding: 60, color: '#CCC' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
-                <p style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.45)' }}>Aucun message</p>
-                <p style={{ fontSize: 13, marginTop: 4, color: 'rgba(255,255,255,.3)' }}>Les messages de tes clientes apparaitront ici</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#999' }}>Aucun message</p>
+                <p style={{ fontSize: 13, marginTop: 4, color: '#BBB' }}>Les messages de tes clientes apparaitront ici</p>
               </div>
             )}
 
@@ -2640,24 +2657,24 @@ export default function Dashboard() {
               var isReplied = msg.status === 'replied'
               var isOpen = messageReplyId === msg.id
               return (
-                <div key={msg.id} style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.04)', borderRadius: 16, padding: '18px 22px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)', borderLeft: isReplied ? '4px solid #10B981' : '4px solid #F59E0B' }}>
+                <div key={msg.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 16, padding: '18px 22px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)', borderLeft: isReplied ? '4px solid #10B981' : '4px solid #F59E0B' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#E8E8F0' }}>{msg.sender_name || 'Client'}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 2 }}>{msg.sender_email || ''} {msg.sender_phone ? ' · ' + msg.sender_phone : ''}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{msg.sender_name || 'Client'}</div>
+                      <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{msg.sender_email || ''} {msg.sender_phone ? ' · ' + msg.sender_phone : ''}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 8, background: isReplied ? '#ECFDF5' : '#FFFBEB', color: isReplied ? '#10B981' : '#F59E0B' }}>{isReplied ? 'Repondu' : 'Nouveau'}</span>
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString('fr-FR') : ''}</span>
+                      <span style={{ fontSize: 11, color: '#CCC' }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString('fr-FR') : ''}</span>
                     </div>
                   </div>
-                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', lineHeight: 1.6, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{msg.content}</div>
-                  {msg.attachments && (function() { try { var files = JSON.parse(msg.attachments); return <div style={{ marginBottom: 12 }}>{files.map(function(f, fi) { return <a key={fi} href={f.url} target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'rgba(255,255,255,.06)', borderRadius: 8, marginRight: 8, marginBottom: 4, fontSize: 12, color: '#6366F1', textDecoration: 'none', border: '1px solid rgba(255,255,255,.06)' }}>📄 {f.name} <span style={{ color: 'rgba(255,255,255,.25)', fontSize: 10 }}>{f.size ? (f.size/1024).toFixed(0) + 'KB' : ''}</span></a> })}</div> } catch(e) { return null } })()}
+                  <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                  {msg.attachments && (function() { try { var files = JSON.parse(msg.attachments); return <div style={{ marginBottom: 12 }}>{files.map(function(f, fi) { return <a key={fi} href={f.url} target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#F5F4F2', borderRadius: 8, marginRight: 8, marginBottom: 4, fontSize: 12, color: '#6366F1', textDecoration: 'none', border: '1px solid rgba(0,0,0,.06)' }}>📄 {f.name} <span style={{ color: '#CCC', fontSize: 10 }}>{f.size ? (f.size/1024).toFixed(0) + 'KB' : ''}</span></a> })}</div> } catch(e) { return null } })()}
 
                   {msg.reply && (
-                    <div style={{ background: 'rgba(16,185,129,.08)', borderRadius: 12, padding: '12px 16px', marginBottom: 10 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#10B981', marginBottom: 4 }}>Ta reponse :</div>
-                      <div style={{ fontSize: 13, color: '#E0E0E8', whiteSpace: 'pre-wrap' }}>{msg.reply}</div>
+                    <div style={{ background: '#F0FDF4', borderRadius: 12, padding: '12px 16px', marginBottom: 10 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#059669', marginBottom: 4 }}>Ta reponse :</div>
+                      <div style={{ fontSize: 13, color: '#333', whiteSpace: 'pre-wrap' }}>{msg.reply}</div>
                     </div>
                   )}
 
@@ -2668,21 +2685,21 @@ export default function Dashboard() {
                           <textarea value={messageReply} onChange={function(e) { setMessageReply(e.target.value) }}
                             placeholder="Ta reponse..."
                             rows={3}
-                            style={{ width: '100%', padding: '12px 14px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', marginBottom: 8 }} />
+                            style={{ width: '100%', padding: '12px 14px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', marginBottom: 8 }} />
                           <div style={{ display: 'flex', gap: 8 }}>
                             <button onClick={function() { sendMessageReply(msg.id) }} disabled={messageSending}
                               style={{ padding: '10px 20px', background: messageSending ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: messageSending ? 'wait' : 'pointer', fontFamily: sf }}>
                               {messageSending ? 'Envoi...' : 'Envoyer'}
                             </button>
                             <button onClick={function() { setMessageReplyId(null); setMessageReply('') }}
-                              style={{ padding: '10px 20px', background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.6)', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
+                              style={{ padding: '10px 20px', background: '#F5F4F2', color: '#555', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: sf }}>
                               Annuler
                             </button>
                           </div>
                         </div>
                       ) : (
                         <button onClick={function() { setMessageReplyId(msg.id); setMessageReply('') }}
-                          style={{ padding: '8px 16px', background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
+                          style={{ padding: '8px 16px', background: '#F5F4F2', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
                           Repondre
                         </button>
                       )}
@@ -2698,8 +2715,8 @@ export default function Dashboard() {
         {activeTab === 'assistant' && (
           <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)' }}>
             <div style={{ marginBottom: 20 }}>
-              <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#E8E8F0', marginBottom: 4 }}>IA Assistant</h1>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)' }}>Ton assistante pour le business, le dashboard, Stripe et la logistique</p>
+              <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>IA Assistant</h1>
+              <p style={{ fontSize: 13, color: '#999' }}>Ton assistante pour le business, le dashboard, Stripe et la logistique</p>
             </div>
 
             {/* Quick actions */}
@@ -2715,7 +2732,7 @@ export default function Dashboard() {
               ].filter(Boolean).map(function(a, i) {
                 return (
                   <button key={i} onClick={function() { setAiInput(a.q); }}
-                    style={{ padding: '8px 14px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: sf, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', gap: 6, transition: 'all .2s' }}>
+                    style={{ padding: '8px 14px', background: '#FFF', border: '1px solid rgba(0,0,0,.06)', borderRadius: 10, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: sf, color: '#555', display: 'flex', alignItems: 'center', gap: 6, transition: 'all .2s' }}>
                     <span>{a.icon}</span> {a.label}
                   </button>
                 )
@@ -2723,7 +2740,7 @@ export default function Dashboard() {
             </div>
 
             {/* Chat messages */}
-            <div ref={aiScrollRef} style={{ flex: 1, overflowY: 'auto', background: 'rgba(255,255,255,.04)', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(255,255,255,.04)', marginBottom: 16 }}>
+            <div ref={aiScrollRef} style={{ flex: 1, overflowY: 'auto', background: '#FFF', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 16 }}>
               {aiMessages.map(function(msg, i) {
                 var isUser = msg.role === 'user'
                 return (
@@ -2744,7 +2761,7 @@ export default function Dashboard() {
                   <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ fontSize: 14 }}>🤖</span>
                   </div>
-                  <div style={{ padding: '12px 16px', borderRadius: 14, background: '#F8F9FA', fontSize: 13, color: 'rgba(255,255,255,.45)' }}>
+                  <div style={{ padding: '12px 16px', borderRadius: 14, background: '#F8F9FA', fontSize: 13, color: '#999' }}>
                     <span style={{ display: 'inline-block', animation: 'pulse 1s infinite' }}>Reflexion en cours...</span>
                   </div>
                 </div>
@@ -2758,7 +2775,7 @@ export default function Dashboard() {
                 onChange={function(e) { setAiInput(e.target.value) }}
                 onKeyDown={function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiMessage() } }}
                 placeholder="Pose ta question..."
-                style={{ flex: 1, padding: '14px 18px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14, fontFamily: sf, fontSize: 14, outline: 'none', background: 'rgba(255,255,255,.04)', transition: 'border-color .2s' }}
+                style={{ flex: 1, padding: '14px 18px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 14, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', transition: 'border-color .2s' }}
               />
               <button onClick={sendAiMessage} disabled={aiLoading || !aiInput.trim()}
                 style={{ padding: '14px 24px', background: aiLoading || !aiInput.trim() ? '#DDD' : 'linear-gradient(135deg, #E94560 0%, #533483 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: aiLoading || !aiInput.trim() ? 'none' : '0 4px 14px rgba(233,69,96,.25)', transition: 'all .2s' }}>
@@ -2778,8 +2795,8 @@ export default function Dashboard() {
             {/* Header */}
             <div style={{ position: 'relative', zIndex: 1, marginBottom: 32 }}>
               <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase', color: '#E94560', marginBottom: 8 }}>Configuration</div>
-              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 28 : 36, fontWeight: 900, color: '#F0F0F8', marginBottom: 6, letterSpacing: -1 }}>Parametres</h1>
-              <p style={{ fontFamily: sf, fontSize: 14, color: 'rgba(255,255,255,.45)', lineHeight: 1.6 }}>Tout ce dont tu as besoin pour gerer ta boutique</p>
+              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 28 : 36, fontWeight: 900, color: '#0F0F1A', marginBottom: 6, letterSpacing: -1 }}>Parametres</h1>
+              <p style={{ fontFamily: sf, fontSize: 14, color: '#999', lineHeight: 1.6 }}>Tout ce dont tu as besoin pour gerer ta boutique</p>
             </div>
 
             {/* Status ribbon */}
@@ -2790,46 +2807,46 @@ export default function Dashboard() {
                 { icon: '💳', label: 'Stripe', ok: !!stripeStatus?.chargesEnabled, text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer', gradient: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)' },
                 { icon: '📦', label: 'Mondial Relay', ok: !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer', gradient: 'linear-gradient(135deg, #E30613 0%, #FF4757 100%)' },
               ].map(function(c, i) { return (
-                <div key={i} className="s-card" style={{ padding: '18px 20px', position: 'relative', overflow: 'hidden', cursor: 'default' }}>
+                <div key={i} style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: '18px 20px', position: 'relative', overflow: 'hidden', cursor: 'default' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.ok ? '#10B981' : c.gradient, borderRadius: '24px 24px 0 0' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: c.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,.12)', fontSize: 18 }}>{c.icon}</div>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.ok ? '#10B981' : '#F59E0B', boxShadow: c.ok ? '0 0 8px rgba(16,185,129,.4)' : '0 0 8px rgba(245,158,11,.4)', animation: 'pulse 2s infinite', marginLeft: 'auto' }} />
                   </div>
-                  <div style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>{c.label}</div>
-                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#E8E8F0' }}>{c.text}</div>
+                  <div style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>{c.label}</div>
+                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{c.text}</div>
                 </div>
               )})}
             </div>
 
             {/* ══════ BOUTIQUE + LOGO ══════ */}
-            <div className="s-card" style={{ position: 'relative', zIndex: 1, padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(15,15,26,.3)', fontSize: 22 }}>🏪</div>
                 <div>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#F0F0F8', letterSpacing: -0.5 }}>Ma boutique</h3>
-                  <p style={{ fontFamily: sf, fontSize: 12, color: 'rgba(255,255,255,.4)', margin: 0 }}>Identite et configuration</p>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Ma boutique</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Identite et configuration</p>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 24 }}>
                 <div style={{ background: 'linear-gradient(135deg, #FAFAFE 0%, #F5F3FF 100%)', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(99,91,255,.08)' }}>
-                  <div style={{ fontFamily: sf, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.45)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Nom de la boutique</div>
-                  <div style={{ fontFamily: sf, fontSize: 17, fontWeight: 800, color: '#F0F0F8' }}>{shop?.name}</div>
+                  <div style={{ fontFamily: sf, fontSize: 9, fontWeight: 700, color: '#999', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Nom de la boutique</div>
+                  <div style={{ fontFamily: sf, fontSize: 17, fontWeight: 800, color: '#0F0F1A' }}>{shop?.name}</div>
                 </div>
                 <div style={{ background: 'linear-gradient(135deg, #FAFAFE 0%, #F0FDF4 100%)', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(16,185,129,.08)', cursor: 'pointer' }} onClick={function() { navigator.clipboard.writeText((typeof window !== 'undefined' ? window.location.origin : '') + '/pay/' + shop?.slug); alert('Lien copie !') }}>
-                  <div style={{ fontFamily: sf, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.45)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Lien de paiement — clic pour copier</div>
+                  <div style={{ fontFamily: sf, fontSize: 9, fontWeight: 700, color: '#999', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Lien de paiement — clic pour copier</div>
                   <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, color: '#6366F1', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '20px 24px', background: 'linear-gradient(135deg, rgba(99,91,255,.03) 0%, rgba(233,69,96,.03) 100%)', borderRadius: 18, border: '2px dashed rgba(255,255,255,.08)' }}>
-                <div style={{ width: 80, height: 80, borderRadius: 20, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,.06)' }}>
-                  {shopLogo ? <img src={shopLogo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: 32, color: 'rgba(255,255,255,.2)' }}>🖼️</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '20px 24px', background: 'linear-gradient(135deg, rgba(99,91,255,.03) 0%, rgba(233,69,96,.03) 100%)', borderRadius: 18, border: '2px dashed rgba(0,0,0,.08)' }}>
+                <div style={{ width: 80, height: 80, borderRadius: 20, background: '#FFF', border: '1px solid rgba(0,0,0,.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,.06)' }}>
+                  {shopLogo ? <img src={shopLogo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: 32, color: '#DDD' }}>🖼️</span>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#F0F0F8' }}>Logo</div>
-                  <div style={{ fontFamily: sf, fontSize: 12, color: 'rgba(255,255,255,.45)', marginBottom: 12 }}>Visible par tes clientes sur la page de paiement</div>
+                  <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#0F0F1A' }}>Logo</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: '#999', marginBottom: 12 }}>Visible par tes clientes sur la page de paiement</div>
                   <label style={{ display: 'inline-block', padding: '10px 22px', background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%)', color: '#FFF', borderRadius: 12, fontFamily: sf, fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(15,15,26,.2)', transition: 'all .3s' }}>
                     {logoUploading ? '⏳ Upload...' : shopLogo ? '🔄 Changer' : '➕ Ajouter un logo'}
                     <input type="file" accept="image/*" onChange={uploadLogo} style={{ display: 'none' }} />
@@ -2839,7 +2856,7 @@ export default function Dashboard() {
             </div>
 
             {/* ══════ LIVE MONITOR VIP ══════ */}
-            <div className="s-glow" style={{ position: 'relative', zIndex: 1, borderRadius: 24, padding: isMobile ? 24 : 36, marginBottom: 24, background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 40%, #16213E 70%, #0F3460 100%)', color: '#FFF', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15,15,26,.4)', animation: 'glowPulse 4s ease-in-out infinite' }}>
+            <div  style={{ position: 'relative', zIndex: 1, borderRadius: 24, padding: isMobile ? 24 : 36, marginBottom: 24, background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 40%, #16213E 70%, #0F3460 100%)', color: '#FFF', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15,15,26,.4)', animation: 'glowPulse 4s ease-in-out infinite' }}>
               <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.2) 0%, transparent 70%)', animation: 'float 6s ease-in-out infinite' }} />
               <div style={{ position: 'absolute', bottom: -40, left: '30%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.15) 0%, transparent 70%)', animation: 'float 8s ease-in-out infinite reverse' }} />
               <div style={{ position: 'absolute', top: '50%', right: '15%', width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,107,107,.1) 0%, transparent 70%)', animation: 'float 5s ease-in-out infinite 1s' }} />
@@ -2849,12 +2866,12 @@ export default function Dashboard() {
                   <div style={{ width: 52, height: 52, borderRadius: 16, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(233,69,96,.4)', fontSize: 26 }}>📡</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: sf, fontSize: 20, fontWeight: 900, letterSpacing: -0.5 }}>LIVE MONITOR</div>
-                    <div style={{ fontFamily: sf, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,.4)' }}>Exclusivite My Live Paiement</div>
+                    <div style={{ fontFamily: sf, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: '#AAA' }}>Exclusivite My Live Paiement</div>
                   </div>
                   <div style={{ padding: '6px 16px', borderRadius: 20, background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)', fontFamily: sf, fontSize: 10, fontWeight: 900, letterSpacing: 2, boxShadow: '0 4px 14px rgba(233,69,96,.4)' }}>VIP</div>
                 </div>
 
-                <p style={{ fontFamily: sf, fontSize: 14, color: 'rgba(255,255,255,.6)', lineHeight: 1.8, marginBottom: 28, maxWidth: 600 }}>
+                <p style={{ fontFamily: sf, fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 28, maxWidth: 600 }}>
                   Capte les commandes en direct pendant ton live TikTok. Detection automatique, gestion en temps reel, impression des tickets.
                 </p>
 
@@ -2864,10 +2881,10 @@ export default function Dashboard() {
                     { icon: '🖨️', title: 'Tickets auto', desc: 'Impression thermique instantanee' },
                     { icon: '📱', title: 'Multi-plateforme', desc: 'TikTok actif — Instagram bientot' },
                   ].map(function(f, i) { return (
-                    <div key={i} style={{ background: 'rgba(255,255,255,.05)', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(255,255,255,.06)', backdropFilter: 'blur(10px)', transition: 'all .3s' }}>
+                    <div key={i} style={{ background: '#FFF', borderRadius: 16, padding: '18px 20px', border: '1px solid rgba(0,0,0,.06)', backdropFilter: 'blur(10px)', transition: 'all .3s' }}>
                       <div style={{ fontSize: 24, marginBottom: 10, filter: 'drop-shadow(0 2px 8px rgba(0,0,0,.3))' }}>{f.icon}</div>
                       <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>{f.title}</div>
-                      <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.6 }}>{f.desc}</div>
+                      <div style={{ fontFamily: sf, fontSize: 11, color: '#AAA', lineHeight: 1.6 }}>{f.desc}</div>
                     </div>
                   )})}
                 </div>
@@ -2887,39 +2904,39 @@ export default function Dashboard() {
                       style={{ padding: '18px 40px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 16, fontFamily: sf, fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: '0 8px 32px rgba(233,69,96,.4)', letterSpacing: 0.5 }}>
                       🚀 Debloquer le Live Monitor
                     </button>
-                    <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.25)', marginTop: 12 }}>Sans engagement · Annule quand tu veux · Mode Demo gratuit</div>
+                    <div style={{ fontFamily: sf, fontSize: 11, color: '#CCC', marginTop: 12 }}>Sans engagement · Annule quand tu veux · Mode Demo gratuit</div>
                   </div>
                 )}
               </div>
             </div>
 
             {/* ══════ STRIPE CONNECT ══════ */}
-            <div className="s-card" style={{ position: 'relative', zIndex: 1, padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(99,91,255,.25)', fontSize: 22 }}>💳</div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#F0F0F8', letterSpacing: -0.5 }}>Stripe Connect</h3>
-                  <p style={{ fontFamily: sf, fontSize: 12, color: 'rgba(255,255,255,.4)', margin: 0 }}>Paiements CB sur ton compte bancaire</p>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Stripe Connect</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Paiements CB sur ton compte bancaire</p>
                 </div>
                 {stripeStatus?.chargesEnabled && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
               </div>
 
               {stripeStatus?.connected && stripeStatus?.chargesEnabled ? (
                 <div>
-                  <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '20px 24px', border: '1px solid rgba(16,185,129,.2)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '20px 24px', border: '1px solid #BBF7D0', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(16,185,129,.3)' }}><span style={{ color: '#FFF', fontSize: 18 }}>✓</span></div>
                     <div>
-                      <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#10B981' }}>Paiements actifs</div>
-                      {stripeStatus.email && <div style={{ fontFamily: sf, fontSize: 12, color: '#34D399' }}>{stripeStatus.email}</div>}
+                      <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#059669' }}>Paiements actifs</div>
+                      {stripeStatus.email && <div style={{ fontFamily: sf, fontSize: 12, color: '#10B981' }}>{stripeStatus.email}</div>}
                     </div>
                   </div>
                   <button onClick={async function() { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.open(data.url, '_blank') }}
-                    style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #F8F7F5 0%, #F0EEEC 100%)', color: 'rgba(255,255,255,.6)', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>📊 Dashboard Stripe</button>
+                    style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #F8F7F5 0%, #F0EEEC 100%)', color: '#555', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>📊 Dashboard Stripe</button>
                 </div>
               ) : stripeStatus?.connected ? (
                 <div>
-                  <div style={{ background: 'rgba(245,158,11,.08)', borderRadius: 16, padding: '18px 22px', border: '1px solid rgba(245,158,11,.2)', marginBottom: 16 }}>
-                    <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#F59E0B' }}>⏳ Finalise ta verification</div>
+                  <div style={{ background: '#FFF7ED', borderRadius: 16, padding: '18px 22px', border: '1px solid #FED7AA', marginBottom: 16 }}>
+                    <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#92400E' }}>⏳ Finalise ta verification</div>
                   </div>
                   <button onClick={async function() { setStripeLoading(true); var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.location.href = data.url; setStripeLoading(false) }} disabled={stripeLoading}
                     style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: '0 8px 24px rgba(99,91,255,.25)' }}>
@@ -2934,10 +2951,10 @@ export default function Dashboard() {
                       { n: '02', t: 'Ajoute ton IBAN', d: 'Pour recevoir les virements' },
                       { n: '03', t: 'Recois tes paiements', d: 'Sous 2 a 7 jours' },
                     ].map(function(s, i) { return (
-                      <div key={i} style={{ padding: '18px 20px', background: 'linear-gradient(135deg, #FAFAFE 0%, #F5F3FF 100%)', borderRadius: 16, border: '1px solid rgba(99,91,255,.06)' }}>
+                      <div key={i} style={{ padding: '18px 20px', background: 'linear-gradient(135deg, #FAFAFE 0%, #F5F3FF 100%)', borderRadius: 16, border: '1px solid rgba(99,91,255,.03)' }}>
                         <div style={{ fontFamily: sf, fontSize: 28, fontWeight: 900, color: 'rgba(99,91,255,.15)', marginBottom: 6 }}>{s.n}</div>
-                        <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#F0F0F8', marginBottom: 2 }}>{s.t}</div>
-                        <div style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.45)' }}>{s.d}</div>
+                        <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#0F0F1A', marginBottom: 2 }}>{s.t}</div>
+                        <div style={{ fontFamily: sf, fontSize: 11, color: '#999' }}>{s.d}</div>
                       </div>
                     )})}
                   </div>
@@ -2946,32 +2963,32 @@ export default function Dashboard() {
                       style={{ padding: '16px 32px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: '0 8px 24px rgba(99,91,255,.3)' }}>
                       {stripeLoading ? '...' : '💳 Connecter Stripe'}
                     </button>
-                    <span style={{ fontFamily: sf, fontSize: 11, color: 'rgba(255,255,255,.25)' }}>1.5% + 0.25€ par transaction</span>
+                    <span style={{ fontFamily: sf, fontSize: 11, color: '#CCC' }}>1.5% + 0.25€ par transaction</span>
                   </div>
                 </div>
               )}
             </div>
 
             {/* ══════ MONDIAL RELAY ══════ */}
-            <div className="s-card" style={{ position: 'relative', zIndex: 1, padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E30613 0%, #FF4757 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(227,6,19,.25)', fontSize: 22 }}>📦</div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#F0F0F8', letterSpacing: -0.5 }}>Mondial Relay</h3>
-                  <p style={{ fontFamily: sf, fontSize: 12, color: 'rgba(255,255,255,.4)', margin: 0 }}>Etiquettes et expedition en 1 clic</p>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Mondial Relay</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Etiquettes et expedition en 1 clic</p>
                 </div>
                 {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
               </div>
 
               {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey ? (
-                <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '16px 22px', border: '1px solid rgba(16,185,129,.2)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '16px 22px', border: '1px solid #BBF7D0', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16,185,129,.4)' }} />
-                  <span style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#10B981' }}>Connecte — {boxtalConfig.mrEnseigne}</span>
+                  <span style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#059669' }}>Connecte — {boxtalConfig.mrEnseigne}</span>
                 </div>
               ) : (
-                <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', borderRadius: 16, padding: '18px 22px', border: '1px solid rgba(245,158,11,.2)', marginBottom: 20 }}>
-                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#F59E0B', marginBottom: 8 }}>Configure tes identifiants</div>
-                  <div style={{ fontFamily: sf, fontSize: 12, color: '#FBBF24', lineHeight: 1.8 }}>
+                <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', borderRadius: 16, padding: '18px 22px', border: '1px solid #FED7AA', marginBottom: 20 }}>
+                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>Configure tes identifiants</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: '#B45309', lineHeight: 1.8 }}>
                     <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.mondialrelay.fr/connexion/', '_blank') }}>mondialrelay.fr</span> → Profil → Parametres de connexion → Webservices (API)
                   </div>
                 </div>
@@ -2979,43 +2996,43 @@ export default function Dashboard() {
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 24 }}>
                 <div>
-                  <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', display: 'block', marginBottom: 6, letterSpacing: 2 }}>CODE ENSEIGNE</label>
+                  <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', display: 'block', marginBottom: 6, letterSpacing: 2 }}>CODE ENSEIGNE</label>
                   <input value={boxtalConfig.mrEnseigne || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnseigne: e.target.value.toUpperCase().trim() })) }}
                     placeholder="CC23H7CX"
-                    style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(255,255,255,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', letterSpacing: 4, fontWeight: 800, textTransform: 'uppercase', background: 'rgba(255,255,255,.03)', transition: 'border .3s' }} />
+                    style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', letterSpacing: 4, fontWeight: 800, textTransform: 'uppercase', background: '#FFF', transition: 'border .3s' }} />
                 </div>
                 <div>
-                  <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', display: 'block', marginBottom: 6, letterSpacing: 2 }}>CLE PRIVEE</label>
+                  <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', display: 'block', marginBottom: 6, letterSpacing: 2 }}>CLE PRIVEE</label>
                   <input value={boxtalConfig.mrPrivateKey || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrPrivateKey: e.target.value.trim() })) }}
                     placeholder="Diar0jh2"
-                    style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(255,255,255,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', fontWeight: 700, background: 'rgba(255,255,255,.03)', transition: 'border .3s' }} />
+                    style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', fontWeight: 700, background: '#FFF', transition: 'border .3s' }} />
                 </div>
               </div>
 
-              <div style={{ background: 'linear-gradient(135deg, #FAFAFE 0%, #F8F7F5 100%)', borderRadius: 18, padding: '20px 24px', marginBottom: 24, border: '1px solid rgba(255,255,255,.04)' }}>
-                <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,.5)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>📍 Adresse expediteur</div>
+              <div style={{ background: 'linear-gradient(135deg, #FAFAFE 0%, #F8F7F5 100%)', borderRadius: 18, padding: '20px 24px', marginBottom: 24, border: '1px solid rgba(0,0,0,.04)' }}>
+                <div style={{ fontFamily: sf, fontSize: 12, fontWeight: 800, color: '#777', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>📍 Adresse expediteur</div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
                   <input value={boxtalConfig.senderAddress || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderAddress: e.target.value })) }}
-                    placeholder="Adresse" style={{ width: '100%', padding: '12px 16px', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: 'rgba(255,255,255,.04)' }} />
+                    placeholder="Adresse" style={{ width: '100%', padding: '12px 16px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
                   <input value={boxtalConfig.senderZip || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderZip: e.target.value })) }}
-                    placeholder="Code postal" style={{ width: '100%', padding: '12px 16px', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: 'rgba(255,255,255,.04)' }} />
+                    placeholder="Code postal" style={{ width: '100%', padding: '12px 16px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
                   <input value={boxtalConfig.senderCity || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderCity: e.target.value })) }}
-                    placeholder="Ville" style={{ width: '100%', padding: '12px 16px', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: 'rgba(255,255,255,.04)' }} />
+                    placeholder="Ville" style={{ width: '100%', padding: '12px 16px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
                 </div>
                 <input value={boxtalConfig.senderPhone || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { senderPhone: e.target.value })) }}
-                  placeholder="Telephone" style={{ width: isMobile ? '100%' : 200, padding: '12px 16px', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: 'rgba(255,255,255,.04)' }} />
+                  placeholder="Telephone" style={{ width: isMobile ? '100%' : 200, padding: '12px 16px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', background: '#FFF' }} />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 18, border: '1px solid rgba(16,185,129,.2)', marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 18, border: '1px solid #BBF7D0', marginBottom: 24 }}>
                 <div>
-                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#10B981', marginBottom: 3 }}>💰 Tarif livraison</div>
-                  <div style={{ fontFamily: sf, fontSize: 11, color: '#34D399' }}>Prix affiche a tes clientes · 0 = offerte</div>
+                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#059669', marginBottom: 3 }}>💰 Tarif livraison</div>
+                  <div style={{ fontFamily: sf, fontSize: 11, color: '#10B981' }}>Prix affiche a tes clientes · 0 = offerte</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <input value={boxtalConfig.shippingPrice || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { shippingPrice: e.target.value.replace(/[^0-9.,]/g, '') })) }}
                     placeholder="4.90"
-                    style={{ width: 80, padding: '14px', border: '2px solid #BBF7D0', borderRadius: 12, fontFamily: sf, fontSize: 22, fontWeight: 900, outline: 'none', textAlign: 'center', background: 'rgba(255,255,255,.04)' }} />
-                  <span style={{ fontFamily: sf, fontSize: 22, fontWeight: 900, color: '#10B981' }}>€</span>
+                    style={{ width: 80, padding: '14px', border: '2px solid #BBF7D0', borderRadius: 12, fontFamily: sf, fontSize: 22, fontWeight: 900, outline: 'none', textAlign: 'center', background: '#FFF' }} />
+                  <span style={{ fontFamily: sf, fontSize: 22, fontWeight: 900, color: '#059669' }}>€</span>
                 </div>
               </div>
 
@@ -3026,12 +3043,12 @@ export default function Dashboard() {
             </div>
 
             {/* ══════ LEGAL ══════ */}
-            <div className="s-card" style={{ position: 'relative', zIndex: 1, padding: isMobile ? 22 : 32 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #F5F4F2 0%, #E5E4E2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📜</div>
                 <div>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#F0F0F8', letterSpacing: -0.5 }}>Informations legales</h3>
-                  <p style={{ fontFamily: sf, fontSize: 12, color: 'rgba(255,255,255,.4)', margin: 0 }}>Affiches en bas de ta page de paiement</p>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Informations legales</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Affiches en bas de ta page de paiement</p>
                 </div>
               </div>
 
@@ -3041,10 +3058,10 @@ export default function Dashboard() {
                 { key: 'privacy', label: 'Politique de confidentialite', ph: 'Collecte et utilisation des donnees...' },
               ].map(function(f) { return (
                 <div key={f.key} style={{ marginBottom: 18 }}>
-                  <label style={{ fontFamily: sf, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', display: 'block', marginBottom: 6 }}>{f.label}</label>
+                  <label style={{ fontFamily: sf, fontSize: 12, fontWeight: 700, color: '#777', display: 'block', marginBottom: 6 }}>{f.label}</label>
                   <textarea value={legalTexts[f.key] || ''} onChange={function(e) { var obj = {}; obj[f.key] = e.target.value; setLegalTexts(Object.assign({}, legalTexts, obj)) }}
                     rows={4} placeholder={f.ph}
-                    style={{ width: '100%', padding: '14px 16px', border: '2px solid rgba(0,0,0,.03)', borderRadius: 14, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', background: 'rgba(255,255,255,.03)', transition: 'border .3s' }} />
+                    style={{ width: '100%', padding: '14px 16px', border: '2px solid rgba(0,0,0,.03)', borderRadius: 14, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', background: '#FFF', transition: 'border .3s' }} />
                 </div>
               )})}
 
