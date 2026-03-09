@@ -347,9 +347,8 @@ export default function LandingPage() {
                     <div style={{ background: '#F5F4F2', borderRadius: 8, padding: '7px 10px' }}><div style={{ fontSize: 9, color: '#BBB' }}>Prénom</div><div style={{ fontSize: 12, color: '#666' }}>Marie</div></div>
                   </div>
                   <div style={{ background: '#F5F4F2', borderRadius: 8, padding: '7px 10px', marginBottom: 6 }}><div style={{ fontSize: 9, color: '#BBB' }}>Email</div><div style={{ fontSize: 12, color: '#666' }}>marie@mail.com</div></div>
-                  <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                    <div style={{ flex: 1, background: '#1A1A1A', borderRadius: 8, padding: '7px 8px', textAlign: 'center' }}><div style={{ fontSize: 11, fontWeight: 700, color: '#FFF' }}>Mondial Relay</div><div style={{ fontSize: 9, color: 'rgba(255,255,255,.6)' }}>3,90€</div></div>
-                    <div style={{ flex: 1, background: '#F5F4F2', borderRadius: 8, padding: '7px 8px', textAlign: 'center' }}><div style={{ fontSize: 11, fontWeight: 600, color: '#999' }}>Domicile</div><div style={{ fontSize: 9, color: '#CCC' }}>Bientot</div></div>
+                  <div style={{ marginBottom: 6 }}>
+                    <div style={{ background: '#1A1A1A', borderRadius: 8, padding: '7px 8px', textAlign: 'center' }}><div style={{ fontSize: 11, fontWeight: 700, color: '#FFF' }}>📦 Mondial Relay</div><div style={{ fontSize: 9, color: 'rgba(255,255,255,.6)' }}>3,90€</div></div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '1px solid rgba(0,0,0,.06)', marginBottom: 8 }}>
                     <span style={{ fontSize: 13, fontWeight: 700 }}>Total</span><span style={{ fontSize: 13, fontWeight: 700 }}>70,90€</span>
