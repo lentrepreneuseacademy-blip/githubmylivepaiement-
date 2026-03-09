@@ -683,7 +683,7 @@ export default function Dashboard() {
     var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiquette ' + ref + '</title><style>'
     html += 'body{margin:0;padding:20px;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     html += '.label{width:100mm;border:2px solid #000;padding:0;margin:0 auto}'
-    html += '.header{background:#1A1A2E;color:#FFF;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}'
+    html += '.header{background:#1A1A1A;color:#FFF;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}'
     html += '.mondial{background:#E30613;color:#FFF;padding:8px 14px;font-size:12px;font-weight:700;text-align:center}'
     html += '.section{padding:10px 14px;border-bottom:1px dashed #CCC}'
     html += '.section-title{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;font-weight:700}'
@@ -691,13 +691,13 @@ export default function Dashboard() {
     html += '.section-detail{font-size:11px;color:#444;line-height:1.5}'
     html += '.relay{background:#F0F0FF;padding:10px 14px;border-bottom:1px dashed #CCC}'
     html += '.ref-bar{padding:12px 14px;text-align:center;border-bottom:1px dashed #CCC}'
-    html += '.ref-code{font-size:24px;font-weight:900;letter-spacing:4px;color:#1A1A2E}'
+    html += '.ref-code{font-size:24px;font-weight:900;letter-spacing:4px;color:#1A1A1A}'
     html += '.footer{padding:8px 14px;display:flex;justify-content:space-between;font-size:9px;color:#999}'
     html += '@media print{body{padding:0}.no-print{display:none !important}}'
     html += '</style></head><body>'
     html += '<div class="no-print" style="text-align:center;margin-bottom:20px;background:#FFF7ED;padding:16px;border-radius:10px;border:1px solid #FED7AA">'
     html += '<p style="color:#92400E;font-size:13px;margin:0 0 10px">⚠️ Etiquette interne — configure tes identifiants Mondial Relay dans Parametres pour generer les vraies etiquettes avec code-barres et suivi.</p>'
-    html += '<button onclick="window.print()" style="padding:14px 40px;background:#1A1A2E;color:#FFF;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">🖨️ Imprimer</button>'
+    html += '<button onclick="window.print()" style="padding:14px 40px;background:#1A1A1A;color:#FFF;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">🖨️ Imprimer</button>'
     html += '</div>'
     html += '<div class="label">'
     html += '<div class="header"><div style="font-size:14px;font-weight:800">📦 COLIS</div><div style="font-size:10px;text-align:right">' + dateStr + '<br>Mondial Relay</div></div>'
@@ -1379,7 +1379,7 @@ export default function Dashboard() {
               <input type="email" placeholder="Email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required style={{ ...inputStyle, marginBottom: 10 }} />
               <input type="password" placeholder="Mot de passe" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required style={{ ...inputStyle, marginBottom: 16 }} />
               {loginError && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{loginError}</p>}
-              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Se connecter</button>
+              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Se connecter</button>
               <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#999' }}>
                 Pas encore de compte ? <button type="button" onClick={() => setIsSignup(true)} style={{ color: '#1A1A1A', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>S'inscrire</button>
               </p>
@@ -1395,7 +1395,7 @@ export default function Dashboard() {
               <input type="email" placeholder="Email" value={signupData.email} onChange={e => setSignupData({...signupData, email: e.target.value})} required style={{ ...inputStyle, marginBottom: 10 }} />
               <input type="password" placeholder="Mot de passe (min 6 car.)" value={signupData.password} onChange={e => setSignupData({...signupData, password: e.target.value})} required minLength={6} style={{ ...inputStyle, marginBottom: 16 }} />
               {loginError && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{loginError}</p>}
-              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Créer ma boutique</button>
+              <button type="submit" style={{ width: '100%', padding: '18px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 14px rgba(0,0,0,.15)', transition: 'transform .15s, box-shadow .15s' }}>Créer ma boutique</button>
               <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#999' }}>
                 Déjà un compte ? <button type="button" onClick={() => setIsSignup(false)} style={{ color: '#1A1A1A', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: sf }}>Se connecter</button>
               </p>
@@ -1420,25 +1420,24 @@ export default function Dashboard() {
   ]
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: sf, background: '#F4F5FA' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: sf, background: '#FAFAF8' }}>
       <style dangerouslySetInnerHTML={{ __html: `
 *{box-sizing:border-box}
-::selection{background:rgba(233,69,96,.12);color:#1A1A2E}
-button{transition:all .25s cubic-bezier(.22,1,.36,1)!important}
-button:hover{transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(0,0,0,.08)!important}
+::selection{background:rgba(26,26,26,.08);color:#1A1A1A}
+button{transition:all .2s ease!important}
+button:hover{transform:translateY(-1px)!important}
 button:active{transform:translateY(0) scale(.98)!important}
 input,textarea,select{transition:border-color .2s,box-shadow .2s}
-input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shadow:0 0 0 3px rgba(233,69,96,.08)!important;outline:none!important}
-::-webkit-scrollbar{width:6px}
+input:focus,textarea:focus,select:focus{border-color:#1A1A1A!important;box-shadow:0 0 0 3px rgba(26,26,26,.06)!important;outline:none!important}
+::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.2)}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.08);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.15)}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-@keyframes glowPulse{0%,100%{box-shadow:0 4px 30px rgba(233,69,96,.08)}50%{box-shadow:0 4px 40px rgba(233,69,96,.16)}}
 @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
 @media(max-width:767px){.grid-4{grid-template-columns:repeat(2,1fr)!important}.grid-3{grid-template-columns:1fr!important}.grid-2{grid-template-columns:1fr!important}.grid-21{grid-template-columns:1fr!important}.grid-form{grid-template-columns:1fr!important}}
 @media(max-width:480px){.grid-4{grid-template-columns:1fr!important}}
@@ -1446,7 +1445,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
       {/* Mobile hamburger */}
       {isMobile && !mobileMenuOpen && (
-        <button onClick={function() { setMobileMenuOpen(true) }} style={{ position: 'fixed', top: 12, left: 12, zIndex: 100, width: 44, height: 44, borderRadius: 12, background: '#1A1A2E', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>
+        <button onClick={function() { setMobileMenuOpen(true) }} style={{ position: 'fixed', top: 12, left: 12, zIndex: 100, width: 44, height: 44, borderRadius: 12, background: '#1A1A1A', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,.15)' }}>
           <span style={{ color: '#FFF', fontSize: 20 }}>☰</span>
         </button>
       )}
@@ -1457,7 +1456,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
       )}
 
       {/* ═══ SIDEBAR PRO ═══ */}
-      <aside style={{ width: isMobile ? 260 : (sidebarCollapsed ? 70 : 240), background: 'linear-gradient(180deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', padding: isMobile ? '20px 16px' : (sidebarCollapsed ? '20px 10px' : '24px 16px'), flexShrink: 0, display: isMobile && !mobileMenuOpen ? 'none' : 'flex', flexDirection: 'column', transition: 'width .3s ease', position: isMobile ? 'fixed' : 'relative', top: 0, left: 0, bottom: 0, zIndex: 99, boxShadow: '4px 0 24px rgba(0,0,0,.15)', overflowY: 'auto' }}>
+      <aside style={{ width: isMobile ? 260 : (sidebarCollapsed ? 70 : 240), background: 'linear-gradient(180deg, #1A1A1A 0%, #16213E 50%, #0F3460 100%)', padding: isMobile ? '20px 16px' : (sidebarCollapsed ? '20px 10px' : '24px 16px'), flexShrink: 0, display: isMobile && !mobileMenuOpen ? 'none' : 'flex', flexDirection: 'column', transition: 'width .3s ease', position: isMobile ? 'fixed' : 'relative', top: 0, left: 0, bottom: 0, zIndex: 99, boxShadow: '4px 0 24px rgba(0,0,0,.15)', overflowY: 'auto' }}>
         
         {/* Collapse/Close button */}
         {isMobile ? (
@@ -1466,11 +1465,12 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
         <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{ position: 'absolute', right: -12, top: 32, width: 24, height: 24, borderRadius: '50%', background: '#FFF', border: '2px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 8px rgba(0,0,0,.1)' }}>
           {sidebarCollapsed ? '→' : '←'}
         </button>
+          </div>
         )}
         
         {/* Logo */}
         <div style={{ marginBottom: 32, padding: '0 4px', textAlign: (sidebarCollapsed && !isMobile) ? 'center' : 'left' }}>
-          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: (sidebarCollapsed && !isMobile) ? '0 auto' : '0', boxShadow: '0 4px 12px rgba(233,69,96,.3)' }}>
+          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: (sidebarCollapsed && !isMobile) ? '0 auto' : '0', boxShadow: 'none' }}>
             <span style={{ color: '#FFF', fontSize: 14, fontWeight: 900, letterSpacing: 1 }}>ML</span>
           </div>
           {(!sidebarCollapsed || isMobile) && (
@@ -1488,9 +1488,9 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isMobile) setMobileMenuOpen(false) }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: (sidebarCollapsed && !isMobile) ? 0 : 12, padding: (sidebarCollapsed && !isMobile) ? '12px 0' : '11px 14px', borderRadius: 10, marginBottom: 2,
-                background: activeTab === tab.id ? 'rgba(233,69,96,.15)' : 'transparent',
+                background: activeTab === tab.id ? 'rgba(255,255,255,.1)' : 'transparent',
                 border: 'none', cursor: 'pointer', fontFamily: sf, textAlign: 'left',
-                borderLeft: activeTab === tab.id ? '3px solid #E94560' : '3px solid transparent',
+                borderLeft: activeTab === tab.id ? '3px solid #FFF' : '3px solid transparent',
                 transition: 'all .2s ease', justifyContent: (sidebarCollapsed && !isMobile) ? 'center' : 'flex-start',
               }}>
               <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{tab.icon}</span>
@@ -1524,13 +1524,41 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
       </aside>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main style={{ flex: 1, padding: isMobile ? '16px 14px' : '32px 40px', paddingTop: isMobile ? 64 : 32, background: '#F4F5FA', overflowY: 'auto', minWidth: 0 }}>
+      <main style={{ flex: 1, padding: isMobile ? '16px 14px' : '32px 40px', paddingTop: isMobile ? 64 : 32, background: '#FAFAF8', overflowY: 'auto', minWidth: 0 }}>
 
         {/* ─── OVERVIEW ─── */}
         {activeTab === 'overview' && (
           <div>
+            {/* MY LIVE PAIEMENT */}
+            {shop?.subscription_status !== 'active' && (
+              <div style={{ position: 'relative', borderRadius: 20, padding: isMobile ? 20 : 32, marginBottom: isMobile ? 16 : 28, background: 'linear-gradient(135deg, #FFF 0%, #FFF5F5 30%, #F5F3FF 70%, #F0FDF4 100%)', border: '1px solid rgba(233,69,96,.1)', overflow: 'hidden', boxShadow: '0 4px 24px rgba(233,69,96,.06)' }}>
+                <div style={{ position: 'absolute', top: -80, right: -80, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.05) 0%, transparent 70%)' }} />
+                <div style={{ position: 'absolute', bottom: -60, left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.04) 0%, transparent 70%)' }} />
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', fontSize: 24 }}>🚀</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: sf, fontSize: isMobile ? 17 : 20, fontWeight: 900, color: '#1A1A1A' }}>MY LIVE PAIEMENT</div>
+                      <div style={{ fontFamily: sf, fontSize: 11, color: '#E94560', fontWeight: 700, letterSpacing: 1 }}>Tout-en-un pour les vendeuses en live</div>
+                    </div>
+                  </div>
+                  <p style={{ fontFamily: sf, fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 20 }}>
+                    27€/mois, tout inclus. 0% de commission, pas de frais caches. Paiement CB + Live Monitor exclusif + etiquettes Mondial Relay + dashboard complet.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                    <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
+                      style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: 'none' }}>
+                      🚀 Activer — 27€/mois
+                    </button>
+                    <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#F0FDF4', color: '#059669' }}>0% commission</span>
+                    <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#F0FDF4', color: '#059669' }}>Sans engagement</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Welcome banner */}
-            <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)', borderRadius: isMobile ? 14 : 20, padding: isMobile ? '20px 18px' : '28px 32px', marginBottom: isMobile ? 16 : 28, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ background: '#1A1A1A', borderRadius: isMobile ? 14 : 20, padding: isMobile ? '20px 18px' : '28px 32px', marginBottom: isMobile ? 16 : 28, color: '#FFF', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', right: -20, top: -20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(233,69,96,.15)' }} />
               <div style={{ position: 'absolute', right: 40, bottom: -30, width: 100, height: 100, borderRadius: '50%', background: 'rgba(102,126,234,.1)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
@@ -1542,7 +1570,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {/* Stats Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
               {[
-                { l: "Chiffre d'affaires", v: stats.revenue.toFixed(0) + '€', icon: '💰', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', shadow: 'rgba(102,126,234,.2)' },
+                { l: "Chiffre d'affaires", v: stats.revenue.toFixed(0) + '€', icon: '💰', gradient: '#1A1A1A', shadow: 'rgba(102,126,234,.2)' },
                 { l: 'Commandes', v: stats.orderCount, icon: '📦', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', shadow: 'rgba(245,87,108,.2)' },
                 { l: 'A expedier', v: stats.pendingShip, icon: '🚚', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', shadow: 'rgba(79,172,254,.2)', alert: stats.pendingShip > 0 },
                 { l: 'Clients', v: stats.clientCount, icon: '👥', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', shadow: 'rgba(67,233,123,.2)' },
@@ -1554,7 +1582,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       <span style={{ fontSize: 18 }}>{s.icon}</span>
                     </div>
                   </div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A2E', marginBottom: 2 }}>{s.v}</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A1A', marginBottom: 2 }}>{s.v}</div>
                   <div style={{ fontSize: 11, color: '#999', letterSpacing: 0.5, fontWeight: 500 }}>{s.l}</div>
                   {s.alert && <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 8px rgba(245,158,11,.5)' }} />}
                 </div>
@@ -1568,7 +1596,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#92400E' }}>⏳ {stats.pendingShip} commande{stats.pendingShip > 1 ? 's' : ''} en attente d'expédition</div>
                   <div style={{ fontSize: 12, color: '#B45309' }}>Génère les étiquettes pour expédier</div>
                 </div>
-                <button onClick={() => setActiveTab('shipping')} style={{ padding: '8px 16px', background: '#92400E', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>Voir</button>
+                <button onClick={() => setActiveTab('shipping')} style={{ padding: '8px 16px', background: '#92400E', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: 'none', transition: 'transform .15s' }}>Voir</button>
               </div>
             )}
 
@@ -1580,7 +1608,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   {typeof window !== 'undefined' ? window.location.origin : ''}/pay/{shop?.slug}
                 </div>
                 <button onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/pay/${shop?.slug}`)}
-                  style={{ padding: '14px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+                  style={{ padding: '14px 24px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: 'none', transition: 'transform .15s' }}>
                   Copier
                 </button>
               </div>
@@ -1589,7 +1617,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {/* Quick create order */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: '#CCC' }}>Dernières commandes</div>
-              <button onClick={() => { setActiveTab('orders'); setShowNewOrder(true) }} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+              <button onClick={() => { setActiveTab('orders'); setShowNewOrder(true) }} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf, boxShadow: 'none', transition: 'transform .15s' }}>
                 + Nouvelle commande
               </button>
             </div>
@@ -1598,11 +1626,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {orders.slice(0, 10).map(o => (
               <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, marginBottom: 4, background: '#FFF' }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || o.ref}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{o.reference || o.ref}</span>
                   <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? `${o.client_first_name} ${o.client_last_name}` : '—'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                   <span style={{
                     fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
                     color: o.status === 'paid' ? '#F59E0B' : o.status === 'shipped' ? '#8B5CF6' : o.status === 'delivered' ? '#10B981' : '#999',
@@ -1614,52 +1642,6 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             ))}
 
-            {/* MY LIVE PAIEMENT */}
-            {shop?.subscription_status !== 'active' && (
-            <div style={{ position: 'relative', borderRadius: 24, padding: isMobile ? 20 : 32, marginTop: 24, background: 'linear-gradient(135deg, #FFF 0%, #FFF5F5 30%, #F5F3FF 70%, #F0FDF4 100%)', border: '1px solid rgba(233,69,96,.1)', overflow: 'hidden', boxShadow: '0 4px 24px rgba(233,69,96,.06)' }}>
-              <div style={{ position: 'absolute', top: -80, right: -80, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(233,69,96,.05) 0%, transparent 70%)' }} />
-              <div style={{ position: 'absolute', bottom: -60, left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,91,255,.04) 0%, transparent 70%)' }} />
-
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(233,69,96,.2)', fontSize: 24 }}>🚀</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: sf, fontSize: isMobile ? 17 : 20, fontWeight: 900, color: '#1A1A2E' }}>MY LIVE PAIEMENT</div>
-                    <div style={{ fontFamily: sf, fontSize: 11, color: '#E94560', fontWeight: 700, letterSpacing: 1 }}>Tout-en-un pour les vendeuses en live</div>
-                  </div>
-                </div>
-
-                <p style={{ fontFamily: sf, fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 20 }}>
-                  27€/mois, tout inclus. 0% de commission, pas de frais caches. Paiement CB + Live Monitor exclusif + etiquettes Mondial Relay + dashboard complet.
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
-                  {[
-                    { icon: '💳', t: 'Paiement CB', c: '#635BFF' },
-                    { icon: '📡', t: 'Live Monitor', c: '#E94560' },
-                    { icon: '📦', t: 'Etiquettes', c: '#E30613' },
-                    { icon: '📊', t: 'Dashboard', c: '#1A1A2E' },
-                  ].map(function(f, i) { return (
-                    <div key={i} style={{ textAlign: 'center', padding: '12px 8px', background: '#FFF', borderRadius: 12, border: '1px solid rgba(0,0,0,.04)' }}>
-                      <div style={{ fontSize: 22, marginBottom: 4 }}>{f.icon}</div>
-                      <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: f.c }}>{f.t}</div>
-                    </div>
-                  )})}
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                  <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
-                    style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: '0 6px 24px rgba(233,69,96,.2)' }}>
-                    🚀 Activer — 27€/mois
-                  </button>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#F0FDF4', color: '#059669' }}>0% commission</span>
-                    <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#F0FDF4', color: '#059669' }}>Sans engagement</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
           </div>
         )}
 
@@ -1697,7 +1679,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                         transition: 'border-color .2s, transform .2s',
                       }}>
                       <div style={{ fontSize: 36, marginBottom: 8 }}>{p.icon}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{p.label}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{p.label}</div>
                       {!p.available && <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>Bientôt disponible</div>}
                     </button>
                   ))}
@@ -1717,7 +1699,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {/* ── STEP 2: Enter username ── */}
             {livePlatform && !liveConnected && !liveConnecting && !liveEnded && (
               <div style={{ maxWidth: 440, margin: '40px auto', textAlign: 'center' }}>
-                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 6 }}>
+                <h2 style={{ fontFamily: sf, fontFamily: ss, fontSize: 24, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>
                   {liveMode === 'demo' ? 'Mode Démo' : `Connecte-toi à ${livePlatform === 'tiktok' ? 'TikTok' : 'Instagram'}`}
                 </h2>
 
@@ -1891,17 +1873,17 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F5F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <span style={{ fontSize: 28 }}>📡</span>
                 </div>
-                <h2 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Live terminé</h2>
+                <h2 style={{ fontFamily: sf, fontFamily: ss, fontSize: 24, fontWeight: 400, color: '#1A1A1A', marginBottom: 8 }}>Live terminé</h2>
                 <p style={{ fontSize: 14, color: '#999', marginBottom: 24 }}>{liveEnded.reason}</p>
 
                 {/* Session stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1A1A2E' }}>{liveOrders.length}</div>
+                    <div style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, color: '#1A1A1A' }}>{liveOrders.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1A1A2E' }}>{allComments.length}</div>
+                    <div style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, color: '#1A1A1A' }}>{allComments.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commentaires</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: 14, textAlign: 'center', border: '1px solid rgba(0,0,0,.04)' }}>
@@ -1914,7 +1896,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                   <button onClick={resetLive}
-                    style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)' }}>
+                    style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A1A 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: 'none' }}>
                     Nouveau live
                   </button>
                   {liveOrders.length > 0 && (
@@ -1940,7 +1922,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   <div style={{ marginTop: 24, background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                       <div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A2E' }}>Suivi des paiements</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>Suivi des paiements</div>
                         <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Croise les tickets live avec les commandes payees</div>
                       </div>
                       <div style={{ display: 'flex', gap: 12 }}>
@@ -2023,7 +2005,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       {autoPrintEnabled ? '🔴 Auto-print ON' : 'Auto-print'}
                     </button>
                     <button onClick={() => { stopLive(); resetLive(); }}
-                      style={{ padding: '8px 16px', background: '#FFF', color: '#EF4444', border: '2px solid #FECACA', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 2px 8px rgba(0,0,0,.06)', transition: 'transform .15s' }}>
+                      style={{ padding: '8px 16px', background: '#FFF', color: '#EF4444', border: '2px solid #FECACA', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: 'none', transition: 'transform .15s' }}>
                       Déconnecter
                     </button>
                   </div>
@@ -2036,7 +2018,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                     <div style={{ fontSize: 10, color: '#999' }}>Commandes</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: '#1A1A2E' }}>{allComments.length}</div>
+                    <div style={{ fontFamily: ss, fontSize: 26, fontWeight: 400, color: '#1A1A1A' }}>{allComments.length}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>Commentaires</div>
                   </div>
                   <div style={{ background: '#FFF', borderRadius: 14, padding: '14px', textAlign: 'center' }}>
@@ -2052,7 +2034,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 {/* Filter + Auto-scroll */}
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12, justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => setLiveFilter('all')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'all' ? '#E94560' : '#FFF', color: liveFilter === 'all' ? '#FFF' : '#777' }}>Tous ({allComments.length})</button>
+                    <button onClick={() => setLiveFilter('all')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'all' ? '#1A1A1A' : '#F5F4F2', color: liveFilter === 'all' ? '#FFF' : '#777' }}>Tous ({allComments.length})</button>
                     <button onClick={() => setLiveFilter('orders')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'orders' ? '#F59E0B' : '#F5F4F2', color: liveFilter === 'orders' ? '#FFF' : '#999' }}>🛒 Commandes ({liveOrders.length})</button>
                     <button onClick={() => setLiveFilter('payments')} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: liveFilter === 'payments' ? '#10B981' : '#F5F4F2', color: liveFilter === 'payments' ? '#FFF' : '#999' }}>💰 Suivi paiements</button>
                   </div>
@@ -2136,7 +2118,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       )}
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: '#1A1A2E' }}>@{c.user}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1A' }}>@{c.user}</span>
                           {c.isPurchase && <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 10, background: '#F59E0B', color: '#FFF' }}>COMMANDE</span>}
                           {c.isGift && <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 10, background: '#EC4899', color: '#FFF' }}>CADEAU</span>}
                           <span style={{ fontSize: 10, color: '#CCC', marginLeft: 'auto' }}>{c.time}</span>
@@ -2184,6 +2166,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             )}
           </div>
+          </div>
         )}
 
 
@@ -2192,14 +2175,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Statistiques</h1>
+                <h1 style={{ fontFamily: sf, fontFamily: ss, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 4 }}>Statistiques</h1>
                 <p style={{ fontSize: 13, color: '#999' }}>Analyse de tes performances</p>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {['7d', '30d', '6m'].map(function(p) {
                   return (
                     <button key={p} onClick={function() { setStatsPeriod(p) }}
-                      style={{ padding: '8px 16px', borderRadius: 10, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: statsPeriod === p ? '#1A1A2E' : '#F5F4F2', color: statsPeriod === p ? '#FFF' : '#999', transition: 'all .2s' }}>
+                      style={{ padding: '8px 16px', borderRadius: 10, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: statsPeriod === p ? '#1A1A1A' : '#F5F4F2', color: statsPeriod === p ? '#FFF' : '#999', transition: 'all .2s' }}>
                       {p === '7d' ? '7 jours' : p === '30d' ? '30 jours' : '6 mois'}
                     </button>
                   )
@@ -2221,7 +2204,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       <span style={{ fontSize: 20 }}>{s.icon}</span>
                       <span style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>{s.l}</span>
                     </div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A2E' }}>{s.v}</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#1A1A1A' }}>{s.v}</div>
                   </div>
                 )
               })}
@@ -2229,7 +2212,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
             {/* Revenue Chart */}
             <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Chiffre d'affaires</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>Chiffre d'affaires</div>
               <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>{statsPeriod === '6m' ? '6 derniers mois' : statsPeriod === '30d' ? '30 derniers jours' : '7 derniers jours'}</div>
               <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 180, padding: '0 4px' }}>
                 {(statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(d, i) {
@@ -2237,7 +2220,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   var h = maxRev > 0 ? Math.max((d.revenue / maxRev) * 150, 4) : 4
                   return (
                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '€' : ''}</div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A1A' }}>{d.revenue > 0 ? d.revenue.toFixed(0) + '€' : ''}</div>
                       <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)', transition: 'height .5s ease' }} />
                       <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
                     </div>
@@ -2248,7 +2231,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
             {/* Orders Chart */}
             <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 4 }}>Commandes</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>Commandes</div>
               <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>Nombre de commandes par periode</div>
               <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 140, padding: '0 4px' }}>
                 {(statsPeriod === '6m' ? statsData.monthly : statsData.daily).map(function(d, i) {
@@ -2256,7 +2239,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   var h = maxOrd > 0 ? Math.max((d.orders / maxOrd) * 110, 4) : 4
                   return (
                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A2E' }}>{d.orders > 0 ? d.orders : ''}</div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#1A1A1A' }}>{d.orders > 0 ? d.orders : ''}</div>
                       <div style={{ width: '100%', maxWidth: 40, height: h, borderRadius: 6, background: 'linear-gradient(180deg, #f093fb 0%, #f5576c 100%)', transition: 'height .5s ease' }} />
                       <div style={{ fontSize: 9, color: '#BBB', fontWeight: 500 }}>{d.name}</div>
                     </div>
@@ -2267,7 +2250,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
             {/* Status distribution */}
             <div style={{ background: '#FFF', borderRadius: 16, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E', marginBottom: 16 }}>Repartition des commandes</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A', marginBottom: 16 }}>Repartition des commandes</div>
               <div style={{ display: 'flex', gap: 16 }}>
                 {[
                   { label: 'En attente', count: orders.filter(function(o) { return o.status === 'pending_payment' }).length, color: '#94A3B8', bg: '#F1F5F9' },
@@ -2293,13 +2276,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* ─── ORDERS ─── */}
         {activeTab === 'orders' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1A1A2E' }}>Commandes ({orders.length})</h1>
+              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1A1A1A' }}>Commandes ({orders.length})</h1>
               <button onClick={() => setShowNewOrder(!showNewOrder)} style={{ padding: '10px 18px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>+ Nouvelle</button>
             </div>
 
@@ -2312,14 +2296,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 { key: 'shipped', label: 'Expediees', count: orders.filter(function(o){return o.status==='shipped'}).length, color: '#8B5CF6' },
                 { key: 'delivered', label: 'Livrees', count: orders.filter(function(o){return o.status==='delivered'}).length, color: '#059669' },
               ].map(function(f) { return (
-                <button key={f.key} onClick={function(){setOrderFilter(f.key)}} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: orderFilter === f.key ? '#E94560' : '#FFF', color: orderFilter === f.key ? '#FFF' : '#777' }}>
+                <button key={f.key} onClick={function(){setOrderFilter(f.key)}} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: orderFilter === f.key ? '#1A1A1A' : '#F5F4F2', color: orderFilter === f.key ? '#FFF' : '#777' }}>
                   {f.label} ({f.count})
                 </button>
               )})}
             </div>
 
             {showNewOrder && (
-              <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #E94560', borderRadius: 14, padding: 18, marginBottom: 20 }}>
+              <form onSubmit={handleCreateOrder} style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 14, padding: 18, marginBottom: 20 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 2fr', gap: 10, marginBottom: 12 }}>
                   <input placeholder="Ref (auto)" value={newOrder.reference} onChange={e => setNewOrder({...newOrder, reference: e.target.value})} style={inputStyle} />
                   <input placeholder="Montant €" type="number" step="0.01" required value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} style={inputStyle} />
@@ -2331,10 +2315,10 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
             {/* Order detail panel */}
             {selectedOrderDetail && !editingOrder && (
-              <div style={{ background: '#FFF', border: '2px solid #E94560', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+              <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 24, marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <div>
-                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1A1A2E' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
+                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1A1A1A' }}>Commande {selectedOrderDetail.reference || selectedOrderDetail.ref}</div>
                     <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Creee le {new Date(selectedOrderDetail.created_at).toLocaleDateString('fr-FR')} a {new Date(selectedOrderDetail.created_at).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -2364,13 +2348,13 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 20 }}>
                   <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
                     <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>CLIENT</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{selectedOrderDetail.client_first_name || ''} {selectedOrderDetail.client_last_name || ''}</div>
                     <div style={{ fontSize: 12, color: '#777', marginTop: 4 }}>{selectedOrderDetail.client_email || ''}</div>
                     <div style={{ fontSize: 12, color: '#777' }}>{selectedOrderDetail.client_phone || ''}</div>
                   </div>
                   <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
                     <div style={{ fontSize: 10, color: '#999', fontWeight: 600, marginBottom: 4, letterSpacing: 1 }}>MONTANT</div>
-                    <div style={{ fontSize: 24, fontWeight: 900, color: '#1A1A2E' }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: '#1A1A1A' }}>{(selectedOrderDetail.total_amount || 0).toFixed(2)}€</div>
                     {selectedOrderDetail.shipping_cost > 0 && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>dont {selectedOrderDetail.shipping_cost}€ livraison</div>}
                   </div>
                   <div style={{ background: '#FAFAF8', borderRadius: 12, padding: '12px 16px' }}>
@@ -2429,14 +2413,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               <div key={o.id} onClick={() => { if (!editingOrder) setSelectedOrderDetail(selectedOrderDetail?.id === o.id ? null : o) }} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '12px 14px' : '14px 16px', borderRadius: 14, marginBottom: 6, gap: isMobile ? 8 : 0, background: selectedOrderDetail?.id === o.id ? 'rgba(233,69,96,.04)' : 'rgba(255,255,255,.03)', border: selectedOrderDetail?.id === o.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || o.ref}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{o.reference || o.ref}</span>
                     <span style={{ fontSize: 13, color: '#999' }}>{o.client_last_name ? (o.client_first_name + ' ' + o.client_last_name) : 'En attente'}</span>
                     {o.source === 'live_monitor' && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, padding: '2px 6px', borderRadius: 8, background: '#EFF6FF', color: '#3B82F6' }}>LIVE</span>}
                   </div>
                   <div style={{ fontSize: 11, color: '#BBB', marginTop: 3 }}>{new Date(o.created_at).toLocaleDateString('fr-FR')} {o.shipping_city ? '· ' + o.shipping_city : ''} {o.description ? '· ' + o.description.substring(0, 40) : ''}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1A2E' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                   <span style={{
                     fontSize: 10, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
                     color: o.status === 'paid' ? '#F59E0B' : o.status === 'shipped' ? '#8B5CF6' : o.status === 'delivered' ? '#10B981' : o.status === 'cancelled' ? '#EF4444' : '#94A3B8',
@@ -2456,15 +2440,16 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* ─── CLIENTS ─── */}
         {activeTab === 'clients' && (
           <div>
-            <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 24 }}>Clients ({clients.length})</h1>
+            <h1 style={{ fontFamily: sf, fontFamily: ss, fontSize: 24, fontWeight: 400, color: '#1A1A1A', marginBottom: 24 }}>Clients ({clients.length})</h1>
 
             {selectedClient && (
-              <div style={{ background: '#FFF', border: '2px solid #E94560', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+              <div style={{ background: '#FFF', border: '2px solid #1A1A1A', borderRadius: 16, padding: 24, marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 18, fontWeight: 800 }}>{selectedClient.first_name} {selectedClient.last_name}</div>
                   <button onClick={function() { setSelectedClient(null) }} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#999' }}>✕</button>
@@ -2479,7 +2464,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Commandes de ce client :</div>
                 {orders.filter(function(o) { return o.client_email && selectedClient.email && o.client_email.toLowerCase() === selectedClient.email.toLowerCase() }).map(function(o) { return (
                   <div key={o.id} onClick={function() { setActiveTab('orders'); setSelectedOrderDetail(o); setSelectedClient(null) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, marginBottom: 4, background: '#FAFAF8', cursor: 'pointer', border: '1px solid rgba(0,0,0,.04)' }}>
-                    <div><span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: '#999' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
+                    <div><span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{o.reference || o.ref}</span> <span style={{ fontSize: 11, color: '#999' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span></div>
                     <div><span style={{ fontSize: 13, fontWeight: 700 }}>{(o.total_amount || 0).toFixed(2)}€</span></div>
                   </div>
                 )})}
@@ -2489,7 +2474,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             {clients.map(c => (
               <div key={c.id} onClick={function() { setSelectedClient(selectedClient?.id === c.id ? null : c) }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 14, marginBottom: 8, background: selectedClient?.id === c.id ? 'rgba(233,69,96,.04)' : 'rgba(255,255,255,.03)', border: selectedClient?.id === c.id ? '1px solid rgba(233,69,96,.3)' : '1px solid rgba(255,255,255,.06)', boxShadow: '0 2px 8px rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{c.first_name} {c.last_name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{c.first_name} {c.last_name}</div>
                   <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{c.email} · {c.phone || '—'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -2506,6 +2491,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* ─── SHIPPING / BOXTAL ─── */}
@@ -2513,7 +2499,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Livraison</h1>
+                <h1 style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#1A1A1A', marginBottom: 4 }}>Livraison</h1>
                 <p style={{ fontSize: 13, color: '#999' }}>Genere tes etiquettes Mondial Relay en 1 clic</p>
               </div>
               {shipStep !== 'list' && (
@@ -2560,14 +2546,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                             <span style={{ fontSize: 15, fontWeight: 800 }}>{o.reference || '#'}</span>
                             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#FFFBEB', color: '#92400E' }}>A expedier</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{(o.total_amount || o.total || o.amount || 0).toFixed(2)}€</span>
                           </div>
                           <div style={{ fontSize: 12, color: '#777' }}>{o.client_first_name || ''} {o.client_last_name || ''} {o.description ? ' - ' + o.description : ''}</div>
                           {o.shipping_address && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{o.shipping_address} {o.shipping_city || ''}</div>}
                           {o.relay_point && (function() { try { var rp = JSON.parse(o.relay_point); return <div style={{ fontSize: 11, color: '#6366F1', marginTop: 3, fontWeight: 600 }}>📍 Point relais : {rp.name} — {rp.address}, {rp.zipcode} {rp.city}</div> } catch(e) { return null } })()}
                         </div>
                         <button onClick={function() { startShipping(o) }}
-                          style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(26,26,46,.15)', whiteSpace: 'nowrap' }}>
+                          style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1A1A1A 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: 'none', whiteSpace: 'nowrap' }}>
                           Expedier
                         </button>
                       </div>
@@ -2580,7 +2566,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{o.reference || '#'}</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{o.reference || '#'}</span>
                             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: '#F5F3FF', color: '#8B5CF6' }}>Expedie</span>
                           </div>
                           <div style={{ fontSize: 12, color: '#999' }}>{o.shipping_carrier || ''} {o.tracking_number ? '- Suivi: ' + o.tracking_number : ''}</div>
@@ -2609,7 +2595,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   <div style={{ fontSize: 16, fontWeight: 800 }}>{shipSelectedOrder.reference || '#'} — {(shipSelectedOrder.total_amount || shipSelectedOrder.total || shipSelectedOrder.amount || 0).toFixed(2)}€</div>
                   <div style={{ fontSize: 13, color: '#777', marginTop: 4 }}>{shipSelectedOrder.client_first_name || ''} {shipSelectedOrder.client_last_name || ''}</div>
                   {shipSelectedOrder.shipping_address && <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{shipSelectedOrder.shipping_address}, {shipSelectedOrder.shipping_zipcode} {shipSelectedOrder.shipping_city}</div>}
-                  {shipSelectedOrder.relay_point && (function() { try { var rp = JSON.parse(shipSelectedOrder.relay_point); return <div style={{ marginTop: 8, padding: '10px 14px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#818CF8' }}>📍 Point relais choisi par le client :</div><div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A2E', marginTop: 2 }}>{rp.name}</div><div style={{ fontSize: 12, color: '#777', marginTop: 1 }}>{rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
+                  {shipSelectedOrder.relay_point && (function() { try { var rp = JSON.parse(shipSelectedOrder.relay_point); return <div style={{ marginTop: 8, padding: '10px 14px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 10 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#818CF8' }}>📍 Point relais choisi par le client :</div><div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A', marginTop: 2 }}>{rp.name}</div><div style={{ fontSize: 12, color: '#777', marginTop: 1 }}>{rp.address}, {rp.zipcode} {rp.city}</div></div> } catch(e) { return null } })()}
                 </div>
 
                 <div style={{ background: '#FFF', borderRadius: 16, padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.04)', marginBottom: 20 }}>
@@ -2618,34 +2604,34 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                     <div>
                       <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Poids (kg)</label>
                       <input value={shipForm.weight} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { weight: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A1A' }} />
                     </div>
                     <div>
                       <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Longueur (cm)</label>
                       <input value={shipForm.length} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { length: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A1A' }} />
                     </div>
                     <div>
                       <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Largeur (cm)</label>
                       <input value={shipForm.width} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { width: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A1A' }} />
                     </div>
                     <div>
                       <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Hauteur (cm)</label>
                       <input value={shipForm.height} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { height: e.target.value })) }}
-                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} />
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A1A' }} />
                     </div>
                   </div>
                   <div style={{ marginBottom: 16 }}>
                     <label style={{ fontSize: 11, fontWeight: 600, color: '#777', display: 'block', marginBottom: 4 }}>Contenu</label>
                     <input value={shipForm.description} onChange={function(e) { setShipForm(Object.assign({}, shipForm, { description: e.target.value })) }}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A2E' }} placeholder="Vetements, Accessoires..." />
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', color: '#1A1A1A' }} placeholder="Vetements, Accessoires..." />
                   </div>
 
                   {shipError && <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#EF4444' }}>{shipError}</div>}
 
                   <button onClick={function() { generateLabel(shipSelectedOrder) }} disabled={shipOrderLoading}
-                    style={{ width: '100%', padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>
+                    style={{ width: '100%', padding: 16, background: shipOrderLoading ? '#DDD' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: shipOrderLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: 'none' }}>
                     {shipOrderLoading ? 'Generation en cours...' : '🏷️ Generer l\'etiquette d\'expedition'}
                   </button>
                   <button onClick={async function() { await fetch('/api/orders/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_status', orderId: shipSelectedOrder.id, fields: { status: 'shipped', shipped_at: new Date().toISOString() } }) }); loadData(shop.id); setShipStep('label') }}
@@ -2662,7 +2648,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(16,185,129,.25)' }}>
                   <span style={{ fontSize: 36, color: '#FFF' }}>✓</span>
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 8 }}>Expedition creee !</h2>
+                <h2 style={{ fontFamily: ss, fontSize: 24, fontWeight: 400, color: '#1A1A1A', marginBottom: 8 }}>Expedition creee !</h2>
                 <p style={{ fontSize: 14, color: '#777', marginBottom: 6 }}>
                   {shipTrackingNumber ? <span>Numero de suivi : <strong style={{ fontSize: 18, letterSpacing: 2 }}>{shipTrackingNumber}</strong></span> : 'Mondial Relay — Point Relais'}
                 </p>
@@ -2676,6 +2662,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* ─── MESSAGES ─── */}
@@ -2683,7 +2670,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <div>
-                <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>Messages</h1>
+                <h1 style={{ fontFamily: sf, fontFamily: ss, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 4 }}>Messages</h1>
                 <p style={{ fontSize: 13, color: '#999' }}>Messages de tes clientes depuis la page de paiement</p>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -2707,7 +2694,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 <div key={msg.id} style={{ background: '#FFF', border: '1px solid rgba(0,0,0,.04)', borderRadius: 16, padding: '18px 22px', marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,.03)', borderLeft: isReplied ? '4px solid #10B981' : '4px solid #F59E0B' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{msg.sender_name || 'Client'}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{msg.sender_name || 'Client'}</div>
                       <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{msg.sender_email || ''} {msg.sender_phone ? ' · ' + msg.sender_phone : ''}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2735,7 +2722,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                             style={{ width: '100%', padding: '12px 14px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 12, fontFamily: sf, fontSize: 13, outline: 'none', resize: 'vertical', marginBottom: 8 }} />
                           <div style={{ display: 'flex', gap: 8 }}>
                             <button onClick={function() { sendMessageReply(msg.id) }} disabled={messageSending}
-                              style={{ padding: '10px 20px', background: messageSending ? '#DDD' : 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: messageSending ? 'wait' : 'pointer', fontFamily: sf }}>
+                              style={{ padding: '10px 20px', background: messageSending ? '#DDD' : 'linear-gradient(135deg, #1A1A1A 0%, #16213E 100%)', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: messageSending ? 'wait' : 'pointer', fontFamily: sf }}>
                               {messageSending ? 'Envoi...' : 'Envoyer'}
                             </button>
                             <button onClick={function() { setMessageReplyId(null); setMessageReply('') }}
@@ -2756,13 +2743,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               )
             })}
           </div>
+          </div>
         )}
 
         {/* ─── AI ASSISTANT ─── */}
         {activeTab === 'assistant' && (
           <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)' }}>
             <div style={{ marginBottom: 20 }}>
-              <h1 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1A1A2E', marginBottom: 4 }}>IA Assistant</h1>
+              <h1 style={{ fontFamily: sf, fontFamily: ss, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 4 }}>IA Assistant</h1>
               <p style={{ fontSize: 13, color: '#999' }}>Ton assistante pour le business, le dashboard, Stripe et la logistique</p>
             </div>
 
@@ -2825,10 +2813,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 style={{ flex: 1, padding: '14px 18px', border: '1px solid rgba(0,0,0,.08)', borderRadius: 14, fontFamily: sf, fontSize: 14, outline: 'none', background: '#FFF', transition: 'border-color .2s' }}
               />
               <button onClick={sendAiMessage} disabled={aiLoading || !aiInput.trim()}
-                style={{ padding: '14px 24px', background: aiLoading || !aiInput.trim() ? '#DDD' : 'linear-gradient(135deg, #E94560 0%, #533483 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: aiLoading || !aiInput.trim() ? 'none' : '0 4px 14px rgba(233,69,96,.25)', transition: 'all .2s' }}>
+                style={{ padding: '14px 24px', background: aiLoading || !aiInput.trim() ? '#DDD' : 'linear-gradient(135deg, #E94560 0%, #533483 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer', fontFamily: sf, boxShadow: 'none', transition: 'all .2s' }}>
                 Envoyer
               </button>
             </div>
+          </div>
           </div>
         )}
 
@@ -2841,27 +2830,27 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
 
             {/* Header */}
             <div style={{ position: 'relative', zIndex: 1, marginBottom: 32 }}>
-              <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase', color: '#E94560', marginBottom: 8 }}>Configuration</div>
-              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 28 : 36, fontWeight: 900, color: '#0F0F1A', marginBottom: 6, letterSpacing: -1 }}>Parametres</h1>
+              <div style={{ fontFamily: sf, fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: '#999', marginBottom: 8 }}>Configuration</div>
+              <h1 style={{ fontFamily: sf, fontFamily: ss, fontSize: isMobile ? 28 : 36, fontWeight: 400, color: '#1A1A1A', marginBottom: 6, letterSpacing: -1 }}>Parametres</h1>
               <p style={{ fontFamily: sf, fontSize: 14, color: '#999', lineHeight: 1.6 }}>Tout ce dont tu as besoin pour gerer ta boutique</p>
             </div>
 
             {/* Status ribbon */}
             <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
               {[
-                { icon: '🏪', label: 'Boutique', ok: !!shop?.name, text: shop?.name || '—', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-                { icon: '📡', label: 'Abonnement', ok: shop?.subscription_status === 'active', text: shop?.subscription_status === 'active' ? 'Actif' : 'Inactif', gradient: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 100%)' },
-                { icon: '💳', label: 'Stripe', ok: !!stripeStatus?.chargesEnabled, text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer', gradient: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)' },
-                { icon: '📦', label: 'Mondial Relay', ok: !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer', gradient: 'linear-gradient(135deg, #E30613 0%, #FF4757 100%)' },
+                { icon: '🏪', label: 'Boutique', ok: !!shop?.name, text: shop?.name || '—', gradient: '#1A1A1A' },
+                { icon: '📡', label: 'Abonnement', ok: shop?.subscription_status === 'active', text: shop?.subscription_status === 'active' ? 'Actif' : 'Inactif', gradient: '#E94560' },
+                { icon: '💳', label: 'Stripe', ok: !!stripeStatus?.chargesEnabled, text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer', gradient: '#635BFF' },
+                { icon: '📦', label: 'Mondial Relay', ok: !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer', gradient: '#E30613' },
               ].map(function(c, i) { return (
-                <div key={i} style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: '18px 20px', position: 'relative', overflow: 'hidden', cursor: 'default' }}>
+                <div key={i} style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.06)', padding: '18px 20px', position: 'relative', overflow: 'hidden', cursor: 'default' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.ok ? '#10B981' : c.gradient, borderRadius: '24px 24px 0 0' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: c.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,.12)', fontSize: 18 }}>{c.icon}</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: c.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{c.icon}</div>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.ok ? '#10B981' : '#F59E0B', boxShadow: c.ok ? '0 0 8px rgba(16,185,129,.4)' : '0 0 8px rgba(245,158,11,.4)', animation: 'pulse 2s infinite', marginLeft: 'auto' }} />
                   </div>
                   <div style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>{c.label}</div>
-                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#1A1A2E' }}>{c.text}</div>
+                  <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{c.text}</div>
                 </div>
               )})}
             </div>
@@ -2875,9 +2864,9 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               <div style={{ position: 'relative', zIndex: 2 }}>
                 {/* Title row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
-                  <div style={{ width: 56, height: 56, borderRadius: 18, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(233,69,96,.2)', fontSize: 28 }}>🚀</div>
+                  <div style={{ width: 56, height: 56, borderRadius: 18, background: 'linear-gradient(135deg, #E94560 0%, #533483 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', fontSize: 28 }}>🚀</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 900, color: '#1A1A2E', letterSpacing: -0.5 }}>MY LIVE PAIEMENT</div>
+                    <div style={{ fontFamily: sf, fontSize: isMobile ? 20 : 24, fontWeight: 900, color: '#1A1A1A', letterSpacing: -0.5 }}>MY LIVE PAIEMENT</div>
                     <div style={{ fontFamily: sf, fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#E94560', fontWeight: 700 }}>La solution complete pour les vendeuses en live</div>
                   </div>
                 </div>
@@ -2885,7 +2874,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 {/* Price banner */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28, marginTop: 20, padding: '16px 24px', background: '#FFF', borderRadius: 16, border: '1px solid rgba(0,0,0,.04)', boxShadow: '0 2px 12px rgba(0,0,0,.03)', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontFamily: sf, fontSize: 36, fontWeight: 900, color: '#1A1A2E' }}>27€</span>
+                    <span style={{ fontFamily: sf, fontSize: 36, fontWeight: 900, color: '#1A1A1A' }}>27€</span>
                     <span style={{ fontFamily: sf, fontSize: 14, color: '#999' }}>/mois</span>
                   </div>
                   <div style={{ height: 36, width: 1, background: 'rgba(0,0,0,.08)' }} />
@@ -2910,7 +2899,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                     { icon: '💳', title: 'Paiement CB', desc: 'Tes clientes paient par carte, tu recois sur ton compte', color: '#635BFF', bg: '#F5F3FF', border: 'rgba(99,91,255,.08)' },
                     { icon: '📡', title: 'Live Monitor', desc: 'Detecte les "je prends" en live — introuvable ailleurs', color: '#E94560', bg: '#FFF5F5', border: 'rgba(233,69,96,.08)' },
                     { icon: '📦', title: 'Etiquettes', desc: 'Mondial Relay en 1 clic, PDF pret a imprimer', color: '#E30613', bg: '#FEF2F2', border: 'rgba(227,6,19,.08)' },
-                    { icon: '📊', title: 'Dashboard', desc: 'Stats, clients, messages, assistant IA integre', color: '#1A1A2E', bg: '#F4F5FA', border: 'rgba(0,0,0,.04)' },
+                    { icon: '📊', title: 'Dashboard', desc: 'Stats, clients, messages, assistant IA integre', color: '#1A1A1A', bg: '#FAFAF8', border: 'rgba(0,0,0,.04)' },
                   ].map(function(f, i) { return (
                     <div key={i} style={{ background: f.bg, borderRadius: 16, padding: '20px', border: '1px solid ' + f.border }}>
                       <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
@@ -2923,13 +2912,13 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                 {/* CTA */}
                 {shop?.subscription_status === 'active' ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                    <div style={{ padding: '14px 32px', borderRadius: 14, background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#FFF', boxShadow: '0 4px 14px rgba(16,185,129,.2)' }}>✓ Abonnement actif — tout est inclus</div>
-                    <button onClick={function() { setActiveTab('live') }} style={{ padding: '14px 28px', background: '#FFF', color: '#1A1A2E', border: '1px solid rgba(0,0,0,.1)', borderRadius: 14, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Ouvrir le Live Monitor →</button>
+                    <div style={{ padding: '14px 32px', borderRadius: 14, background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#FFF', boxShadow: 'none' }}>✓ Abonnement actif — tout est inclus</div>
+                    <button onClick={function() { setActiveTab('live') }} style={{ padding: '14px 28px', background: '#FFF', color: '#1A1A1A', border: '1px solid rgba(0,0,0,.1)', borderRadius: 14, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Ouvrir le Live Monitor →</button>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                     <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
-                      style={{ padding: '18px 44px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 16, fontFamily: sf, fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: '0 8px 32px rgba(233,69,96,.2)', letterSpacing: 0.5 }}>
+                      style={{ padding: '18px 44px', background: 'linear-gradient(135deg, #E94560 0%, #FF6B6B 50%, #E94560 100%)', backgroundSize: '200% 200%', animation: 'gradientMove 3s ease infinite', color: '#FFF', border: 'none', borderRadius: 16, fontFamily: sf, fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: 'none', letterSpacing: 0.5 }}>
                       🚀 Activer My Live Paiement — 27€/mois
                     </button>
                     <div style={{ fontFamily: sf, fontSize: 12, color: '#BBB' }}>Mode Demo gratuit disponible</div>
@@ -2939,11 +2928,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             </div>
 
             {/* ══════ BOUTIQUE + LOGO ══════ */}
-            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(15,15,26,.3)', fontSize: 22 }}>🏪</div>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', fontSize: 22 }}>🏪</div>
                 <div>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Ma boutique</h3>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1A1A1A', letterSpacing: -0.5 }}>Ma boutique</h3>
                   <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Identite et configuration</p>
                 </div>
               </div>
@@ -2951,7 +2940,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 24 }}>
                 <div style={{ background: 'linear-gradient(135deg, #FAFAFE 0%, #F5F3FF 100%)', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(99,91,255,.08)' }}>
                   <div style={{ fontFamily: sf, fontSize: 9, fontWeight: 700, color: '#999', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Nom de la boutique</div>
-                  <div style={{ fontFamily: sf, fontSize: 17, fontWeight: 800, color: '#0F0F1A' }}>{shop?.name}</div>
+                  <div style={{ fontFamily: sf, fontSize: 17, fontWeight: 800, color: '#1A1A1A' }}>{shop?.name}</div>
                 </div>
                 <div style={{ background: 'linear-gradient(135deg, #FAFAFE 0%, #F0FDF4 100%)', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(16,185,129,.08)', cursor: 'pointer' }} onClick={function() { navigator.clipboard.writeText((typeof window !== 'undefined' ? window.location.origin : '') + '/pay/' + shop?.slug); alert('Lien copie !') }}>
                   <div style={{ fontFamily: sf, fontSize: 9, fontWeight: 700, color: '#999', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Lien de paiement — clic pour copier</div>
@@ -2964,9 +2953,9 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                   {shopLogo ? <img src={shopLogo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: 32, color: '#DDD' }}>🖼️</span>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#0F0F1A' }}>Logo</div>
+                  <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#1A1A1A' }}>Logo</div>
                   <div style={{ fontFamily: sf, fontSize: 12, color: '#999', marginBottom: 12 }}>Visible par tes clientes sur la page de paiement</div>
-                  <label style={{ display: 'inline-block', padding: '10px 22px', background: 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%)', color: '#FFF', borderRadius: 12, fontFamily: sf, fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(15,15,26,.2)', transition: 'all .3s' }}>
+                  <label style={{ display: 'inline-block', padding: '10px 22px', background: '#1A1A1A', color: '#FFF', borderRadius: 12, fontFamily: sf, fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(15,15,26,.2)', transition: 'all .3s' }}>
                     {logoUploading ? '⏳ Upload...' : shopLogo ? '🔄 Changer' : '➕ Ajouter un logo'}
                     <input type="file" accept="image/*" onChange={uploadLogo} style={{ display: 'none' }} />
                   </label>
@@ -2975,11 +2964,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             </div>
 
             {/* ══════ STRIPE CONNECT ══════ */}
-            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(99,91,255,.25)', fontSize: 22 }}>💳</div>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#635BFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>💳</div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Stripe Connect</h3>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1A1A1A', letterSpacing: -0.5 }}>Stripe Connect</h3>
                   <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Paiements CB sur ton compte bancaire</p>
                 </div>
                 {stripeStatus?.chargesEnabled && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
@@ -2988,7 +2977,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               {stripeStatus?.connected && stripeStatus?.chargesEnabled ? (
                 <div>
                   <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '20px 24px', border: '1px solid #BBF7D0', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(16,185,129,.3)' }}><span style={{ color: '#FFF', fontSize: 18 }}>✓</span></div>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }}><span style={{ color: '#FFF', fontSize: 18 }}>✓</span></div>
                     <div>
                       <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#059669' }}>Paiements actifs</div>
                       {stripeStatus.email && <div style={{ fontFamily: sf, fontSize: 12, color: '#10B981' }}>{stripeStatus.email}</div>}
@@ -3003,7 +2992,7 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                     <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#92400E' }}>⏳ Finalise ta verification</div>
                   </div>
                   <button onClick={async function() { setStripeLoading(true); var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.location.href = data.url; setStripeLoading(false) }} disabled={stripeLoading}
-                    style={{ padding: '14px 28px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: '0 8px 24px rgba(99,91,255,.25)' }}>
+                    style={{ padding: '14px 28px', background: stripeLoading ? '#E5E5E5' : '#635BFF', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: 'none' }}>
                     {stripeLoading ? 'Chargement...' : 'Finaliser'}
                   </button>
                 </div>
@@ -3017,14 +3006,14 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
                     ].map(function(s, i) { return (
                       <div key={i} style={{ padding: '18px 20px', background: 'linear-gradient(135deg, #FAFAFE 0%, #F5F3FF 100%)', borderRadius: 16, border: '1px solid rgba(99,91,255,.03)' }}>
                         <div style={{ fontFamily: sf, fontSize: 28, fontWeight: 900, color: 'rgba(99,91,255,.15)', marginBottom: 6 }}>{s.n}</div>
-                        <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#0F0F1A', marginBottom: 2 }}>{s.t}</div>
+                        <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>{s.t}</div>
                         <div style={{ fontFamily: sf, fontSize: 11, color: '#999' }}>{s.d}</div>
                       </div>
                     )})}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                     <button onClick={async function() { setStripeLoading(true); try { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.location.href = data.url; else alert(data.error || 'Erreur'); } catch(e) { alert('Erreur') } setStripeLoading(false) }} disabled={stripeLoading}
-                      style={{ padding: '16px 32px', background: stripeLoading ? '#DDD' : 'linear-gradient(135deg, #635BFF 0%, #8B5CF6 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: '0 8px 24px rgba(99,91,255,.3)' }}>
+                      style={{ padding: '16px 32px', background: stripeLoading ? '#E5E5E5' : '#635BFF', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: stripeLoading ? 'wait' : 'pointer', boxShadow: 'none' }}>
                       {stripeLoading ? '...' : '💳 Connecter Stripe'}
                     </button>
                     <span style={{ fontFamily: sf, fontSize: 11, color: '#CCC' }}>1.5% + 0.25€ par transaction</span>
@@ -3034,11 +3023,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
             </div>
 
             {/* ══════ MONDIAL RELAY ══════ */}
-            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #E30613 0%, #FF4757 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(227,6,19,.25)', fontSize: 22 }}>📦</div>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#E30613', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📦</div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Mondial Relay</h3>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1A1A1A', letterSpacing: -0.5 }}>Mondial Relay</h3>
                   <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Etiquettes et expedition en 1 clic</p>
                 </div>
                 {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
@@ -3101,17 +3090,17 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               </div>
 
               <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
-                style={{ padding: '16px 36px', background: boxtalSaving ? '#DDD' : 'linear-gradient(135deg, #E30613 0%, #FF4757 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: boxtalSaving ? 'wait' : 'pointer', boxShadow: '0 8px 24px rgba(227,6,19,.25)', transition: 'all .3s' }}>
+                style={{ padding: '16px 36px', background: boxtalSaving ? '#E5E5E5' : '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: boxtalSaving ? 'wait' : 'pointer', boxShadow: 'none', transition: 'all .3s' }}>
                 {boxtalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder'}
               </button>
             </div>
 
             {/* ══════ LEGAL ══════ */}
-            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 2px 16px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.05)', padding: isMobile ? 22 : 32 }}>
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,.04)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #F5F4F2 0%, #E5E4E2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📜</div>
                 <div>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#0F0F1A', letterSpacing: -0.5 }}>Informations legales</h3>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1A1A1A', letterSpacing: -0.5 }}>Informations legales</h3>
                   <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Affiches en bas de ta page de paiement</p>
                 </div>
               </div>
@@ -3130,10 +3119,11 @@ input:focus,textarea:focus,select:focus{border-color:#E94560!important;box-shado
               )})}
 
               <button onClick={saveLegalTexts} disabled={legalSaving}
-                style={{ padding: '14px 32px', background: legalSaving ? '#DDD' : 'linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%)', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: legalSaving ? 'wait' : 'pointer', boxShadow: '0 8px 24px rgba(15,15,26,.2)' }}>
+                style={{ padding: '14px 32px', background: legalSaving ? '#E5E5E5' : '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: legalSaving ? 'wait' : 'pointer', boxShadow: 'none' }}>
                 {legalSaving ? '⏳ ...' : '💾 Sauvegarder'}
               </button>
             </div>
+          </div>
           </div>
         )}
       </main>
