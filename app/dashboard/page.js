@@ -986,15 +986,17 @@ export default function Dashboard() {
           setLiveViewers(viewers || 0)
 
           // Créer une session live en DB
-          if (shop) {
-            const { data: session } = await supabase.from('live_sessions').insert({
-              shop_id: shop.id,
-              platform: livePlatform,
-              username: liveUsername,
-              status: 'active',
-            }).select().single()
-            if (session) setLiveSessionId(session.id)
-          }
+          try {
+            if (shop) {
+              const { data: session } = await supabase.from('live_sessions').insert({
+                shop_id: shop.id,
+                platform: livePlatform,
+                username: liveUsername,
+                status: 'active',
+              }).select().single()
+              if (session) setLiveSessionId(session.id)
+            }
+          } catch(e) { console.log('[Live] live_sessions skipped:', e.message) }
         } else if (reason) {
           setLiveError(reason)
         }
@@ -1042,14 +1044,16 @@ export default function Dashboard() {
         setLiveConnected(false)
 
         // Update session en DB
-        if (liveSessionId) {
-          await supabase.from('live_sessions').update({
-            status: 'ended',
-            ended_at: new Date().toISOString(),
-            order_count: liveOrderCount,
-            comment_count: allComments.length,
-          }).eq('id', liveSessionId)
-        }
+        try {
+          if (liveSessionId) {
+            await supabase.from('live_sessions').update({
+              status: 'ended',
+              ended_at: new Date().toISOString(),
+              order_count: liveOrderCount,
+              comment_count: allComments.length,
+            }).eq('id', liveSessionId)
+          }
+        } catch(e) { console.log('[Live] session update skipped') }
 
         cleanupSocket()
       })
@@ -1102,15 +1106,17 @@ export default function Dashboard() {
       setLiveViewers(Math.floor(Math.random() * 50) + 20)
 
       // Créer une session live en DB
-      if (shop) {
-        const { data: session } = await supabase.from('live_sessions').insert({
-          shop_id: shop.id,
-          platform: livePlatform || 'tiktok',
-          username: liveUsername || 'demo',
-          status: 'active',
-        }).select().single()
-        if (session) setLiveSessionId(session.id)
-      }
+      try {
+        if (shop) {
+          const { data: session } = await supabase.from('live_sessions').insert({
+            shop_id: shop.id,
+            platform: livePlatform || 'tiktok',
+            username: liveUsername || 'demo',
+            status: 'active',
+          }).select().single()
+          if (session) setLiveSessionId(session.id)
+        }
+      } catch(e) { console.log('[Live] live_sessions skipped:', e.message) }
 
       let i = 0
       demoIntervalRef.current = setInterval(() => {
@@ -1140,14 +1146,16 @@ export default function Dashboard() {
     }
 
     // Update session en DB
-    if (liveSessionId) {
-      await supabase.from('live_sessions').update({
-        status: 'ended',
-        ended_at: new Date().toISOString(),
-        order_count: liveOrderCount,
-        comment_count: allComments.length,
-      }).eq('id', liveSessionId)
-    }
+    try {
+      if (liveSessionId) {
+        await supabase.from('live_sessions').update({
+          status: 'ended',
+          ended_at: new Date().toISOString(),
+          order_count: liveOrderCount,
+          comment_count: allComments.length,
+        }).eq('id', liveSessionId)
+      }
+    } catch(e) { console.log('[Live] stop session skipped:', e.message) }
 
     // Reset state
     setLiveConnected(false)
@@ -1723,7 +1731,8 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 {/* Username input */}
                 <div style={{ position: 'relative', marginBottom: 16 }}>
                   <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 15, color: '#999' }}>@</span>
-                  <input value={liveUsername} onChange={e => setLiveUsername(e.target.value)} placeholder={liveMode === 'demo' ? 'ton_username (optionnel)' : 'ton_username'}
+                  <input value={liveUsername} onChange={e => setLiveUsername(e.target.value.trim().toLowerCase())} placeholder={liveMode === 'demo' ? 'ton_username (optionnel)' : 'ton_username'}
+                    autoCorrect="off" autoCapitalize="none" autoComplete="off" spellCheck="false"
                     style={{ ...inputStyle, paddingLeft: 36, fontSize: 16, fontWeight: 600, textAlign: 'center' }}
                     onKeyDown={e => { if (e.key === 'Enter' && (liveMode === 'demo' || liveUsername.trim())) handleStartLive() }}
                   />
