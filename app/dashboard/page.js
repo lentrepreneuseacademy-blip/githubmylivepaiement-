@@ -143,6 +143,12 @@ export default function Dashboard() {
 
   // Statistics
   const [statsData, setStatsData] = useState({ daily: [], monthly: [], topProducts: [], conversionRate: 0, avgOrderValue: 0, totalRevenue7d: 0, totalOrders7d: 0 })
+
+  // ═══ TRIAL & SUBSCRIPTION LOGIC ═══
+  const isSubscribed = shop?.subscription_status === 'active'
+  const trialDaysLeft = shop?.created_at ? Math.max(0, 7 - Math.floor((Date.now() - new Date(shop.created_at).getTime()) / 86400000)) : 0
+  const isTrialing = trialDaysLeft > 0 && !isSubscribed
+  const hasAccess = isSubscribed || isTrialing
   const [statsPeriod, setStatsPeriod] = useState('7d')
 
   // AI Assistant
@@ -1601,6 +1607,18 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 <div style={{ position: 'absolute', top: -80, right: -80, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,122,255,.03) 0%, transparent 70%)' }} />
                 <div style={{ position: 'absolute', bottom: -60, left: '20%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(88,86,214,.02) 0%, transparent 70%)' }} />
                 <div style={{ position: 'relative', zIndex: 2 }}>
+                  {isTrialing && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '10px 16px', background: 'rgba(52,199,89,.08)', borderRadius: 12, border: '1px solid rgba(52,199,89,.15)' }}>
+                      <span style={{ fontSize: 16 }}>🎉</span>
+                      <span style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#059669' }}>Essai gratuit — {trialDaysLeft} jour{trialDaysLeft > 1 ? 's' : ''} restant{trialDaysLeft > 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                  {!isTrialing && !isSubscribed && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '10px 16px', background: 'rgba(255,59,48,.06)', borderRadius: 12, border: '1px solid rgba(255,59,48,.1)' }}>
+                      <span style={{ fontSize: 16 }}>⚠️</span>
+                      <span style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#FF3B30' }}>Essai termine — Active ton abonnement pour continuer</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
                     <div style={{ width: 48, height: 48, borderRadius: 14, background: '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🚀</div>
                     <div style={{ flex: 1 }}>
@@ -1614,7 +1632,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                     <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
                       style={{ padding: '14px 32px', background: '#007AFF', color: '#FFF', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: 'none' }}>
-                      🚀 Activer — 27€/mois
+                      🚀 {isTrialing ? 'Activer maintenant — 27€/mois' : 'Activer — 27€/mois'}
                     </button>
                     <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: 'rgba(52,199,89,.1)', color: '#34C759' }}>0% commission</span>
                     <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: 'rgba(52,199,89,.1)', color: '#34C759' }}>Sans engagement</span>
@@ -1717,8 +1735,22 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
         {activeTab === 'live' && (
           <div>
 
+            {/* ── BLOCKED: Trial expired ── */}
+            {!hasAccess && (
+              <div style={{ maxWidth: 500, margin: '60px auto', textAlign: 'center' }}>
+                <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(255,59,48,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 36 }}>🔒</div>
+                <h2 style={{ fontFamily: sf, fontSize: 24, fontWeight: 800, color: '#1D1D1F', marginBottom: 8 }}>Essai gratuit termine</h2>
+                <p style={{ fontFamily: sf, fontSize: 14, color: '#999', lineHeight: 1.7, marginBottom: 28 }}>Ton essai de 7 jours est termine. Active ton abonnement a 27€/mois pour retrouver l acces au Live Monitor et a toutes les fonctionnalites.</p>
+                <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
+                  style={{ padding: '16px 40px', background: '#007AFF', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>
+                  🚀 Activer — 27€/mois
+                </button>
+                <div style={{ fontFamily: sf, fontSize: 11, color: '#BBB', marginTop: 12 }}>0% de commission · Sans engagement · Annule quand tu veux</div>
+              </div>
+            )}
+
             {/* ── STEP 1: Choose platform ── */}
-            {!liveConnected && !liveConnecting && !livePlatform && !liveEnded && (
+            {hasAccess && !liveConnected && !liveConnecting && !livePlatform && !liveEnded && (
               <div style={{ maxWidth: 560, margin: '40px auto', textAlign: 'center' }}>
                 <h2 style={{ fontFamily: ss, fontSize: 30, fontWeight: 400, marginBottom: 8 }}>Live Monitor</h2>
                 <p style={{ fontSize: 14, color: '#999', marginBottom: 32 }}>Connecte-toi à ton live pour détecter les commandes automatiquement</p>
@@ -1763,7 +1795,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             )}
 
             {/* ── STEP 2: Enter username ── */}
-            {livePlatform && !liveConnected && !liveConnecting && !liveEnded && (
+            {hasAccess && livePlatform && !liveConnected && !liveConnecting && !liveEnded && (
               <div style={{ maxWidth: 440, margin: '40px auto', textAlign: 'center' }}>
                 <h2 style={{ fontFamily: sf, fontSize: 24, fontWeight: 700, color: '#1D1D1F', marginBottom: 6 }}>
                   {liveMode === 'demo' ? 'Mode Démo' : `Connecte-toi à ${livePlatform === 'tiktok' ? 'TikTok' : 'Instagram'}`}
@@ -1922,7 +1954,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             )}
 
             {/* ── CONNECTING ── */}
-            {liveConnecting && (
+            {hasAccess && liveConnecting && (
               <div style={{ maxWidth: 400, margin: '80px auto', textAlign: 'center' }}>
                 <div style={{ width: 48, height: 48, border: '3px solid rgba(239,68,68,.2)', borderTopColor: '#EF4444', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }} />
                 <p style={{ fontSize: 15, fontWeight: 600 }}>
@@ -1935,7 +1967,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             )}
 
             {/* ── LIVE ENDED SCREEN ── */}
-            {liveEnded && !liveConnected && !liveConnecting && (
+            {hasAccess && liveEnded && !liveConnected && !liveConnecting && (
               <div style={{ maxWidth: 440, margin: '60px auto', textAlign: 'center' }}>
                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(0,0,0,.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <span style={{ fontSize: 28 }}>📡</span>
@@ -2197,7 +2229,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             )}
 
             {/* ══ LIVE ACTIVE ══ */}
-            {liveConnected && (
+            {hasAccess && liveConnected && (
               <div>
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -3056,7 +3088,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
               {[
                 { icon: '🏪', label: 'Boutique', ok: !!shop?.name, text: shop?.name || '—', gradient: '#1D1D1F' },
-                { icon: '📡', label: 'Abonnement', ok: shop?.subscription_status === 'active', text: shop?.subscription_status === 'active' ? 'Actif' : 'Inactif', gradient: '#FF3B30' },
+                { icon: '📡', label: 'Abonnement', ok: isSubscribed, text: isSubscribed ? 'Actif' : isTrialing ? 'Essai (' + trialDaysLeft + 'j)' : 'Expire', gradient: isSubscribed ? '#34C759' : isTrialing ? '#FF9500' : '#FF3B30' },
                 { icon: '💳', label: 'Stripe', ok: !!stripeStatus?.chargesEnabled, text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer', gradient: '#5856D6' },
                 { icon: '📦', label: 'Mondial Relay', ok: !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer', gradient: '#FF9500' },
 
@@ -3128,18 +3160,19 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 </div>
 
                 {/* CTA */}
-                {shop?.subscription_status === 'active' ? (
+                {isSubscribed ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                     <div style={{ padding: '14px 32px', borderRadius: 14, background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#FFF', boxShadow: 'none' }}>✓ Abonnement actif — tout est inclus</div>
                     <button onClick={function() { setActiveTab('live') }} style={{ padding: '14px 28px', background: '#FFF', color: '#1D1D1F', border: '1px solid rgba(0,0,0,.1)', borderRadius: 14, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Ouvrir le Live Monitor →</button>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                    {isTrialing && <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 10, background: 'rgba(255,149,0,.08)', color: '#FF9500' }}>⏱ Essai gratuit : {trialDaysLeft} jour{trialDaysLeft > 1 ? 's' : ''} restant{trialDaysLeft > 1 ? 's' : ''}</div>}
                     <button onClick={async function() { try { var res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shop_id: shop.id, email: user.email }) }); var data = await res.json(); if (data.url) window.location.href = data.url; } catch(e) { alert('Erreur') } }}
                       style={{ padding: '18px 44px', background: '#007AFF', color: '#FFF', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 16, fontWeight: 900, cursor: 'pointer', boxShadow: 'none', letterSpacing: 0.5 }}>
-                      🚀 Activer My Live Paiement — 27€/mois
+                      🚀 Activer — 27€/mois
                     </button>
-                    <div style={{ fontFamily: sf, fontSize: 12, color: '#BBB' }}>Mode Demo gratuit disponible</div>
+                    {!isTrialing && <div style={{ fontFamily: sf, fontSize: 12, color: '#FF3B30', fontWeight: 600 }}>⚠️ Essai termine — Live Monitor et page de paiement desactives</div>}
                   </div>
                 )}
               </div>
