@@ -995,10 +995,12 @@ export default function PayPage() {
 
   const freeShipping = hasPreviousOrderToday;
   const customShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(c.shippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 4.90; })();
-  const shippingCost = freeShipping ? 0 : customShippingPrice;
+  const chronopostEnabled = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); return !!(c.chronopostEnabled && c.chronopostAccount && c.chronopostPassword); } } catch(e) {} return false; })();
+  const mrEnabled = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); return !!(c.mrEnseigne && c.mrPrivateKey); } } catch(e) {} return false; })();
+  const shippingCost = freeShipping ? 0 : (shippingMethod === 'chronopost' ? customShippingPrice + 1 : customShippingPrice);
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
-  const canPay = nom && prenom && email && phone && adresse && cp && ville && parsedAmount > 0 && (shippingMethod !== 'relay' || selectedRelay);
+  const canPay = nom && prenom && email && phone && adresse && cp && ville && parsedAmount > 0 && (shippingMethod === 'chronopost' || shippingMethod !== 'relay' || selectedRelay);
 
   // Auto-detect language on mount
   useEffect(() => {
@@ -1190,7 +1192,7 @@ export default function PayPage() {
             <h1 style={{ fontFamily: ss, fontSize: 32, fontWeight: 400, marginBottom: 8 }}>{t.payConfirmed}</h1>
             <p style={{ fontFamily: sf, fontSize: 14, color: "#999", marginBottom: 32 }}>{t.emailSentTo} {email}</p>
             <div style={{ background: "#FFF", border: "1px solid rgba(0,0,0,.08)", borderRadius: 16, padding: 24, textAlign: "left" }}>
-              {[{ l: t.ref, v: (orderData?.reference || orderData?.ref || ref.toUpperCase()) }, { l: t.amount, v: totalAmount + "€" }, { l: t.deliveryMethod, v: t.relay }].map((row, i) => (
+              {[{ l: t.ref, v: (orderData?.reference || orderData?.ref || ref.toUpperCase()) }, { l: t.amount, v: totalAmount + "€" }, { l: t.deliveryMethod, v: shippingMethod === 'chronopost' ? 'Chronopost Relais Pickup' : t.relay }].map((row, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 2 ? "1px solid rgba(0,0,0,.04)" : "none" }}>
                   <span style={{ fontFamily: sf, fontSize: 13, color: "#999" }}>{row.l}</span><span style={{ fontFamily: sf, fontSize: 13, fontWeight: 600 }}>{row.v}</span>
                 </div>
@@ -1247,7 +1249,13 @@ export default function PayPage() {
             </div>
           )}
 
-          {payStep === "form" && orderData && (
+          {payStep === "form" && orderData && (() => {
+            // Extract TikTok pseudo from description
+            const desc = orderData?.description || ''
+            const tiktokMatch = desc.match(/Live: @(\S+)/)
+            const tiktokPseudo = tiktokMatch ? tiktokMatch[1] : null
+            const isLiveOrder = desc.startsWith('Live:')
+            return (
             <form onSubmit={async (e) => { e.preventDefault(); setPaying(true);
                 try {
                   // Save/update order via API (bypasse le RLS)
@@ -1310,6 +1318,17 @@ export default function PayPage() {
                 }
                 setPaying(false)
               }}>
+              {/* TikTok pseudo welcome */}
+              {isLiveOrder && tiktokPseudo && (
+                <div style={{ background: "linear-gradient(135deg, #1A1A1A 0%, #333 100%)", borderRadius: 16, padding: "18px 22px", marginBottom: 22, color: "#FFF", display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎵</div>
+                  <div>
+                    <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700 }}>@{tiktokPseudo}</div>
+                    <div style={{ fontFamily: sf, fontSize: 12, color: "rgba(255,255,255,.6)", marginTop: 2 }}>{lang === 'fr' ? 'Commande depuis le live' : lang === 'es' ? 'Pedido desde el live' : lang === 'de' ? 'Bestellung aus dem Live' : 'Order from live'} · Ref. {(orderData?.reference || orderData?.ref || ref.toUpperCase())}</div>
+                  </div>
+                </div>
+              )}
+
               {/* Amount */}
               <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 14 }}>{t.amountSection}</h2>
@@ -1354,9 +1373,9 @@ export default function PayPage() {
                     <span style={{ fontFamily: sf, fontSize: 13, color: "#065F46", fontWeight: 500 }}>{t.freeShippingBanner}</span>
                   </div>
                 )}
-                <div style={{ width: "100%", padding: "16px 18px", border: "2px solid #1A1A1A", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ width: "100%", padding: "16px 18px", border: shippingMethod === "relay" ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.08)", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onClick={() => setShippingMethod("relay")}>
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: "6px solid #1A1A1A" }} />
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: shippingMethod === "relay" ? "6px solid #1A1A1A" : "2px solid #CCC" }} />
                     <div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>📍 {t.relay}</div><div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginTop: 2 }}>{t.relayDesc}</div></div>
                   </div>
                   {freeShipping ? (
@@ -1368,6 +1387,19 @@ export default function PayPage() {
                     <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>{customShippingPrice > 0 ? customShippingPrice.toFixed(2) + "€" : "Gratuit"}</div>
                   )}
                 </div>
+                {chronopostEnabled && (
+                  <div style={{ width: "100%", padding: "16px 18px", border: shippingMethod === "chronopost" ? "2px solid #0038A8" : "1px solid rgba(0,0,0,.08)", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onClick={() => setShippingMethod("chronopost")}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", border: shippingMethod === "chronopost" ? "6px solid #0038A8" : "2px solid #CCC" }} />
+                      <div><div style={{ fontFamily: sf, fontSize: 14, fontWeight: 600 }}>🚀 Chronopost Relais Pickup</div><div style={{ fontFamily: sf, fontSize: 12, color: "#999", marginTop: 2 }}>{lang === 'fr' ? 'Express en point relais · J+1' : lang === 'es' ? 'Express en punto de recogida · J+1' : lang === 'de' ? 'Express Pickup-Stelle · J+1' : 'Express pickup point · next day'}</div></div>
+                    </div>
+                    {freeShipping ? (
+                      <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: "#065F46", background: "#ECFDF5", padding: "3px 8px", borderRadius: 6 }}>{t.freeShippingTag}</span>
+                    ) : (
+                      <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>{customShippingPrice > 0 ? (customShippingPrice + 1).toFixed(2) + "€" : "Gratuit"}</div>
+                    )}
+                  </div>
+                )}
                 {shippingMethod === "relay" && (
                   <div style={{ marginTop: 12, background: "#F8F7F5", borderRadius: 12, padding: 14 }}>
                     <div style={{ fontFamily: sf, fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>{t.relayPoints}</div>
@@ -1421,6 +1453,17 @@ export default function PayPage() {
                     )}
                   </div>
                 )}
+                {shippingMethod === "chronopost" && (
+                  <div style={{ marginTop: 12, background: "#EFF6FF", borderRadius: 12, padding: 14, border: "1px solid #BFDBFE" }}>
+                    <div style={{ fontFamily: sf, fontSize: 11, color: "#1E40AF", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🚀 Chronopost Relais Pickup</div>
+                    <div style={{ fontFamily: sf, fontSize: 12, color: "#3B82F6", lineHeight: 1.6 }}>
+                      {lang === 'fr' ? 'Livraison express en point relais Pickup. Ton colis sera disponible le lendemain avant 13h dans le relais le plus proche de ton adresse. Tu recevras un email et un SMS avec l adresse exacte du point de retrait.' :
+                       lang === 'es' ? 'Entrega express en punto de recogida Pickup. Tu paquete estara disponible al dia siguiente antes de las 13h.' :
+                       lang === 'de' ? 'Express-Lieferung an Pickup-Stelle. Ihr Paket ist am nachsten Tag vor 13 Uhr verfugbar.' :
+                       'Express delivery to Pickup relay point. Your parcel will be available the next day before 1pm at the nearest relay point. You will receive an email and SMS with the exact pickup address.'}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Card */}
@@ -1456,7 +1499,7 @@ export default function PayPage() {
               <button type="submit" disabled={!canPay || paying} style={{ width: "100%", padding: 18, background: canPay ? "#1A1A1A" : "#E0E0E0", color: canPay ? "#FFF" : "#999", border: "none", borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 600, cursor: canPay ? "pointer" : "not-allowed" }}>{paying ? t.paying : `${t.payBtn} ${totalAmount}€`}</button>
               <div style={{ textAlign: "center", marginTop: 16, fontFamily: sf, fontSize: 11, color: "#CCC" }}>🔒 {t.securedData}</div>
             </form>
-          )}
+          )})()}
         </div>
       </div>
     );
