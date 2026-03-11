@@ -13,6 +13,8 @@ export default function SuperAdminPage() {
   const [tab, setTab] = useState('kpi')
   const [search, setSearch] = useState('')
   const [detailShop, setDetailShop] = useState(null)
+  const [contactMsgs, setContactMsgs] = useState([])
+  const [contactLoading, setContactLoading] = useState(false)
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('')
@@ -60,6 +62,22 @@ export default function SuperAdminPage() {
       const d = await res.json()
       if (d.stats) setData(d)
     } catch (e) { console.error('[Admin]', e) }
+    loadContactMessages()
+  }
+
+  async function loadContactMessages() {
+    setContactLoading(true)
+    try {
+      const res = await fetch('/api/admin-contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_messages' }) })
+      const d = await res.json()
+      if (d.messages) setContactMsgs(d.messages)
+    } catch (e) { console.error('[Admin Contact]', e) }
+    setContactLoading(false)
+  }
+
+  async function markContactRead(id) {
+    await fetch('/api/admin-contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark_read', id }) })
+    setContactMsgs(contactMsgs.map(m => m.id === id ? Object.assign({}, m, { status: 'read' }) : m))
   }
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#F5F5F7', color: '#86868B' }}>Chargement...</div>
@@ -176,6 +194,7 @@ export default function SuperAdminPage() {
             { id: 'all', l: '📊 Tous (' + shops.length + ')' },
             { id: 'orders', l: '💰 Commandes (' + orders.length + ')' },
             { id: 'feed', l: '🔔 Activite' },
+            { id: 'messages', l: '📩 Messages (' + contactMsgs.filter(m => m.status === 'unread').length + ')' },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: sf, background: tab === t.id ? '#1D1D1F' : 'transparent', color: tab === t.id ? '#FFF' : '#86868B' }}>
@@ -277,6 +296,33 @@ export default function SuperAdminPage() {
             </div>
           </div>
         ))}
+
+        {/* MESSAGES */}
+        {tab === 'messages' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {contactLoading && <div style={{ textAlign: 'center', padding: 40, color: '#86868B' }}>Chargement...</div>}
+            {!contactLoading && contactMsgs.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: '#86868B' }}>Aucun message</div>}
+            {contactMsgs.map((m, i) => (
+              <div key={i} onClick={function() { if (m.status === 'unread') markContactRead(m.id) }}
+                style={{ padding: '16px 18px', borderRadius: 12, background: '#FFF', border: m.status === 'unread' ? '2px solid #007AFF' : '1px solid rgba(0,0,0,.04)', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {m.status === 'unread' && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#007AFF' }} />}
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1D1D1F' }}>{m.name || 'Anonyme'}</span>
+                    <span style={{ fontSize: 11, color: '#86868B' }}>{m.email}</span>
+                  </div>
+                  <span style={{ fontSize: 10, color: '#86868B' }}>{new Date(m.created_at).toLocaleDateString('fr-FR')} {new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                {m.subject && <div style={{ fontSize: 11, fontWeight: 700, color: '#007AFF', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>{m.subject}</div>}
+                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.message}</div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <a href={'mailto:' + m.email} style={{ fontSize: 11, fontWeight: 700, padding: '6px 14px', borderRadius: 8, background: '#007AFF', color: '#FFF', textDecoration: 'none' }}>Repondre par email</a>
+                  {m.status === 'unread' && <span style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(0,0,0,.04)', color: '#86868B' }}>Cliquer = marquer lu</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* DETAIL MODAL */}
