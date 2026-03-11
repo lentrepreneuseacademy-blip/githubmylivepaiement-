@@ -785,6 +785,18 @@ export default function PayPage() {
   const [cp, setCp] = useState("");
   const [ville, setVille] = useState("");
   const [shippingMethod, setShippingMethod] = useState("relay");
+  // Auto-select first available carrier
+  useEffect(() => {
+    if (shopData?.boxtal_config) {
+      try {
+        var c = JSON.parse(shopData.boxtal_config);
+        var mr = c.mrEnabled !== false && !!(c.mrEnseigne && c.mrPrivateKey);
+        var chrono = !!(c.chronopostEnabled && c.chronopostAccount && c.chronopostPassword);
+        if (!mr && chrono) setShippingMethod('chronopost');
+        else if (mr) setShippingMethod('relay');
+      } catch(e) {}
+    }
+  }, [shopData]);
   const [selectedRelay, setSelectedRelay] = useState(null);
   const [realRelayPoints, setRealRelayPoints] = useState([]);
   const [relayLoading, setRelayLoading] = useState(false);
@@ -995,9 +1007,10 @@ export default function PayPage() {
 
   const freeShipping = hasPreviousOrderToday;
   const customShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(c.shippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 4.90; })();
+  const chronopostShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.chronopostShippingPrice !== undefined && c.chronopostShippingPrice !== '') return parseFloat(c.chronopostShippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 5.90; })();
   const chronopostEnabled = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); return !!(c.chronopostEnabled && c.chronopostAccount && c.chronopostPassword); } } catch(e) {} return false; })();
-  const mrEnabled = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); return !!(c.mrEnseigne && c.mrPrivateKey); } } catch(e) {} return false; })();
-  const shippingCost = freeShipping ? 0 : (shippingMethod === 'chronopost' ? customShippingPrice + 1 : customShippingPrice);
+  const mrEnabled = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); return c.mrEnabled !== false && !!(c.mrEnseigne && c.mrPrivateKey); } } catch(e) {} return false; })();
+  const shippingCost = freeShipping ? 0 : (shippingMethod === 'chronopost' ? chronopostShippingPrice : customShippingPrice);
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
   const canPay = nom && prenom && email && phone && adresse && cp && ville && parsedAmount > 0 && (shippingMethod === 'chronopost' || shippingMethod !== 'relay' || selectedRelay);
@@ -1373,6 +1386,7 @@ export default function PayPage() {
                     <span style={{ fontFamily: sf, fontSize: 13, color: "#065F46", fontWeight: 500 }}>{t.freeShippingBanner}</span>
                   </div>
                 )}
+                {mrEnabled && (
                 <div style={{ width: "100%", padding: "16px 18px", border: shippingMethod === "relay" ? "2px solid #1A1A1A" : "1px solid rgba(0,0,0,.08)", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onClick={() => setShippingMethod("relay")}>
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <div style={{ width: 20, height: 20, borderRadius: "50%", border: shippingMethod === "relay" ? "6px solid #1A1A1A" : "2px solid #CCC" }} />
@@ -1387,6 +1401,7 @@ export default function PayPage() {
                     <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>{customShippingPrice > 0 ? customShippingPrice.toFixed(2) + "€" : "Gratuit"}</div>
                   )}
                 </div>
+                )}
                 {chronopostEnabled && (
                   <div style={{ width: "100%", padding: "16px 18px", border: shippingMethod === "chronopost" ? "2px solid #0038A8" : "1px solid rgba(0,0,0,.08)", borderRadius: 14, background: "#FFF", marginBottom: 8, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onClick={() => setShippingMethod("chronopost")}>
                     <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -1396,7 +1411,7 @@ export default function PayPage() {
                     {freeShipping ? (
                       <span style={{ fontFamily: sf, fontSize: 11, fontWeight: 700, color: "#065F46", background: "#ECFDF5", padding: "3px 8px", borderRadius: 6 }}>{t.freeShippingTag}</span>
                     ) : (
-                      <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>{customShippingPrice > 0 ? (customShippingPrice + 1).toFixed(2) + "€" : "Gratuit"}</div>
+                      <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>{chronopostShippingPrice > 0 ? chronopostShippingPrice.toFixed(2) + "€" : "Gratuit"}</div>
                     )}
                   </div>
                 )}
