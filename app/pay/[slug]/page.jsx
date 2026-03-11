@@ -785,6 +785,7 @@ export default function PayPage() {
   const [cp, setCp] = useState("");
   const [ville, setVille] = useState("");
   const [shippingMethod, setShippingMethod] = useState("relay");
+
   const [selectedRelay, setSelectedRelay] = useState(null);
   const [realRelayPoints, setRealRelayPoints] = useState([]);
   const [relayLoading, setRelayLoading] = useState(false);
@@ -995,6 +996,12 @@ export default function PayPage() {
 
   const freeShipping = hasPreviousOrderToday;
   const customShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(c.shippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 4.90; })();
+
+  // ═══ TRIAL & SUBSCRIPTION CHECK ═══
+  const shopIsSubscribed = shopData?.subscription_status === 'active';
+  const shopTrialDaysLeft = shopData?.created_at ? Math.max(0, 7 - Math.floor((Date.now() - new Date(shopData.created_at).getTime()) / 86400000)) : 0;
+  const shopHasAccess = shopIsSubscribed || shopTrialDaysLeft > 0;
+
   const shippingCost = freeShipping ? 0 : customShippingPrice;
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
@@ -1055,6 +1062,26 @@ export default function PayPage() {
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 48, height: 48, border: "3px solid #E5E5E5", borderTopColor: "#1A1A1A", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
           <style>{"@keyframes spin { to { transform: rotate(360deg) } }"}</style>
+        </div>
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════
+  // SHOP SUSPENDED - Trial expired, no subscription
+  // ═══════════════════════════════════════
+  if (shopData && !shopHasAccess) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#FAFAF8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", maxWidth: 420, padding: "0 20px" }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: "rgba(255,59,48,.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 32 }}>⏸️</div>
+          <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: "#1A1A1A", marginBottom: 8 }}>Boutique temporairement indisponible</h1>
+          <p style={{ fontFamily: sf, fontSize: 14, color: "#999", lineHeight: 1.7, marginBottom: 24 }}>
+            {lang === 'fr' ? 'Cette boutique est en pause. Le vendeur a ete notifie. Merci de ta patience.' :
+             lang === 'es' ? 'Esta tienda esta en pausa. El vendedor ha sido notificado. Gracias por tu paciencia.' :
+             lang === 'de' ? 'Dieser Shop ist vorübergehend nicht verfügbar. Der Verkäufer wurde benachrichtigt.' :
+             'This shop is temporarily unavailable. The seller has been notified. Thank you for your patience.'}
+          </p>
         </div>
       </div>
     )
@@ -1247,7 +1274,13 @@ export default function PayPage() {
             </div>
           )}
 
-          {payStep === "form" && orderData && (
+          {payStep === "form" && orderData && (() => {
+            // Extract TikTok pseudo from description
+            const desc = orderData?.description || ''
+            const tiktokMatch = desc.match(/Live: @(\S+)/)
+            const tiktokPseudo = tiktokMatch ? tiktokMatch[1] : null
+            const isLiveOrder = desc.startsWith('Live:')
+            return (
             <form onSubmit={async (e) => { e.preventDefault(); setPaying(true);
                 try {
                   // Save/update order via API (bypasse le RLS)
@@ -1264,7 +1297,7 @@ export default function PayPage() {
                     shipping_zipcode: cp,
                     shipping_city: ville,
                     shipping_method: shippingMethod,
-                    relay_point: shippingMethod === 'relay' && selectedRelay ? JSON.stringify(realRelayPoints.find(r => r.code === selectedRelay) || { code: selectedRelay }) : null,
+                    relay_point: (shippingMethod === 'relay' && selectedRelay) ? JSON.stringify(realRelayPoints.find(r => r.code === selectedRelay) || { code: selectedRelay }) : null,
                     description: orderData?.description || '',
                     status: 'pending_payment',
                   }
@@ -1310,6 +1343,17 @@ export default function PayPage() {
                 }
                 setPaying(false)
               }}>
+              {/* TikTok pseudo welcome */}
+              {isLiveOrder && tiktokPseudo && (
+                <div style={{ background: "linear-gradient(135deg, #1A1A1A 0%, #333 100%)", borderRadius: 16, padding: "18px 22px", marginBottom: 22, color: "#FFF", display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎵</div>
+                  <div>
+                    <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 700 }}>@{tiktokPseudo}</div>
+                    <div style={{ fontFamily: sf, fontSize: 12, color: "rgba(255,255,255,.6)", marginTop: 2 }}>{lang === 'fr' ? 'Commande depuis le live' : lang === 'es' ? 'Pedido desde el live' : lang === 'de' ? 'Bestellung aus dem Live' : 'Order from live'} · Ref. {(orderData?.reference || orderData?.ref || ref.toUpperCase())}</div>
+                  </div>
+                </div>
+              )}
+
               {/* Amount */}
               <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontFamily: sf, fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "#999", marginBottom: 14 }}>{t.amountSection}</h2>
@@ -1421,6 +1465,7 @@ export default function PayPage() {
                     )}
                   </div>
                 )}
+
               </div>
 
               {/* Card */}
@@ -1456,7 +1501,7 @@ export default function PayPage() {
               <button type="submit" disabled={!canPay || paying} style={{ width: "100%", padding: 18, background: canPay ? "#1A1A1A" : "#E0E0E0", color: canPay ? "#FFF" : "#999", border: "none", borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 600, cursor: canPay ? "pointer" : "not-allowed" }}>{paying ? t.paying : `${t.payBtn} ${totalAmount}€`}</button>
               <div style={{ textAlign: "center", marginTop: 16, fontFamily: sf, fontSize: 11, color: "#CCC" }}>🔒 {t.securedData}</div>
             </form>
-          )}
+          )})()}
         </div>
       </div>
     );

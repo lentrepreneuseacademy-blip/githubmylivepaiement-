@@ -30,7 +30,7 @@ export default function LandingPage() {
   const sf = "'Outfit', sans-serif"
   const ss = "'Cormorant Garamond', Georgia, serif"
 
-  const marqueeText = '27€/MOIS ✦ 0% COMMISSION ✦ SANS ENGAGEMENT ✦ LIVE MONITOR ✦ PAIEMENT CB ✦ ÉTIQUETTES AUTO ✦ MULTILINGUE ✦ ESPACE CLIENT AUTO ✦ '
+  const marqueeText = '7 JOURS GRATUITS ✦ 27€/MOIS ✦ 0% COMMISSION ✦ SANS ENGAGEMENT ✦ LIVE MONITOR ✦ PAIEMENT CB ✦ ÉTIQUETTES AUTO ✦ '
 
   const [demoComments, setDemoComments] = useState([])
   const [liveCounters, setLiveCounters] = useState({ shops: 0, orders: 0, labels: 0 })
@@ -147,6 +147,7 @@ export default function LandingPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <a href="/blog" style={{ padding: '9px 18px', color: '#1A1A1A', textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>Blog</a>
+            <a href="/contact" style={{ padding: '9px 18px', color: '#1A1A1A', textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>Contact</a>
             <a href="/dashboard" style={{ padding: '9px 18px', color: '#1A1A1A', textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>Se connecter</a>
             <a href="/dashboard" style={{ padding: '10px 22px', background: '#1A1A1A', color: '#FFF', textDecoration: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600 }}>Commencer ✦</a>
           </div>
@@ -158,9 +159,9 @@ export default function LandingPage() {
         <div className="g-hero">
           <div>
             <Fade>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 20, padding: '6px 16px', marginBottom: 20 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', animation: 'pulse 1.5s infinite' }} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#DC2626' }}>NOUVEAU — Live Monitor intégré</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 20, padding: '8px 18px', marginBottom: 20 }}>
+                <span style={{ fontSize: 14 }}>🎁</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#059669' }}>7 JOURS D'ESSAI GRATUIT — Sans carte bancaire</span>
               </div>
             </Fade>
             <Fade delay={0.06}>
@@ -174,12 +175,12 @@ export default function LandingPage() {
               </p>
             </Fade>
             <Fade delay={0.16}>
-              <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 28 }}>27€/mois · 0% de commission · Sans engagement</p>
+              <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 28 }}>✨ Teste gratuitement pendant 7 jours — aucune carte bancaire requise</p>
             </Fade>
             <Fade delay={0.2}>
               {!submitted ? (
                 <form onSubmit={e => { e.preventDefault(); if (email) setSubmitted(true) }} style={{ display: 'flex', gap: 8, maxWidth: 440, flexWrap: 'wrap' }}>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Ton email professionnel" required
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Ton email" required
                     style={{ flex: '1 1 200px', padding: '15px 18px', border: '1px solid rgba(0,0,0,.12)', borderRadius: 12, fontSize: 14, fontFamily: sf, outline: 'none', background: '#FFF' }} />
                   <button type="submit" style={{ padding: '15px 22px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Commencer ✦</button>
                 </form>
@@ -191,7 +192,7 @@ export default function LandingPage() {
             </Fade>
             <Fade delay={0.24}>
               <div style={{ display: 'flex', gap: 24, marginTop: 24 }}>
-                {[{ v: '0%', l: 'Commission' }, { v: '27€', l: 'Par mois' }, { v: '0', l: 'Engagement' }].map((s, i) => (
+                {[{ v: '7j', l: 'Essai gratuit' }, { v: '0%', l: 'Commission' }, { v: '0€', l: 'Sans CB' }].map((s, i) => (
                   <div key={i} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 22, fontWeight: 800 }}>{s.v}</div>
                     <div style={{ fontSize: 11, color: '#BBB', marginTop: 2 }}>{s.l}</div>
@@ -287,7 +288,7 @@ export default function LandingPage() {
             <div style={{ fontSize: 'clamp(48px, 8vw, 60px)', fontWeight: 900, color: '#FFF', marginBottom: 6 }}>0<span style={{ fontSize: '0.6em' }}>%</span></div>
             <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', color: '#FFF', marginBottom: 24 }}>Commission</div>
             <h3 style={{ fontFamily: ss, fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 400, color: '#FFF', marginBottom: 16 }}>0% de commission. <em style={{ fontStyle: 'italic' }}>Contrairement aux autres.</em></h3>
-            <p style={{ fontSize: 15, color: '#FFF', lineHeight: 1.8, maxWidth: 600, margin: '0 auto' }}>Les plateformes de live shopping prennent entre 2 et 5% sur chaque vente. MY LIVE PAIEMENT c'est un forfait fixe de 27€/mois. Tu vends 500€ ou 50 000€, tu paies toujours 27€.</p>
+            <p style={{ fontSize: 15, color: '#FFF', lineHeight: 1.8, maxWidth: 600, margin: '0 auto' }}>Les plateformes de live shopping prennent entre 2 et 5% sur chaque vente. MY LIVE PAIEMENT c'est 7 jours gratuits puis un forfait fixe de 27€/mois. Tu vends 500€ ou 50 000€, tu paies toujours 27€.</p>
           </div>
         </Fade>
       </section>
@@ -545,10 +546,11 @@ export default function LandingPage() {
           </Fade>
           <Fade delay={0.1}>
             <div style={{ border: '2px solid #1A1A1A', borderRadius: 24, padding: '36px 28px', textAlign: 'center' }}>
-              <div style={{ display: 'inline-block', background: '#FEF2F2', borderRadius: 20, padding: '5px 16px', marginBottom: 20 }}><span style={{ fontSize: 12, fontWeight: 700, color: '#DC2626' }}>0% de commission — jamais</span></div>
+              <div style={{ display: 'inline-block', background: '#ECFDF5', borderRadius: 20, padding: '8px 18px', marginBottom: 16 }}><span style={{ fontSize: 13, fontWeight: 800, color: '#059669' }}>🎁 7 JOURS GRATUITS</span></div>
+              <div style={{ display: 'inline-block', background: '#FEF2F2', borderRadius: 20, padding: '5px 16px', marginBottom: 20, marginLeft: 8 }}><span style={{ fontSize: 12, fontWeight: 700, color: '#DC2626' }}>0% de commission</span></div>
               <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>MY LIVE PAIEMENT</div>
               <div style={{ fontSize: 'clamp(42px, 8vw, 52px)', fontWeight: 900, marginBottom: 2 }}>27€<span style={{ fontSize: '0.32em', fontWeight: 500, color: '#999' }}>/mois</span></div>
-              <div style={{ fontSize: 14, color: '#777', marginBottom: 28 }}>Sans engagement · Annule quand tu veux</div>
+              <div style={{ fontSize: 14, color: '#777', marginBottom: 28 }}>7 jours gratuits · Sans engagement · Annule quand tu veux</div>
               <div style={{ textAlign: 'left' }}>
                 {['📡 Live Monitor (TikTok · Instagram bientôt)', '📋 Système de référence unique', '💳 Paiement CB sécurisé (Stripe)', '🏷️ Étiquettes Mondial Relay', '📦 Mondial Relay intégré', '👥 Espace client automatique', '🌍 Multilingue (4 langues)', '🎁 Tarif livraison flexible', '📊 Dashboard pro complet', '🔗 Lien perso dans ta bio', '👥 Fichier client automatique', '💬 Support inclus'].map((f, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < 11 ? '1px solid rgba(0,0,0,.04)' : 'none' }}>
@@ -557,8 +559,8 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <a href="/dashboard" style={{ display: 'block', width: '100%', marginTop: 24, padding: 18, background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>Commencer — 27€/mois ✦</a>
-              <p style={{ fontSize: 12, color: '#999', marginTop: 12 }}>0% de commission. Sans engagement. Annule en 1 clic.</p>
+              <a href="/dashboard" style={{ display: 'block', width: '100%', marginTop: 24, padding: 18, background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>Essai gratuit 7 jours ✦</a>
+              <p style={{ fontSize: 12, color: '#999', marginTop: 12 }}>Aucune carte bancaire pour l'essai. 0% de commission. Annule en 1 clic.</p>
             </div>
           </Fade>
         </div>
@@ -570,7 +572,8 @@ export default function LandingPage() {
         {[
           { q: "C'est quoi le Live Monitor ?", a: "Un outil intégré qui se connecte à ton live TikTok ou Instagram. Il capte les commentaires et détecte les intentions d'achat. Chaque commande reçoit un numéro unique." },
           { q: 'Comment fonctionne le système de référence ?', a: "Chaque commande reçoit un numéro (ex: GLOW-047). Tu donnes cette réf à ta cliente. Elle va sur ton lien, entre la ref, et le formulaire de paiement apparaît." },
-          { q: 'Pourquoi 0% de commission ?', a: "On ne prend aucune commission. Tu paies 27€/mois, que tu vendes 100€ ou 100 000€. Les seuls frais sont ceux de Stripe (1.5% + 0.25€)." },
+          { q: 'Comment fonctionne l\'essai gratuit ?', a: "Tu crees ta boutique en 2 minutes et tu as acces a tout pendant 7 jours : Live Monitor, paiement CB, etiquettes, dashboard. Aucune carte bancaire demandee. A la fin des 7 jours, tu choisis de continuer a 27€/mois ou tu arretes." },
+          { q: 'Pourquoi 0% de commission ?', a: "On ne prend aucune commission. Tu as 7 jours gratuits pour tester, puis 27€/mois, que tu vendes 100€ ou 100 000€. Les seuls frais sont ceux de Stripe (1.5% + 0.25€)." },
           { q: 'Est-ce que je dois avoir un site e-commerce ?', a: "Non. MY LIVE PAIEMENT EST ton site. Tu partages ton lien et tes clientes paient dessus." },
           { q: 'Comment mes clientes paient ?', a: "Par carte bancaire, sécurisé par Stripe. Tu reçois l'argent sur ton compte bancaire." },
           { q: 'Comment fonctionnent les étiquettes ?', a: "Depuis ton dashboard, quand une commande arrive, tu cliques Générer. Le PDF se telecharge, tu imprimes, tu colles et tu deposes en point relais." },
@@ -596,8 +599,8 @@ export default function LandingPage() {
       <section style={{ padding: '60px 24px 80px', textAlign: 'center' }}>
         <Fade>
           <h2 style={{ fontFamily: ss, fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 400, marginBottom: 8 }}>Prête à vendre en <em style={{ fontStyle: 'italic' }}>live</em> ?</h2>
-          <p style={{ fontSize: 15, color: '#777', marginBottom: 28 }}>27€/mois. 0% de commission. Sans engagement.</p>
-          <a href="/dashboard" style={{ display: 'inline-block', padding: '18px 42px', background: '#1A1A1A', color: '#FFF', borderRadius: 14, fontSize: 15, fontWeight: 700, textDecoration: 'none', letterSpacing: .5 }}>Commencer — 27€/mois ✦</a>
+          <p style={{ fontSize: 15, color: '#777', marginBottom: 28 }}>Essaie gratuitement pendant 7 jours. Puis 27€/mois, 0% de commission.</p>
+          <a href="/dashboard" style={{ display: 'inline-block', padding: '18px 42px', background: '#1A1A1A', color: '#FFF', borderRadius: 14, fontSize: 15, fontWeight: 700, textDecoration: 'none', letterSpacing: .5 }}>Essai gratuit 7 jours ✦</a>
         </Fade>
       </section>
 
@@ -611,7 +614,7 @@ export default function LandingPage() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
           <a href="https://www.instagram.com/mylivepaiement" target="_blank" rel="noopener" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Instagram</a>
           <a href="/blog" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Blog</a>
-          <a href="mailto:contact@mylivepaiement.com" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Contact</a>
+          <a href="/contact" style={{ fontSize: 12, color: '#777', textDecoration: 'none' }}>Contact</a>
         </div>
       </footer>
     </div>
