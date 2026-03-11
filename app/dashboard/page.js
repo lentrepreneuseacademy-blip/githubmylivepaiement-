@@ -87,6 +87,8 @@ export default function Dashboard() {
   const [autoPrintEnabled, setAutoPrintEnabled] = useState(false)
   const receiptWindowRef = useRef(null)
   const [showPaymentTracking, setShowPaymentTracking] = useState(false)
+  const [unpaidPopup, setUnpaidPopup] = useState(null) // { orders: [...], time: Date }
+  const unpaidCheckRef = useRef(null)
 
   // New order form
   const [showNewOrder, setShowNewOrder] = useState(false)
@@ -134,7 +136,7 @@ export default function Dashboard() {
   const [shipLabel, setShipLabel] = useState(null)
   const [shipError, setShipError] = useState(null)
   const [shipTrackingNumber, setShipTrackingNumber] = useState(null)
-  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90', mrEnseigne: '', mrPrivateKey: '' })
+  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90', mrEnseigne: '', mrPrivateKey: '', chronopostAccount: '', chronopostPassword: '', chronopostEnabled: false })
   const [boxtalSaving, setBoxtalSaving] = useState(false)
   const [stripeStatus, setStripeStatus] = useState(null)
   const [stripeLoading, setStripeLoading] = useState(false)
@@ -815,9 +817,10 @@ export default function Dashboard() {
     ticket.className = 'ticket'
     var h = ''
     h += '<div class="ticket-shop">' + ((shop && shop.name) || 'MA BOUTIQUE').toUpperCase() + '</div>'
-    h += '<div class="ticket-num">#' + order.orderNum + '</div>'
+    h += '<div class="ticket-num">' + (order.ref || '#' + order.orderNum) + '</div>'
     h += '<div class="ticket-user">@' + order.user + '</div>'
     h += '<div class="ticket-text">' + order.text + '</div>'
+    h += '<div class="ticket-ref" style="margin-top:6px;padding:8px;background:#F5F5F5;border-radius:6px;text-align:center;font-size:18px;font-weight:900;letter-spacing:3px">' + (order.ref || '#' + order.orderNum) + '</div>'
     h += '<div class="ticket-time">' + order.time + '</div>'
     h += '<div class="ticket-platform">Live ' + (livePlatform === 'tiktok' ? 'TikTok' : 'Instagram') + '</div>'
     ticket.innerHTML = h
@@ -860,6 +863,7 @@ export default function Dashboard() {
         // Auto-create order in DB
         if (shop) {
           const ref = `${shop.slug.toUpperCase().slice(0, 4)}-${String(num).padStart(3, '0')}`
+          comment.ref = ref
           fetch('/api/orders/upsert', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -876,6 +880,12 @@ export default function Dashboard() {
               }
             })
           })
+          .then(r => r.json())
+          .then(data => {
+            if (data.error) console.error('[Live] Order creation failed:', data.error)
+            else console.log('[Live] ✅ Commande créée:', ref, '→ @' + commentData.username)
+          })
+          .catch(err => console.error('[Live] Order creation error:', err))
         }
         return num
       })
@@ -919,9 +929,10 @@ export default function Dashboard() {
       var o = liveOrders[j]
       h += '<div class="ticket">'
       h += '<div class="ticket-shop">' + sn.toUpperCase() + '</div>'
-      h += '<div class="ticket-num">#' + o.orderNum + '</div>'
+      h += '<div class="ticket-num">' + (o.ref || '#' + o.orderNum) + '</div>'
       h += '<div class="ticket-user">@' + o.user + '</div>'
       h += '<div class="ticket-text">' + o.text + '</div>'
+      h += '<div class="ticket-ref" style="margin-top:6px;padding:8px;background:#F5F5F5;border-radius:6px;text-align:center;font-size:18px;font-weight:900;letter-spacing:3px">' + (o.ref || '#' + o.orderNum) + '</div>'
       h += '<div class="ticket-time">' + o.time + '</div>'
       h += '<div class="ticket-platform">Live ' + pl + ' - @' + un + '</div>'
       h += '</div>'
@@ -1135,6 +1146,55 @@ export default function Dashboard() {
       }, Math.random() * 2000 + 1500)
     }, 2000)
   }
+
+  // ═══ UNPAID ORDERS CHECKER (every 2 min during live) ═══
+  useEffect(() => {
+    if (liveConnected && liveOrders.length > 0) {
+      // Check immediately
+      var checkUnpaid = function() {
+        var unpaid = liveOrders.filter(function(lo) {
+          return !orders.some(function(o) {
+            return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+          })
+        })
+        if (unpaid.length > 0) {
+          setUnpaidPopup({ orders: unpaid, time: new Date() })
+          // Play alert sound
+          try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)()
+            var osc = ctx.createOscillator()
+            var gain = ctx.createGain()
+            osc.connect(gain)
+            gain.connect(ctx.destination)
+            osc.frequency.value = 440
+            gain.gain.value = 0.15
+            osc.start()
+            osc.stop(ctx.currentTime + 0.15)
+            setTimeout(function() {
+              var osc2 = ctx.createOscillator()
+              var gain2 = ctx.createGain()
+              osc2.connect(gain2)
+              gain2.connect(ctx.destination)
+              osc2.frequency.value = 520
+              gain2.gain.value = 0.15
+              osc2.start()
+              osc2.stop(ctx.currentTime + 0.15)
+            }, 200)
+          } catch(e) {}
+        }
+      }
+      // Check every 2 minutes
+      unpaidCheckRef.current = setInterval(checkUnpaid, 120000)
+      // First check after 60 seconds
+      var firstCheck = setTimeout(checkUnpaid, 60000)
+      return function() {
+        clearInterval(unpaidCheckRef.current)
+        clearTimeout(firstCheck)
+      }
+    } else {
+      if (unpaidCheckRef.current) clearInterval(unpaidCheckRef.current)
+    }
+  }, [liveConnected, liveOrders.length, orders])
 
   // ═══ STOP LIVE (both modes) ═══
   async function stopLive() {
@@ -1913,10 +1973,28 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                     </button>
                   )}
                   {liveOrders.length > 0 && (
-                    <button onClick={function() { setShowPaymentTracking(!showPaymentTracking) }}
-                      style={{ padding: '12px 24px', background: showPaymentTracking ? '#10B981' : '#5856D6', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, boxShadow: '0 4px 12px rgba(102,126,234,.25)', fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
-                      💰 Suivi paiements
-                    </button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={function() { setShowPaymentTracking(!showPaymentTracking) }}
+                        style={{ padding: '12px 24px', background: showPaymentTracking ? '#10B981' : '#5856D6', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, boxShadow: '0 4px 12px rgba(102,126,234,.25)', fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                        💰 Suivi paiements
+                      </button>
+                      <button onClick={function() {
+                        var unpaid = liveOrders.filter(function(lo) {
+                          return !orders.some(function(o) {
+                            return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                          })
+                        })
+                        if (unpaid.length > 0) {
+                          setUnpaidPopup({ orders: unpaid, time: new Date() })
+                        } else {
+                          setUnpaidPopup({ orders: [], time: new Date() })
+                          setTimeout(function() { setUnpaidPopup(null) }, 2000)
+                        }
+                      }}
+                        style={{ padding: '12px 24px', background: '#EF4444', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: sf, boxShadow: '0 4px 12px rgba(239,68,68,.25)' }}>
+                        ⚠ Non payes ?
+                      </button>
+                    </div>
                   )}
                   <button onClick={() => { setActiveTab('orders'); loadData(shop.id); }}
                     style={{ padding: '12px 24px', background: 'rgba(0,0,0,.03)', color: '#555', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: sf }}>
@@ -1944,38 +2022,177 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {liveOrders.map(function(lo, idx) {
-                        var isPaid = orders.some(function(o) {
-                          return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                      {/* ── TABLE 1: Commandes payées ── */}
+                      {(() => {
+                        var paidOrders = liveOrders.filter(function(lo) {
+                          return orders.some(function(o) {
+                            return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                          })
                         })
-                        var matchedOrder = orders.find(function(o) {
-                          return o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                        var unpaidOrders = liveOrders.filter(function(lo) {
+                          return !orders.some(function(o) {
+                            return (o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered') && o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                          })
                         })
                         return (
-                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: isPaid ? '#F0FDF4' : '#FFF7ED', border: isPaid ? '1px solid #BBF7D0' : '1px solid #FED7AA' }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 10, background: isPaid ? '#10B981' : '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <span style={{ color: '#FFF', fontSize: 16 }}>{isPaid ? '✓' : '⏳'}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                            {/* PAID TABLE */}
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: 8, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <span style={{ color: '#FFF', fontSize: 14 }}>✓</span>
+                                </div>
+                                <span style={{ fontSize: 15, fontWeight: 700, color: '#059669' }}>Commandes payees ({paidOrders.length})</span>
+                              </div>
+                              {paidOrders.length === 0 ? (
+                                <div style={{ padding: '18px 16px', borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0', textAlign: 'center' }}>
+                                  <div style={{ fontSize: 12, color: '#059669' }}>Aucune commande payee pour le moment</div>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {paidOrders.map(function(lo, idx) {
+                                    var matchedOrder = orders.find(function(o) {
+                                      return o.description && o.description.toLowerCase().indexOf(lo.user.toLowerCase()) !== -1
+                                    })
+                                    return (
+                                      <div key={'paid-'+idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+                                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                          <span style={{ color: '#FFF', fontSize: 16 }}>✓</span>
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 14, fontWeight: 800, color: '#007AFF' }}>{lo.ref || '#' + lo.orderNum}</span>
+                                            <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
+                                          </div>
+                                          <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{lo.text}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                          <div style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: '#10B981', color: '#FFF' }}>PAYE</div>
+                                          {matchedOrder && <div style={{ fontSize: 10, color: '#059669', marginTop: 4 }}>{matchedOrder.total_amount || matchedOrder.amount || 0}€ · {matchedOrder.status === 'paid' ? 'A expedier' : matchedOrder.status === 'shipped' ? 'Expedie' : 'Livre'}</div>}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              )}
                             </div>
+
+                            {/* UNPAID TABLE */}
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <span style={{ color: '#FFF', fontSize: 14 }}>⏳</span>
+                                </div>
+                                <span style={{ fontSize: 15, fontWeight: 700, color: '#92400E' }}>En attente de paiement ({unpaidOrders.length})</span>
+                              </div>
+                              {unpaidOrders.length === 0 ? (
+                                <div style={{ padding: '18px 16px', borderRadius: 12, background: '#FFF7ED', border: '1px solid #FED7AA', textAlign: 'center' }}>
+                                  <div style={{ fontSize: 12, color: '#92400E' }}>Toutes les commandes sont payees !</div>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {unpaidOrders.map(function(lo, idx) {
+                                    return (
+                                      <div key={'unpaid-'+idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: '#FFF7ED', border: '1px solid #FED7AA' }}>
+                                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                          <span style={{ color: '#FFF', fontSize: 16 }}>⏳</span>
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 14, fontWeight: 800, color: '#007AFF' }}>{lo.ref || '#' + lo.orderNum}</span>
+                                            <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
+                                          </div>
+                                          <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{lo.text}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                          <div style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: '#F59E0B', color: '#FFF' }}>NON PAYE</div>
+                                          <button onClick={function() {
+                                            var msg = '@' + lo.user + ' ta ref est ' + (lo.ref || '#' + lo.orderNum) + ' ! Lien dans ma bio pour payer'
+                                            navigator.clipboard.writeText(msg).then(function() {
+                                              var b = document.getElementById('copy-live-' + idx)
+                                              if (b) { b.textContent = '✓ Copie'; setTimeout(function() { b.textContent = '📋 Copier msg' }, 1500) }
+                                            })
+                                          }} id={'copy-live-' + idx}
+                                            style={{ marginTop: 4, padding: '4px 10px', background: '#1D1D1F', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                                            📋 Copier msg
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ══ UNPAID POPUP ══ */}
+            {unpaidPopup && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                <div style={{ background: '#FFF', borderRadius: 24, padding: '28px 24px', maxWidth: 500, width: '100%', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
+                  {unpaidPopup.orders.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: '#059669', marginBottom: 6 }}>Tout est paye !</div>
+                      <div style={{ fontSize: 13, color: '#999' }}>Toutes les commandes live ont ete reglees</div>
+                    </div>
+                  ) : (
+                    <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse 1.5s infinite' }}>
+                          <span style={{ color: '#FFF', fontSize: 20 }}>⚠</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: '#1D1D1F' }}>{unpaidPopup.orders.length} commande{unpaidPopup.orders.length > 1 ? 's' : ''} non payee{unpaidPopup.orders.length > 1 ? 's' : ''}</div>
+                          <div style={{ fontSize: 12, color: '#999' }}>Relance-les pendant le live !</div>
+                        </div>
+                      </div>
+                      <button onClick={() => setUnpaidPopup(null)} style={{ width: 32, height: 32, borderRadius: 8, background: '#F5F5F7', border: 'none', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {unpaidPopup.orders.map(function(lo, idx) {
+                        var copyText = '@' + lo.user + ' ta ref est ' + (lo.ref || '#' + lo.orderNum) + ' ! Lien dans ma bio pour payer'
+                        return (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: '#FFF7ED', border: '1px solid #FED7AA' }}>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={{ fontSize: 14, fontWeight: 800 }}>#{lo.orderNum}</span>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
+                                <span style={{ fontSize: 15, fontWeight: 800, color: '#007AFF' }}>{lo.ref || '#' + lo.orderNum}</span>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: '#555' }}>@{lo.user}</span>
                               </div>
-                              <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{lo.text}</div>
+                              <div style={{ fontSize: 11, color: '#999', marginTop: 3 }}>{lo.text}</div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: isPaid ? '#10B981' : '#F59E0B', color: '#FFF' }}>
-                                {isPaid ? 'PAYE' : 'NON PAYE'}
-                              </div>
-                              {matchedOrder && <div style={{ fontSize: 10, color: '#999', marginTop: 4 }}>{matchedOrder.reference} — {matchedOrder.status === 'paid' ? 'A expedier' : matchedOrder.status === 'shipped' ? 'Expedie' : matchedOrder.status === 'delivered' ? 'Livre' : 'En attente'}</div>}
-                              {!isPaid && <div style={{ fontSize: 10, color: '#92400E', marginTop: 4 }}>Relancer</div>}
-                            </div>
+                            <button onClick={function() {
+                              navigator.clipboard.writeText(copyText).then(function() {
+                                var btn = document.getElementById('copy-btn-' + idx)
+                                if (btn) { btn.textContent = '✓ Copie'; setTimeout(function() { btn.textContent = '📋 Copier' }, 1500) }
+                              })
+                            }} id={'copy-btn-' + idx}
+                              style={{ padding: '8px 14px', background: '#1D1D1F', color: '#FFF', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: sf }}>
+                              📋 Copier
+                            </button>
                           </div>
                         )
                       })}
                     </div>
-                  </div>
-                )}
+
+                    <div style={{ marginTop: 16, padding: '12px 16px', background: '#F5F5F7', borderRadius: 12 }}>
+                      <div style={{ fontSize: 11, color: '#999', textAlign: 'center' }}>Clique Copier → colle dans TikTok Studio → envoie !</div>
+                    </div>
+                    </div>
+                  )}
+
+                  <button onClick={() => setUnpaidPopup(null)} style={{ width: '100%', marginTop: 16, padding: 14, background: '#1D1D1F', color: '#FFF', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: sf }}>
+                    Fermer
+                  </button>
+                </div>
               </div>
             )}
 
@@ -2836,12 +3053,13 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             </div>
 
             {/* Status ribbon */}
-            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
+            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 32 }}>
               {[
                 { icon: '🏪', label: 'Boutique', ok: !!shop?.name, text: shop?.name || '—', gradient: '#1D1D1F' },
                 { icon: '📡', label: 'Abonnement', ok: shop?.subscription_status === 'active', text: shop?.subscription_status === 'active' ? 'Actif' : 'Inactif', gradient: '#FF3B30' },
                 { icon: '💳', label: 'Stripe', ok: !!stripeStatus?.chargesEnabled, text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer', gradient: '#5856D6' },
                 { icon: '📦', label: 'Mondial Relay', ok: !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer', gradient: '#FF9500' },
+                { icon: '🚀', label: 'Chronopost', ok: !!(boxtalConfig.chronopostAccount && boxtalConfig.chronopostPassword && boxtalConfig.chronopostEnabled), text: boxtalConfig.chronopostEnabled ? (boxtalConfig.chronopostAccount ? 'Connecte' : 'A configurer') : 'Desactive', gradient: '#0038A8' },
               ].map(function(c, i) { return (
                 <div key={i} style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '1px solid rgba(0,0,0,.06)', padding: '18px 20px', position: 'relative', overflow: 'hidden', cursor: 'default' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.ok ? '#10B981' : c.gradient, borderRadius: '24px 24px 0 0' }} />
@@ -3093,6 +3311,72 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 style={{ padding: '16px 36px', background: boxtalSaving ? '#E5E5E5' : '#007AFF', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: boxtalSaving ? 'wait' : 'pointer', boxShadow: 'none', transition: 'all .3s' }}>
                 {boxtalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder'}
               </button>
+            </div>
+
+            {/* ══════ CHRONOPOST RELAIS PICKUP ══════ */}
+            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0038A8 0%, #002D7A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🚀</div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1D1D1F', letterSpacing: -0.5 }}>Chronopost Relais Pickup</h3>
+                  <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Livraison express en point relais — 17 000+ relais en France</p>
+                </div>
+                {boxtalConfig.chronopostAccount && boxtalConfig.chronopostPassword && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
+              </div>
+
+              {/* Enable toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#F5F5F7', borderRadius: 14, marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#1D1D1F' }}>Activer Chronopost</div>
+                  <div style={{ fontFamily: sf, fontSize: 11, color: '#999' }}>Tes clientes pourront choisir Chronopost Relais au checkout</div>
+                </div>
+                <button onClick={function() { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostEnabled: !boxtalConfig.chronopostEnabled })) }}
+                  style={{ width: 50, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s',
+                    background: boxtalConfig.chronopostEnabled ? '#007AFF' : '#E5E5E5' }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 11, background: '#FFF', position: 'absolute', top: 3, transition: 'left .2s',
+                    left: boxtalConfig.chronopostEnabled ? 25 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.15)' }} />
+                </button>
+              </div>
+
+              {boxtalConfig.chronopostEnabled && (
+                <div>
+                  {boxtalConfig.chronopostAccount && boxtalConfig.chronopostPassword ? (
+                    <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '16px 22px', border: '1px solid #BBF7D0', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16,185,129,.4)' }} />
+                      <span style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#059669' }}>Connecte — {boxtalConfig.chronopostAccount}</span>
+                    </div>
+                  ) : (
+                    <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', borderRadius: 16, padding: '18px 22px', border: '1px solid #FED7AA', marginBottom: 20 }}>
+                      <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>Configure tes identifiants Chronopost</div>
+                      <div style={{ fontFamily: sf, fontSize: 12, color: '#B45309', lineHeight: 1.8 }}>
+                        1. Cree un compte sur <span style={{ color: '#0038A8', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.chronopost.fr/fr/se-creer-un-compte', '_blank') }}>chronopost.fr</span> (Chronopost Pro, gratuit)<br/>
+                        2. Demande l acces E-Commerce via <span style={{ color: '#0038A8', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.chronopost.fr/fr/professionnel/nous-contacter', '_blank') }}>le formulaire contact</span><br/>
+                        3. Tu recois un numero de compte + mot de passe
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
+                    <div>
+                      <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', display: 'block', marginBottom: 6, letterSpacing: 2 }}>NUMERO DE COMPTE</label>
+                      <input value={boxtalConfig.chronopostAccount || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostAccount: e.target.value.trim() })) }}
+                        placeholder="12345678"
+                        style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', letterSpacing: 2, fontWeight: 800, background: '#FFF', transition: 'border .3s' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', display: 'block', marginBottom: 6, letterSpacing: 2 }}>MOT DE PASSE API</label>
+                      <input value={boxtalConfig.chronopostPassword || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostPassword: e.target.value.trim() })) }}
+                        placeholder="motdepasse" type="password"
+                        style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', fontWeight: 700, background: '#FFF', transition: 'border .3s' }} />
+                    </div>
+                  </div>
+
+                  <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
+                    style={{ padding: '14px 28px', background: boxtalSaving ? '#E5E5E5' : '#0038A8', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: boxtalSaving ? 'wait' : 'pointer' }}>
+                    {boxtalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder Chronopost'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ══════ LEGAL ══════ */}
