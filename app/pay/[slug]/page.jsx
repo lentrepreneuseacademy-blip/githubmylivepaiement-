@@ -997,6 +997,11 @@ export default function PayPage() {
   const freeShipping = hasPreviousOrderToday;
   const customShippingPrice = (function() { try { if (shopData?.boxtal_config) { var c = JSON.parse(shopData.boxtal_config); if (c.shippingPrice !== undefined && c.shippingPrice !== '') return parseFloat(c.shippingPrice.replace(',', '.')) || 0; } } catch(e) {} return 4.90; })();
 
+  // ═══ TRIAL & SUBSCRIPTION CHECK ═══
+  const shopIsSubscribed = shopData?.subscription_status === 'active';
+  const shopTrialDaysLeft = shopData?.created_at ? Math.max(0, 7 - Math.floor((Date.now() - new Date(shopData.created_at).getTime()) / 86400000)) : 0;
+  const shopHasAccess = shopIsSubscribed || shopTrialDaysLeft > 0;
+
   const shippingCost = freeShipping ? 0 : customShippingPrice;
   const parsedAmount = parseFloat(amount) || 0;
   const totalAmount = (parsedAmount + shippingCost).toFixed(2);
@@ -1057,6 +1062,26 @@ export default function PayPage() {
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 48, height: 48, border: "3px solid #E5E5E5", borderTopColor: "#1A1A1A", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
           <style>{"@keyframes spin { to { transform: rotate(360deg) } }"}</style>
+        </div>
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════
+  // SHOP SUSPENDED - Trial expired, no subscription
+  // ═══════════════════════════════════════
+  if (shopData && !shopHasAccess) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#FAFAF8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", maxWidth: 420, padding: "0 20px" }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: "rgba(255,59,48,.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 32 }}>⏸️</div>
+          <h1 style={{ fontFamily: sf, fontSize: 22, fontWeight: 800, color: "#1A1A1A", marginBottom: 8 }}>Boutique temporairement indisponible</h1>
+          <p style={{ fontFamily: sf, fontSize: 14, color: "#999", lineHeight: 1.7, marginBottom: 24 }}>
+            {lang === 'fr' ? 'Cette boutique est en pause. Le vendeur a ete notifie. Merci de ta patience.' :
+             lang === 'es' ? 'Esta tienda esta en pausa. El vendedor ha sido notificado. Gracias por tu paciencia.' :
+             lang === 'de' ? 'Dieser Shop ist vorübergehend nicht verfügbar. Der Verkäufer wurde benachrichtigt.' :
+             'This shop is temporarily unavailable. The seller has been notified. Thank you for your patience.'}
+          </p>
         </div>
       </div>
     )
