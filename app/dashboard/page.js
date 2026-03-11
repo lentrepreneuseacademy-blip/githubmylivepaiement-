@@ -136,7 +136,7 @@ export default function Dashboard() {
   const [shipLabel, setShipLabel] = useState(null)
   const [shipError, setShipError] = useState(null)
   const [shipTrackingNumber, setShipTrackingNumber] = useState(null)
-  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90', mrEnseigne: '', mrPrivateKey: '', mrEnabled: true, chronopostAccount: '', chronopostPassword: '', chronopostEnabled: false, chronopostShippingPrice: '5.90' })
+  const [boxtalConfig, setBoxtalConfig] = useState({ user: '', pass: '', senderAddress: '', senderZip: '', senderCity: '', senderPhone: '', shippingPrice: '4.90', mrEnseigne: '', mrPrivateKey: '' })
   const [boxtalSaving, setBoxtalSaving] = useState(false)
   const [stripeStatus, setStripeStatus] = useState(null)
   const [stripeLoading, setStripeLoading] = useState(false)
@@ -3053,13 +3053,13 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             </div>
 
             {/* Status ribbon */}
-            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 32 }}>
+            <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
               {[
                 { icon: '🏪', label: 'Boutique', ok: !!shop?.name, text: shop?.name || '—', gradient: '#1D1D1F' },
                 { icon: '📡', label: 'Abonnement', ok: shop?.subscription_status === 'active', text: shop?.subscription_status === 'active' ? 'Actif' : 'Inactif', gradient: '#FF3B30' },
                 { icon: '💳', label: 'Stripe', ok: !!stripeStatus?.chargesEnabled, text: stripeStatus?.chargesEnabled ? 'Connecte' : 'A configurer', gradient: '#5856D6' },
                 { icon: '📦', label: 'Mondial Relay', ok: !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), text: boxtalConfig.mrEnseigne ? 'Connecte' : 'A configurer', gradient: '#FF9500' },
-                { icon: '🚀', label: 'Chronopost', ok: !!(boxtalConfig.chronopostAccount && boxtalConfig.chronopostPassword && boxtalConfig.chronopostEnabled), text: boxtalConfig.chronopostEnabled ? (boxtalConfig.chronopostAccount ? 'Connecte' : 'A configurer') : 'Desactive', gradient: '#0038A8' },
+
               ].map(function(c, i) { return (
                 <div key={i} style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '1px solid rgba(0,0,0,.06)', padding: '18px 20px', position: 'relative', overflow: 'hidden', cursor: 'default' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: c.ok ? '#10B981' : c.gradient, borderRadius: '24px 24px 0 0' }} />
@@ -3251,21 +3251,7 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
               </div>
 
-              {/* MR Enable toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#F5F5F7', borderRadius: 14, marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#1D1D1F' }}>Activer Mondial Relay</div>
-                  <div style={{ fontFamily: sf, fontSize: 11, color: '#999' }}>Tes clientes pourront choisir Mondial Relay au checkout</div>
-                </div>
-                <button onClick={function() { setBoxtalConfig(Object.assign({}, boxtalConfig, { mrEnabled: !boxtalConfig.mrEnabled })) }}
-                  style={{ width: 50, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s',
-                    background: boxtalConfig.mrEnabled !== false ? '#007AFF' : '#E5E5E5' }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 11, background: '#FFF', position: 'absolute', top: 3, transition: 'left .2s',
-                    left: boxtalConfig.mrEnabled !== false ? 25 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.15)' }} />
-                </button>
-              </div>
 
-              {boxtalConfig.mrEnabled !== false && (<div>
 
               {boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey ? (
                 <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '16px 22px', border: '1px solid #BBF7D0', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -3327,86 +3313,6 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 style={{ padding: '16px 36px', background: boxtalSaving ? '#E5E5E5' : '#007AFF', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 15, fontWeight: 800, cursor: boxtalSaving ? 'wait' : 'pointer', boxShadow: 'none', transition: 'all .3s' }}>
                 {boxtalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder'}
               </button>
-              </div>)}
-            </div>
-
-            {/* ══════ CHRONOPOST RELAIS PICKUP ══════ */}
-            <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0038A8 0%, #002D7A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🚀</div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1D1D1F', letterSpacing: -0.5 }}>Chronopost Relais Pickup</h3>
-                  <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Livraison express en point relais — 17 000+ relais en France</p>
-                </div>
-                {boxtalConfig.chronopostAccount && boxtalConfig.chronopostPassword && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />}
-              </div>
-
-              {/* Enable toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#F5F5F7', borderRadius: 14, marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#1D1D1F' }}>Activer Chronopost</div>
-                  <div style={{ fontFamily: sf, fontSize: 11, color: '#999' }}>Tes clientes pourront choisir Chronopost Relais au checkout</div>
-                </div>
-                <button onClick={function() { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostEnabled: !boxtalConfig.chronopostEnabled })) }}
-                  style={{ width: 50, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s',
-                    background: boxtalConfig.chronopostEnabled ? '#007AFF' : '#E5E5E5' }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 11, background: '#FFF', position: 'absolute', top: 3, transition: 'left .2s',
-                    left: boxtalConfig.chronopostEnabled ? 25 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.15)' }} />
-                </button>
-              </div>
-
-              {boxtalConfig.chronopostEnabled && (
-                <div>
-                  {boxtalConfig.chronopostAccount && boxtalConfig.chronopostPassword ? (
-                    <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '16px 22px', border: '1px solid #BBF7D0', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16,185,129,.4)' }} />
-                      <span style={{ fontFamily: sf, fontSize: 14, fontWeight: 700, color: '#059669' }}>Connecte — {boxtalConfig.chronopostAccount}</span>
-                    </div>
-                  ) : (
-                    <div style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)', borderRadius: 16, padding: '18px 22px', border: '1px solid #FED7AA', marginBottom: 20 }}>
-                      <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>Configure tes identifiants Chronopost</div>
-                      <div style={{ fontFamily: sf, fontSize: 12, color: '#B45309', lineHeight: 1.8 }}>
-                        1. Cree un compte sur <span style={{ color: '#0038A8', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.chronopost.fr/fr/se-creer-un-compte', '_blank') }}>chronopost.fr</span> (Chronopost Pro, gratuit)<br/>
-                        2. Demande l acces E-Commerce via <span style={{ color: '#0038A8', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.chronopost.fr/fr/professionnel/nous-contacter', '_blank') }}>le formulaire contact</span><br/>
-                        3. Tu recois un numero de compte + mot de passe
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
-                    <div>
-                      <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', display: 'block', marginBottom: 6, letterSpacing: 2 }}>NUMERO DE COMPTE</label>
-                      <input value={boxtalConfig.chronopostAccount || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostAccount: e.target.value.trim() })) }}
-                        placeholder="12345678"
-                        style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', letterSpacing: 2, fontWeight: 800, background: '#FFF', transition: 'border .3s' }} />
-                    </div>
-                    <div>
-                      <label style={{ fontFamily: sf, fontSize: 10, fontWeight: 700, color: '#BBB', display: 'block', marginBottom: 6, letterSpacing: 2 }}>MOT DE PASSE API</label>
-                      <input value={boxtalConfig.chronopostPassword || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostPassword: e.target.value.trim() })) }}
-                        placeholder="motdepasse" type="password"
-                        style={{ width: '100%', padding: '16px 18px', border: '1px solid rgba(0,0,0,.06)', borderRadius: 14, fontFamily: sf, fontSize: 18, outline: 'none', fontWeight: 700, background: '#FFF', transition: 'border .3s' }} />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', background: 'linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%)', borderRadius: 18, border: '1px solid #BFDBFE', marginBottom: 24 }}>
-                    <div>
-                      <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#1E40AF', marginBottom: 3 }}>🚀 Tarif livraison Chronopost</div>
-                      <div style={{ fontFamily: sf, fontSize: 11, color: '#3B82F6' }}>Prix affiche a tes clientes · 0 = offerte</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <input value={boxtalConfig.chronopostShippingPrice || ''} onChange={function(e) { setBoxtalConfig(Object.assign({}, boxtalConfig, { chronopostShippingPrice: e.target.value.replace(/[^0-9.,]/g, '') })) }}
-                        placeholder="5.90"
-                        style={{ width: 80, padding: '14px', border: '2px solid #BFDBFE', borderRadius: 12, fontFamily: sf, fontSize: 22, fontWeight: 900, outline: 'none', textAlign: 'center', background: '#FFF' }} />
-                      <span style={{ fontFamily: sf, fontSize: 22, fontWeight: 900, color: '#1E40AF' }}>€</span>
-                    </div>
-                  </div>
-
-                  <button onClick={saveBoxtalConfig} disabled={boxtalSaving}
-                    style={{ padding: '14px 28px', background: boxtalSaving ? '#E5E5E5' : '#0038A8', color: '#FFF', border: 'none', borderRadius: 14, fontFamily: sf, fontSize: 14, fontWeight: 800, cursor: boxtalSaving ? 'wait' : 'pointer' }}>
-                    {boxtalSaving ? '⏳ Sauvegarde...' : '💾 Sauvegarder Chronopost'}
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* ══════ LEGAL ══════ */}
