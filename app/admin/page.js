@@ -29,7 +29,7 @@ export default function SuperAdminPage() {
   }
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A', color: '#555' }}>Chargement...</div>
-  if (!user) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A' }}><a href="/dashboard" style={{ color: '#007AFF' }}>Se connecter</a></div>
+  if (!user || user.email !== 'lahamenhl@gmail.com') return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A' }}><span style={{ color: '#333' }}>Acces refuse</span></div>
   if (!data) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A', color: '#555' }}>Chargement...</div>
 
   const { shops, orders, stats, revenueByDay, signupsByDay, revenueByShop } = data
