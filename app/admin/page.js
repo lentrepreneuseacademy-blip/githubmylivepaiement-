@@ -4,12 +4,12 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-export default function AdminPage() {
-  const sf = "system-ui, -apple-system, 'SF Pro Display', sans-serif"
+export default function SuperAdminPage() {
+  const sf = "system-ui, -apple-system, sans-serif"
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState('kpi')
   const [search, setSearch] = useState('')
   const [detailShop, setDetailShop] = useState(null)
 
@@ -28,212 +28,251 @@ export default function AdminPage() {
     } catch (e) { console.error('[Admin]', e) }
   }
 
-  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, color: '#999' }}>Chargement...</div>
-  if (!user) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf }}><a href="/dashboard" style={{ color: '#007AFF' }}>Se connecter</a></div>
-  if (!data) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, color: '#999' }}>Chargement des donnees...</div>
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A', color: '#555' }}>Chargement...</div>
+  if (!user) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A' }}><a href="/dashboard" style={{ color: '#007AFF' }}>Se connecter</a></div>
+  if (!data) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: sf, background: '#0A0A0A', color: '#555' }}>Chargement...</div>
 
   const { shops, orders, stats, revenueByDay, signupsByDay, revenueByShop } = data
   const activeShops = shops.filter(s => s.subscription_status === 'active')
   const inactiveShops = shops.filter(s => s.subscription_status !== 'active')
   const paidOrders = orders.filter(o => o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered')
+  const maxRev = Math.max(...Object.values(revenueByDay), 1)
+  const maxSig = Math.max(...Object.values(signupsByDay), 1)
 
-  // Chart helper
-  const maxRevenue = Math.max(...Object.values(revenueByDay), 1)
-  const maxSignups = Math.max(...Object.values(signupsByDay), 1)
+  const today = new Date().toISOString().slice(0, 10)
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  const todaySignups = shops.filter(s => (s.created_at || '').slice(0, 10) === today).length
+  const yesterdaySignups = shops.filter(s => (s.created_at || '').slice(0, 10) === yesterday).length
 
-  const filteredShops = shops.filter(s => {
+  // Activity feed
+  const activity = [
+    ...shops.map(s => ({ t: 'signup', d: s.created_at, s })),
+    ...activeShops.map(s => ({ t: 'pro', d: s.updated_at || s.created_at, s })),
+    ...orders.slice(0, 80).map(o => ({ t: o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered' ? 'paid' : 'pending', d: o.created_at, o, s: shops.find(x => x.id === o.shop_id) })),
+  ].sort((a, b) => new Date(b.d) - new Date(a.d)).slice(0, 60)
+
+  const filtered = shops.filter(s => {
     if (!search) return true
     const q = search.toLowerCase()
     return (s.name || '').toLowerCase().includes(q) || (s.slug || '').toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q)
   })
 
-  function ShopRow({ shop }) {
-    const rs = revenueByShop[shop.id] || { revenue: 0, orders: 0 }
-    const isActive = shop.subscription_status === 'active'
-    return (
-      <div onClick={() => setDetailShop(shop)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', borderRadius: 14, background: '#FFF', border: '1px solid rgba(0,0,0,.04)', cursor: 'pointer', transition: 'all .15s' }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: isActive ? '#34C759' : '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ color: isActive ? '#FFF' : '#999', fontSize: 16, fontWeight: 800 }}>{(shop.name || '?')[0].toUpperCase()}</span>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1F' }}>{shop.name || 'Sans nom'}</span>
-            <span style={{ fontSize: 11, color: '#86868B', background: '#F5F5F7', padding: '2px 8px', borderRadius: 6 }}>{shop.slug}</span>
-            {isActive && <span style={{ fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#34C759', color: '#FFF', letterSpacing: 1 }}>PRO</span>}
-          </div>
-          <div style={{ fontSize: 11, color: '#86868B', marginTop: 3 }}>{shop.email || '-'} · {new Date(shop.created_at).toLocaleDateString('fr-FR')}</div>
-        </div>
-        <div style={{ textAlign: 'right', minWidth: 80 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: rs.revenue > 0 ? '#1D1D1F' : '#CCC' }}>{Math.round(rs.revenue)}€</div>
-          <div style={{ fontSize: 10, color: '#86868B' }}>{rs.orders} vente{rs.orders !== 1 ? 's' : ''}</div>
-        </div>
-        <div style={{ textAlign: 'right', minWidth: 70 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: shop.stripe_account_id ? '#34C759' : '#FF9500' }}>{shop.stripe_account_id ? '✓ Stripe' : '✗ Stripe'}</div>
-          <div style={{ fontSize: 11, color: shop.mondial_relay_enseigne ? '#34C759' : '#CCC' }}>{shop.mondial_relay_enseigne ? '✓ MR' : '✗ MR'}</div>
-        </div>
-        <div style={{ fontSize: 16, color: '#CCC' }}>›</div>
-      </div>
-    )
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F5F7', fontFamily: sf }}>
-      {/* Header */}
-      <div style={{ background: '#1D1D1F', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
+    <div style={{ minHeight: '100vh', background: '#0A0A0A', fontFamily: sf, color: '#FFF' }}>
+      {/* HEADER */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,.06)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,10,.95)', backdropFilter: 'blur(20px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 30, height: 30, background: '#007AFF', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#FFF', fontSize: 10, fontWeight: 900 }}>ML</span>
+          <div style={{ width: 28, height: 28, background: '#FFF', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: '#0A0A0A', fontSize: 9, fontWeight: 900 }}>ML</span>
           </div>
-          <span style={{ color: '#FFF', fontSize: 14, fontWeight: 700 }}>Admin</span>
-          <span style={{ color: 'rgba(255,255,255,.4)', fontSize: 12 }}>MY LIVE PAIEMENT</span>
+          <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>SUPER ADMIN</span>
+          <span style={{ fontSize: 11, color: '#555' }}>mylivepaiement.com</span>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span style={{ color: 'rgba(255,255,255,.4)', fontSize: 11 }}>{user.email}</span>
-          <a href="/dashboard" style={{ color: 'rgba(255,255,255,.6)', fontSize: 12, textDecoration: 'none' }}>Dashboard →</a>
-          <button onClick={loadData} style={{ padding: '5px 12px', background: 'rgba(255,255,255,.1)', color: '#FFF', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>↻</button>
+          <span style={{ fontSize: 10, color: '#555' }}>{user.email}</span>
+          <button onClick={loadData} style={{ padding: '5px 12px', background: 'rgba(255,255,255,.08)', color: '#AAA', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>↻ Refresh</button>
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 16px' }}>
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 20 }}>
+      <div style={{ maxWidth: 1300, margin: '0 auto', padding: '20px 16px' }}>
+
+        {/* ═══ KPI CARDS ═══ */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 24 }}>
           {[
-            { l: 'MRR', v: stats.mrr + '€', sub: stats.activeSubscriptions + ' abonnes', c: '#007AFF', bg: '#EBF5FF' },
-            { l: "Aujourd'hui", v: stats.todayRevenue + '€', sub: stats.todayOrders + ' commandes', c: '#34C759', bg: '#ECFDF5' },
-            { l: 'Volume total', v: Math.round(stats.totalRevenue) + '€', sub: stats.paidOrders + ' payees', c: '#5856D6', bg: '#F3F0FF' },
-            { l: 'Boutiques', v: stats.totalShops, sub: stats.activeSubscriptions + ' pro / ' + (stats.totalShops - stats.activeSubscriptions) + ' free', c: '#FF9500', bg: '#FFF8EB' },
-            { l: 'En attente', v: stats.pendingOrders, sub: 'non payees', c: '#FF3B30', bg: '#FEF2F2' },
+            { l: 'MRR', v: stats.mrr + '€', sub: stats.activeSubscriptions + ' x 27€/mois', c: '#00FF87', bg: 'rgba(0,255,135,.06)' },
+            { l: 'ARR', v: (stats.mrr * 12) + '€', sub: 'projection annuelle', c: '#00D4FF', bg: 'rgba(0,212,255,.06)' },
+            { l: 'Clients PRO', v: stats.activeSubscriptions, sub: 'sur ' + stats.totalShops + ' inscrits (' + (stats.totalShops > 0 ? Math.round(stats.activeSubscriptions / stats.totalShops * 100) : 0) + '% conversion)', c: '#A855F7', bg: 'rgba(168,85,247,.06)' },
+            { l: 'Volume plateforme', v: Math.round(stats.totalRevenue).toLocaleString() + '€', sub: stats.paidOrders + ' commandes payees', c: '#F59E0B', bg: 'rgba(245,158,11,.06)' },
+            { l: "Aujourd'hui", v: stats.todayRevenue + '€', sub: stats.todayOrders + ' commandes / ' + todaySignups + ' inscriptions', c: '#10B981', bg: 'rgba(16,185,129,.06)' },
           ].map((s, i) => (
-            <div key={i} style={{ background: s.bg, borderRadius: 16, padding: '16px 14px', border: '1px solid rgba(0,0,0,.03)' }}>
-              <div style={{ fontSize: 10, color: '#86868B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>{s.l}</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: s.c }}>{s.v}</div>
-              <div style={{ fontSize: 11, color: '#86868B', marginTop: 2 }}>{s.sub}</div>
+            <div key={i} style={{ background: s.bg, borderRadius: 14, padding: '18px 16px', border: '1px solid rgba(255,255,255,.04)' }}>
+              <div style={{ fontSize: 10, color: '#666', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>{s.l}</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: s.c, letterSpacing: -1 }}>{s.v}</div>
+              <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{s.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* Revenue chart */}
-        <div style={{ background: '#FFF', borderRadius: 16, padding: '20px 18px', marginBottom: 16, border: '1px solid rgba(0,0,0,.04)' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1F', marginBottom: 14 }}>💰 Revenus des 30 derniers jours</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 120 }}>
-            {Object.entries(revenueByDay).map(([day, val], i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ width: '100%', background: val > 0 ? '#007AFF' : 'rgba(0,0,0,.04)', borderRadius: '4px 4px 0 0', height: Math.max(2, (val / maxRevenue) * 100), transition: 'height .3s' }} title={day + ': ' + Math.round(val) + '€'} />
-              </div>
-            ))}
+        {/* ═══ CHARTS ═══ */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+          {/* Revenue chart */}
+          <div style={{ background: 'rgba(255,255,255,.02)', borderRadius: 14, padding: '18px 16px', border: '1px solid rgba(255,255,255,.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Revenus 30j</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: '#00FF87' }}>{Math.round(Object.values(revenueByDay).reduce((a, b) => a + b, 0))}€</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 100 }}>
+              {Object.entries(revenueByDay).map(([d, v], i) => (
+                <div key={i} style={{ flex: 1 }}>
+                  <div style={{ width: '100%', background: v > 0 ? '#00FF87' : 'rgba(255,255,255,.03)', borderRadius: '3px 3px 0 0', height: Math.max(2, (v / maxRev) * 90) }} title={d + ': ' + Math.round(v) + '€'} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+              <span style={{ fontSize: 9, color: '#444' }}>-30j</span>
+              <span style={{ fontSize: 9, color: '#444' }}>aujourd'hui</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            <span style={{ fontSize: 9, color: '#CCC' }}>il y a 30j</span>
-            <span style={{ fontSize: 9, color: '#CCC' }}>aujourd'hui</span>
+
+          {/* Signups chart */}
+          <div style={{ background: 'rgba(255,255,255,.02)', borderRadius: 14, padding: '18px 16px', border: '1px solid rgba(255,255,255,.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Inscriptions 30j</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: '#A855F7' }}>{Object.values(signupsByDay).reduce((a, b) => a + b, 0)}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 100 }}>
+              {Object.entries(signupsByDay).map(([d, v], i) => (
+                <div key={i} style={{ flex: 1 }}>
+                  <div style={{ width: '100%', background: v > 0 ? '#A855F7' : 'rgba(255,255,255,.03)', borderRadius: '3px 3px 0 0', height: Math.max(2, (v / maxSig) * 90) }} title={d + ': ' + v} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+              <span style={{ fontSize: 9, color: '#444' }}>-30j</span>
+              <span style={{ fontSize: 9, color: '#444' }}>aujourd'hui</span>
+            </div>
           </div>
         </div>
 
-        {/* Signups chart */}
-        <div style={{ background: '#FFF', borderRadius: 16, padding: '20px 18px', marginBottom: 20, border: '1px solid rgba(0,0,0,.04)' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#1D1D1F', marginBottom: 14 }}>📈 Inscriptions des 30 derniers jours</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 80 }}>
-            {Object.entries(signupsByDay).map(([day, val], i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ width: '100%', background: val > 0 ? '#34C759' : 'rgba(0,0,0,.04)', borderRadius: '4px 4px 0 0', height: Math.max(2, (val / maxSignups) * 60), transition: 'height .3s' }} title={day + ': ' + val + ' inscriptions'} />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            <span style={{ fontSize: 9, color: '#CCC' }}>il y a 30j</span>
-            <span style={{ fontSize: 9, color: '#CCC' }}>aujourd'hui</span>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        {/* ═══ TABS ═══ */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,.06)', paddingBottom: 12 }}>
           {[
-            { id: 'overview', l: '✅ Abonnes PRO (' + activeShops.length + ')' },
-            { id: 'free', l: '⏳ Non abonnes (' + inactiveShops.length + ')' },
-            { id: 'all', l: '🏪 Toutes (' + shops.length + ')' },
-            { id: 'orders', l: '📦 Commandes (' + orders.length + ')' },
-            { id: 'activity', l: '🔔 Activite recente' },
+            { id: 'kpi', l: '💎 Clients PRO (' + activeShops.length + ')' },
+            { id: 'free', l: '👤 Inscrits gratuits (' + inactiveShops.length + ')' },
+            { id: 'all', l: '📊 Toutes les boutiques (' + shops.length + ')' },
+            { id: 'orders', l: '💰 Commandes (' + orders.length + ')' },
+            { id: 'feed', l: '🔔 Fil d activite' },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              style={{ padding: '8px 16px', borderRadius: 10, border: tab === t.id ? 'none' : '1px solid rgba(0,0,0,.06)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sf, background: tab === t.id ? '#1D1D1F' : '#FFF', color: tab === t.id ? '#FFF' : '#555' }}>
+              style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: sf,
+                background: tab === t.id ? '#FFF' : 'transparent', color: tab === t.id ? '#0A0A0A' : '#555' }}>
               {t.l}
             </button>
           ))}
         </div>
 
         {/* Search */}
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher par nom, slug ou email..."
-          style={{ width: '100%', maxWidth: 400, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(0,0,0,.08)', fontSize: 13, fontFamily: sf, outline: 'none', marginBottom: 16, background: '#FFF' }} />
-
-        {/* PRO subscribers */}
-        {tab === 'overview' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {activeShops.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: '#999', fontSize: 14 }}>Aucun abonne PRO pour le moment</div>}
-            {activeShops.filter(s => !search || (s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.email || '').toLowerCase().includes(search.toLowerCase())).map(s => <ShopRow key={s.id} shop={s} />)}
-          </div>
+        {tab !== 'feed' && (
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher nom, slug, email..."
+            style={{ width: '100%', maxWidth: 350, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.08)', fontSize: 12, fontFamily: sf, outline: 'none', marginBottom: 14, background: 'rgba(255,255,255,.04)', color: '#FFF' }} />
         )}
 
-        {/* Free / non-subscribers */}
-        {tab === 'free' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {inactiveShops.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: '#999', fontSize: 14 }}>Tout le monde est abonne !</div>}
-            {inactiveShops.filter(s => !search || (s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.email || '').toLowerCase().includes(search.toLowerCase())).map(s => <ShopRow key={s.id} shop={s} />)}
-          </div>
-        )}
-
-        {/* All shops */}
-        {tab === 'all' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {filteredShops.map(s => <ShopRow key={s.id} shop={s} />)}
-          </div>
-        )}
-
-        {/* Orders */}
-        {tab === 'orders' && (
+        {/* ═══ PRO CLIENTS ═══ */}
+        {tab === 'kpi' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {orders.slice(0, 100).map((o, i) => {
-              const shopName = shops.find(s => s.id === o.shop_id)
-              const isPaid = o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered'
+            {activeShops.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: '#444' }}>Aucun abonne PRO</div>}
+            {activeShops.filter(s => !search || (s.name+s.email+s.slug).toLowerCase().includes(search.toLowerCase())).map(s => {
+              const rs = revenueByShop[s.id] || { revenue: 0, orders: 0 }
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, background: '#FFF', border: '1px solid rgba(0,0,0,.04)' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: isPaid ? '#ECFDF5' : '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: 13 }}>{isPaid ? '✅' : '⏳'}</span>
+                <div key={s.id} onClick={() => setDetailShop(s)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #00FF87, #00D4FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ color: '#000', fontSize: 14, fontWeight: 900 }}>{(s.name || '?')[0].toUpperCase()}</span>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#007AFF' }}>{o.reference}</div>
-                    <div style={{ fontSize: 10, color: '#86868B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shopName ? shopName.name : '-'} · {o.client_email || o.description || '-'}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700 }}>{s.name}</span>
+                      <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: '#00FF87', color: '#000' }}>PRO</span>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>{s.email} · {s.slug}</div>
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: '#1D1D1F', minWidth: 60, textAlign: 'right' }}>{o.total_amount || 0}€</div>
-                  <div style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, color: '#FFF', minWidth: 60, textAlign: 'center',
-                    background: o.status === 'paid' ? '#34C759' : o.status === 'shipped' ? '#007AFF' : o.status === 'delivered' ? '#5856D6' : '#F59E0B' }}>
-                    {o.status === 'paid' ? 'PAYE' : o.status === 'shipped' ? 'EXPEDIE' : o.status === 'delivered' ? 'LIVRE' : 'ATTENTE'}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#00FF87' }}>{Math.round(rs.revenue)}€</div>
+                    <div style={{ fontSize: 10, color: '#555' }}>{rs.orders} ventes</div>
                   </div>
-                  <div style={{ fontSize: 10, color: '#86868B', minWidth: 70, textAlign: 'right' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</div>
+                  <div style={{ textAlign: 'right', minWidth: 80 }}>
+                    <div style={{ fontSize: 10, color: s.stripe_account_id ? '#00FF87' : '#F59E0B' }}>{s.stripe_account_id ? '✓ Stripe' : '✗ Stripe'}</div>
+                    <div style={{ fontSize: 10, color: s.mondial_relay_enseigne ? '#00FF87' : '#555' }}>{s.mondial_relay_enseigne ? '✓ MR' : '✗ MR'}</div>
+                  </div>
+                  <span style={{ color: '#333' }}>›</span>
                 </div>
               )
             })}
           </div>
         )}
 
-        {/* Activity feed */}
-        {tab === 'activity' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {[...shops.map(s => ({ type: 'signup', date: s.created_at, shop: s })),
-              ...shops.filter(s => s.subscription_status === 'active').map(s => ({ type: 'subscribed', date: s.subscription_current_period_end ? new Date(new Date(s.subscription_current_period_end).getTime() - 30*86400000).toISOString() : s.created_at, shop: s })),
-              ...orders.slice(0, 50).map(o => ({ type: o.status === 'paid' ? 'paid' : 'order', date: o.created_at, order: o, shop: shops.find(s => s.id === o.shop_id) })),
-            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50).map((ev, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: '#FFF', border: '1px solid rgba(0,0,0,.04)' }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  background: ev.type === 'signup' ? '#EBF5FF' : ev.type === 'subscribed' ? '#ECFDF5' : ev.type === 'paid' ? '#F3F0FF' : '#FFF7ED' }}>
-                  <span style={{ fontSize: 14 }}>{ev.type === 'signup' ? '🆕' : ev.type === 'subscribed' ? '💎' : ev.type === 'paid' ? '💰' : '📦'}</span>
+        {/* ═══ FREE USERS ═══ */}
+        {tab === 'free' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {inactiveShops.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: '#444' }}>Tous abonnes !</div>}
+            {inactiveShops.filter(s => !search || (s.name+s.email+s.slug).toLowerCase().includes(search.toLowerCase())).map(s => (
+              <div key={s.id} onClick={() => setDetailShop(s)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: '#555', fontSize: 14, fontWeight: 900 }}>{(s.name || '?')[0].toUpperCase()}</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-                    {ev.type === 'signup' && <>{ev.shop?.name || 'Nouvelle boutique'} <span style={{ color: '#007AFF' }}>s'est inscrit(e)</span></>}
-                    {ev.type === 'subscribed' && <>{ev.shop?.name} <span style={{ color: '#34C759' }}>est passe(e) PRO</span> — 27€/mois</>}
-                    {ev.type === 'paid' && <>Commande <span style={{ color: '#5856D6' }}>{ev.order?.reference}</span> payee — {ev.order?.total_amount || 0}€</>}
-                    {ev.type === 'order' && <>Commande <span style={{ color: '#F59E0B' }}>{ev.order?.reference}</span> en attente</>}
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{s.name || 'Sans nom'}</div>
+                  <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>{s.email} · inscrit le {new Date(s.created_at).toLocaleDateString('fr-FR')}</div>
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: 'rgba(245,158,11,.1)', color: '#F59E0B' }}>A CONVERTIR</span>
+                <span style={{ color: '#333' }}>›</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ═══ ALL SHOPS ═══ */}
+        {tab === 'all' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {filtered.map(s => {
+              const rs = revenueByShop[s.id] || { revenue: 0, orders: 0 }
+              const isActive = s.subscription_status === 'active'
+              return (
+                <div key={s.id} onClick={() => setDetailShop(s)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: isActive ? 'linear-gradient(135deg, #00FF87, #00D4FF)' : 'rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ color: isActive ? '#000' : '#555', fontSize: 12, fontWeight: 900 }}>{(s.name || '?')[0].toUpperCase()}</span>
                   </div>
-                  <div style={{ fontSize: 10, color: '#86868B', marginTop: 2 }}>{ev.shop?.name || '-'} · {new Date(ev.date).toLocaleDateString('fr-FR')} {new Date(ev.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>{s.name || 'Sans nom'}</span>
+                    <span style={{ fontSize: 10, color: '#444', marginLeft: 8 }}>{s.slug}</span>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: rs.revenue > 0 ? '#FFF' : '#333' }}>{Math.round(rs.revenue)}€</span>
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: isActive ? '#00FF87' : 'rgba(255,255,255,.06)', color: isActive ? '#000' : '#555' }}>{isActive ? 'PRO' : 'FREE'}</span>
+                  <span style={{ color: '#333' }}>›</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ═══ ORDERS ═══ */}
+        {tab === 'orders' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {orders.filter(o => !search || (o.reference+o.client_email+(o.description||'')).toLowerCase().includes(search.toLowerCase())).slice(0, 100).map((o, i) => {
+              const sh = shops.find(x => x.id === o.shop_id)
+              const isPaid = o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered'
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.03)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#00D4FF', minWidth: 80 }}>{o.reference}</span>
+                  <span style={{ flex: 1, fontSize: 11, color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sh ? sh.name : '-'} · {o.client_email || (o.description || '').slice(0, 40)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, minWidth: 60, textAlign: 'right' }}>{o.total_amount || 0}€</span>
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 4, minWidth: 55, textAlign: 'center',
+                    background: isPaid ? 'rgba(0,255,135,.1)' : 'rgba(245,158,11,.1)', color: isPaid ? '#00FF87' : '#F59E0B' }}>
+                    {o.status === 'paid' ? 'PAYE' : o.status === 'shipped' ? 'EXPEDIE' : o.status === 'delivered' ? 'LIVRE' : 'ATTENTE'}
+                  </span>
+                  <span style={{ fontSize: 10, color: '#444', minWidth: 65, textAlign: 'right' }}>{new Date(o.created_at).toLocaleDateString('fr-FR')}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ═══ ACTIVITY FEED ═══ */}
+        {tab === 'feed' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {activity.map((ev, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.03)' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: ev.t === 'signup' ? 'rgba(0,212,255,.1)' : ev.t === 'pro' ? 'rgba(0,255,135,.1)' : ev.t === 'paid' ? 'rgba(168,85,247,.1)' : 'rgba(245,158,11,.1)' }}>
+                  <span style={{ fontSize: 14 }}>{ev.t === 'signup' ? '🆕' : ev.t === 'pro' ? '💎' : ev.t === 'paid' ? '💰' : '📦'}</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600 }}>
+                    {ev.t === 'signup' && <><span style={{ color: '#00D4FF' }}>{ev.s?.name || 'Nouveau'}</span> s est inscrit(e)</>}
+                    {ev.t === 'pro' && <><span style={{ color: '#00FF87' }}>{ev.s?.name}</span> est passe(e) PRO — 27€/mois</>}
+                    {ev.t === 'paid' && <>Commande <span style={{ color: '#A855F7' }}>{ev.o?.reference}</span> payee — {ev.o?.total_amount || 0}€</>}
+                    {ev.t === 'pending' && <>Commande <span style={{ color: '#F59E0B' }}>{ev.o?.reference}</span> en attente</>}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#444', marginTop: 2 }}>{ev.s?.name || '-'} · {new Date(ev.d).toLocaleDateString('fr-FR')} {new Date(ev.d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
               </div>
             ))}
@@ -241,80 +280,77 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Shop detail modal */}
+      {/* ═══ SHOP DETAIL MODAL ═══ */}
       {detailShop && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
           onClick={() => setDetailShop(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#FFF', borderRadius: 24, padding: '28px 24px', maxWidth: 550, width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#141414', borderRadius: 20, padding: '28px 24px', maxWidth: 560, width: '100%', maxHeight: '85vh', overflow: 'auto', border: '1px solid rgba(255,255,255,.06)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#1D1D1F' }}>{detailShop.name || 'Sans nom'}</div>
-                <div style={{ fontSize: 13, color: '#86868B', marginTop: 4 }}>{detailShop.slug} · {detailShop.email}</div>
+                <div style={{ fontSize: 22, fontWeight: 900 }}>{detailShop.name || 'Sans nom'}</div>
+                <div style={{ fontSize: 12, color: '#555', marginTop: 4 }}>{detailShop.email} · {detailShop.slug}</div>
               </div>
-              <button onClick={() => setDetailShop(null)} style={{ width: 32, height: 32, borderRadius: 8, background: '#F5F5F7', border: 'none', fontSize: 16, cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setDetailShop(null)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,.06)', border: 'none', color: '#555', fontSize: 14, cursor: 'pointer' }}>✕</button>
             </div>
 
-            {/* Status badges */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 8, background: detailShop.subscription_status === 'active' ? '#34C759' : '#F59E0B', color: '#FFF' }}>
-                {detailShop.subscription_status === 'active' ? 'ABONNE PRO' : 'NON ABONNE'}
+            {/* Badges */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
+              <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 6, background: detailShop.subscription_status === 'active' ? '#00FF87' : 'rgba(245,158,11,.2)', color: detailShop.subscription_status === 'active' ? '#000' : '#F59E0B' }}>
+                {detailShop.subscription_status === 'active' ? 'ABONNE PRO 27€/mois' : 'NON ABONNE'}
               </span>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 8, background: detailShop.stripe_account_id ? '#ECFDF5' : '#FEF2F2', color: detailShop.stripe_account_id ? '#059669' : '#DC2626' }}>
-                {detailShop.stripe_account_id ? '✓ Stripe connecte' : '✗ Stripe non connecte'}
+              <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 6, background: detailShop.stripe_account_id ? 'rgba(0,255,135,.1)' : 'rgba(239,68,68,.1)', color: detailShop.stripe_account_id ? '#00FF87' : '#EF4444' }}>
+                {detailShop.stripe_account_id ? '✓ Stripe' : '✗ Stripe'}
               </span>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 8, background: detailShop.mondial_relay_enseigne ? '#ECFDF5' : '#FEF2F2', color: detailShop.mondial_relay_enseigne ? '#059669' : '#DC2626' }}>
+              <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 6, background: detailShop.mondial_relay_enseigne ? 'rgba(0,255,135,.1)' : 'rgba(255,255,255,.04)', color: detailShop.mondial_relay_enseigne ? '#00FF87' : '#555' }}>
                 {detailShop.mondial_relay_enseigne ? '✓ Mondial Relay' : '✗ Mondial Relay'}
               </span>
             </div>
 
-            {/* Shop stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
               {(() => {
                 const rs = revenueByShop[detailShop.id] || { revenue: 0, orders: 0 }
-                const shopOrders = orders.filter(o => o.shop_id === detailShop.id)
-                const pending = shopOrders.filter(o => o.status === 'pending_payment').length
+                const so = orders.filter(o => o.shop_id === detailShop.id)
                 return [
-                  { l: 'Revenus', v: Math.round(rs.revenue) + '€', c: '#007AFF' },
-                  { l: 'Ventes', v: rs.orders, c: '#34C759' },
-                  { l: 'En attente', v: pending, c: '#F59E0B' },
+                  { l: 'Revenus', v: Math.round(rs.revenue) + '€', c: '#00FF87' },
+                  { l: 'Ventes', v: rs.orders, c: '#00D4FF' },
+                  { l: 'En attente', v: so.filter(o => o.status === 'pending_payment').length, c: '#F59E0B' },
                 ]
               })().map((s, i) => (
-                <div key={i} style={{ background: '#F5F5F7', borderRadius: 12, padding: '12px 10px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: s.c }}>{s.v}</div>
-                  <div style={{ fontSize: 10, color: '#86868B' }}>{s.l}</div>
+                <div key={i} style={{ background: 'rgba(255,255,255,.04)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: s.c }}>{s.v}</div>
+                  <div style={{ fontSize: 10, color: '#555' }}>{s.l}</div>
                 </div>
               ))}
             </div>
 
             {/* Info */}
-            <div style={{ fontSize: 12, color: '#555', lineHeight: 2 }}>
-              <div><strong>Cree le :</strong> {new Date(detailShop.created_at).toLocaleDateString('fr-FR')} a {new Date(detailShop.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
-              <div><strong>Email :</strong> {detailShop.email || '-'}</div>
-              <div><strong>Slug :</strong> {detailShop.slug}</div>
-              {detailShop.stripe_account_id && <div><strong>Stripe ID :</strong> {detailShop.stripe_account_id}</div>}
-              {detailShop.stripe_subscription_id && <div><strong>Subscription :</strong> {detailShop.stripe_subscription_id}</div>}
-              {detailShop.subscription_current_period_end && <div><strong>Prochain paiement :</strong> {new Date(detailShop.subscription_current_period_end).toLocaleDateString('fr-FR')}</div>}
-              <div><strong>Lien boutique :</strong> <a href={'https://www.mylivepaiement.com/pay/' + detailShop.slug} target="_blank" rel="noopener" style={{ color: '#007AFF' }}>mylivepaiement.com/pay/{detailShop.slug}</a></div>
+            <div style={{ fontSize: 11, color: '#888', lineHeight: 2.2, marginBottom: 20 }}>
+              <div><span style={{ color: '#555' }}>Inscrit le</span> {new Date(detailShop.created_at).toLocaleDateString('fr-FR')}</div>
+              <div><span style={{ color: '#555' }}>Email</span> {detailShop.email || '-'}</div>
+              <div><span style={{ color: '#555' }}>Lien boutique</span> <a href={'https://www.mylivepaiement.com/pay/' + detailShop.slug} target="_blank" rel="noopener" style={{ color: '#00D4FF' }}>mylivepaiement.com/pay/{detailShop.slug}</a></div>
+              {detailShop.stripe_subscription_id && <div><span style={{ color: '#555' }}>Stripe Sub</span> {detailShop.stripe_subscription_id}</div>}
+              {detailShop.subscription_current_period_end && <div><span style={{ color: '#555' }}>Prochain paiement</span> {new Date(detailShop.subscription_current_period_end).toLocaleDateString('fr-FR')}</div>}
             </div>
 
-            {/* Recent orders for this shop */}
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Dernieres commandes</div>
-              {orders.filter(o => o.shop_id === detailShop.id).slice(0, 10).map((o, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#F5F5F7', marginBottom: 4, fontSize: 12 }}>
-                  <span style={{ fontWeight: 700, color: '#007AFF' }}>{o.reference}</span>
-                  <span style={{ flex: 1, color: '#86868B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.client_email || o.description || '-'}</span>
-                  <span style={{ fontWeight: 700 }}>{o.total_amount || 0}€</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, color: '#FFF',
-                    background: o.status === 'paid' ? '#34C759' : o.status === 'shipped' ? '#007AFF' : '#F59E0B' }}>
-                    {o.status === 'paid' ? 'PAYE' : o.status === 'shipped' ? 'EXPEDIE' : 'ATTENTE'}
+            {/* Orders */}
+            <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, color: '#888' }}>Dernieres commandes</div>
+            {orders.filter(o => o.shop_id === detailShop.id).slice(0, 10).map((o, i) => {
+              const isPaid = o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered'
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, background: 'rgba(255,255,255,.03)', marginBottom: 3, fontSize: 11 }}>
+                  <span style={{ fontWeight: 800, color: '#00D4FF' }}>{o.reference}</span>
+                  <span style={{ flex: 1, color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.client_email || (o.description || '').slice(0, 30)}</span>
+                  <span style={{ fontWeight: 800 }}>{o.total_amount || 0}€</span>
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: isPaid ? 'rgba(0,255,135,.1)' : 'rgba(245,158,11,.1)', color: isPaid ? '#00FF87' : '#F59E0B' }}>
+                    {isPaid ? 'PAYE' : 'ATTENTE'}
                   </span>
                 </div>
-              ))}
-              {orders.filter(o => o.shop_id === detailShop.id).length === 0 && (
-                <div style={{ fontSize: 12, color: '#CCC', textAlign: 'center', padding: 16 }}>Aucune commande</div>
-              )}
-            </div>
+              )
+            })}
+            {orders.filter(o => o.shop_id === detailShop.id).length === 0 && (
+              <div style={{ fontSize: 11, color: '#333', textAlign: 'center', padding: 16 }}>Aucune commande</div>
+            )}
           </div>
         </div>
       )}
