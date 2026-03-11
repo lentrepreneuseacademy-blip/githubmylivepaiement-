@@ -22,7 +22,7 @@ function Fade({ children, delay = 0, style = {} }) {
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  
   const [activeFaq, setActiveFaq] = useState(null)
   const [demoRef, setDemoRef] = useState('')
   const [demoRefValidated, setDemoRefValidated] = useState(false)
@@ -178,17 +178,11 @@ export default function LandingPage() {
               <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 28 }}>✨ Teste gratuitement pendant 7 jours — aucune carte bancaire requise</p>
             </Fade>
             <Fade delay={0.2}>
-              {!submitted ? (
-                <form onSubmit={e => { e.preventDefault(); if (email) setSubmitted(true) }} style={{ display: 'flex', gap: 8, maxWidth: 440, flexWrap: 'wrap' }}>
+              <form onSubmit={e => { e.preventDefault(); if (email) window.location.href = '/dashboard?email=' + encodeURIComponent(email) }} style={{ display: 'flex', gap: 8, maxWidth: 440, flexWrap: 'wrap' }}>
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Ton email" required
                     style={{ flex: '1 1 200px', padding: '15px 18px', border: '1px solid rgba(0,0,0,.12)', borderRadius: 12, fontSize: 14, fontFamily: sf, outline: 'none', background: '#FFF' }} />
-                  <button type="submit" style={{ padding: '15px 22px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Commencer ✦</button>
+                  <button type="submit" style={{ padding: '15px 22px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Essai gratuit 7j ✦</button>
                 </form>
-              ) : (
-                <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 12, padding: '14px 20px', maxWidth: 440 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#065F46' }}>✓ Inscription reçue ! On te contacte très vite.</span>
-                </div>
-              )}
             </Fade>
             <Fade delay={0.24}>
               <div style={{ display: 'flex', gap: 24, marginTop: 24 }}>
