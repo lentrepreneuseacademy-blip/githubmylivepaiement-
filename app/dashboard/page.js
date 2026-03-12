@@ -50,6 +50,18 @@ export default function Dashboard() {
   const [isSignup, setIsSignup] = useState(false)
   const [signupData, setSignupData] = useState({ email: '', password: '', shopName: '', slug: '' })
 
+  // Pre-fill email from landing page
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      var params = new URLSearchParams(window.location.search)
+      var emailParam = params.get('email')
+      if (emailParam) {
+        setSignupData(function(prev) { return Object.assign({}, prev, { email: emailParam }) })
+        setIsSignup(true)
+      }
+    }
+  }, [])
+
   // Navigation
   const [activeTab, setActiveTab] = useState('overview')
 
