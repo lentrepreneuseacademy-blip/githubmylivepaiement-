@@ -1487,6 +1487,13 @@ export default function Dashboard() {
               </p>
             </form>
           )}
+          <div style={{ textAlign: 'center', marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,.06)' }}>
+            <a href="/" style={{ fontSize: 13, color: '#999', textDecoration: 'none' }}>← Retour au site</a>
+            <span style={{ color: '#E5E5E5', margin: '0 12px' }}>·</span>
+            <a href="/contact" style={{ fontSize: 13, color: '#999', textDecoration: 'none' }}>Une question ?</a>
+            <span style={{ color: '#E5E5E5', margin: '0 12px' }}>·</span>
+            <a href="/blog" style={{ fontSize: 13, color: '#999', textDecoration: 'none' }}>Blog</a>
+          </div>
         </div>
       </div>
     )
