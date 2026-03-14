@@ -1502,6 +1502,7 @@ export default function Dashboard() {
   // ═══ MAIN DASHBOARD ═══
   const tabs = [
     { id: 'overview', icon: '📊', label: 'Tableau de bord' },
+    { id: 'guide', icon: '📖', label: 'Guide', badge: (!boxtalConfig.mrEnseigne || !boxtalConfig.mrPrivateKey || !stripeStatus?.chargesEnabled) ? '!' : 0 },
     { id: 'live', icon: '📡', label: 'Live Monitor', live: liveConnected },
     { id: 'orders', icon: '📋', label: 'Commandes' },
     { id: 'stats', icon: '📈', label: 'Statistiques' },
@@ -1745,6 +1746,161 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
               </div>
             ))}
 
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════ */}
+        {/* ─── GUIDE DE DEMARRAGE ─── */}
+        {/* ══════════════════════════════════════════ */}
+        {activeTab === 'guide' && (
+          <div>
+            <div style={{ marginBottom: 32 }}>
+              <h1 style={{ fontFamily: sf, fontSize: isMobile ? 24 : 32, fontWeight: 800, color: '#1D1D1F', marginBottom: 6 }}>Guide de demarrage</h1>
+              <p style={{ fontFamily: sf, fontSize: 14, color: '#999' }}>Suis ces etapes pour etre prete a vendre en live</p>
+            </div>
+
+            {/* Progress */}
+            <div style={{ background: '#FFF', borderRadius: 16, padding: '20px 24px', border: '1px solid rgba(0,0,0,.06)', marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontFamily: sf, fontSize: 14, fontWeight: 700 }}>Progression</span>
+                <span style={{ fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#007AFF' }}>{[!!shop?.name, !!stripeStatus?.chargesEnabled, !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), !!(boxtalConfig.senderAddress && boxtalConfig.senderZip)].filter(Boolean).length}/4 etapes</span>
+              </div>
+              <div style={{ height: 8, borderRadius: 4, background: '#F5F5F7' }}>
+                <div style={{ height: 8, borderRadius: 4, background: '#007AFF', width: ([!!shop?.name, !!stripeStatus?.chargesEnabled, !!(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey), !!(boxtalConfig.senderAddress && boxtalConfig.senderZip)].filter(Boolean).length / 4 * 100) + '%', transition: 'width .5s' }} />
+              </div>
+            </div>
+
+            {/* Step 1: Boutique */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, border: shop?.name ? '2px solid #10B981' : '2px solid #007AFF', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: shop?.name ? '#ECFDF5' : '#EBF5FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{shop?.name ? '✅' : '1️⃣'}</div>
+                <div>
+                  <div style={{ fontFamily: sf, fontSize: 16, fontWeight: 800, color: '#1D1D1F' }}>Creer ta boutique</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: shop?.name ? '#10B981' : '#999' }}>{shop?.name ? 'Complete !' : 'En cours'}</div>
+                </div>
+              </div>
+              {shop?.name && (
+                <div style={{ fontFamily: sf, fontSize: 13, color: '#059669', padding: '10px 14px', background: '#ECFDF5', borderRadius: 10 }}>
+                  ✅ Ta boutique <strong>{shop.name}</strong> est creee ! Ton lien : <a href={'https://www.mylivepaiement.com/pay/' + shop.slug} target="_blank" rel="noopener" style={{ color: '#007AFF', fontWeight: 700 }}>mylivepaiement.com/pay/{shop.slug}</a>
+                </div>
+              )}
+            </div>
+
+            {/* Step 2: Stripe */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, border: stripeStatus?.chargesEnabled ? '2px solid #10B981' : '2px solid #F59E0B', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: stripeStatus?.chargesEnabled ? '#ECFDF5' : '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{stripeStatus?.chargesEnabled ? '✅' : '2️⃣'}</div>
+                <div>
+                  <div style={{ fontFamily: sf, fontSize: 16, fontWeight: 800, color: '#1D1D1F' }}>Connecter Stripe (paiement CB)</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: stripeStatus?.chargesEnabled ? '#10B981' : '#F59E0B' }}>{stripeStatus?.chargesEnabled ? 'Connecte !' : 'A configurer'}</div>
+                </div>
+              </div>
+              {stripeStatus?.chargesEnabled ? (
+                <div style={{ fontFamily: sf, fontSize: 13, color: '#059669', padding: '10px 14px', background: '#ECFDF5', borderRadius: 10 }}>✅ Stripe est connecte. Tes clientes peuvent payer par CB.</div>
+              ) : (
+                <div>
+                  <p style={{ fontFamily: sf, fontSize: 13, color: '#555', lineHeight: 1.7, marginBottom: 14 }}>Stripe permet a tes clientes de payer par carte bancaire. L'argent arrive directement sur ton compte.</p>
+                  <div style={{ fontFamily: sf, fontSize: 13, color: '#555', lineHeight: 2 }}>
+                    <strong>1.</strong> Va dans <span style={{ color: '#007AFF', fontWeight: 700, cursor: 'pointer' }} onClick={function() { setActiveTab('settings') }}>⚙️ Parametres</span><br/>
+                    <strong>2.</strong> Clique le bouton <strong>"Connecter Stripe"</strong><br/>
+                    <strong>3.</strong> Tu es redirigee vers Stripe — cree ton compte ou connecte-toi<br/>
+                    <strong>4.</strong> Remplis tes infos (IBAN, identite, adresse)<br/>
+                    <strong>5.</strong> Tu reviens sur le dashboard — c'est fait !
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Step 3: Mondial Relay */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, border: (boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) ? '2px solid #10B981' : '2px solid #F59E0B', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: (boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) ? '#ECFDF5' : '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) ? '✅' : '3️⃣'}</div>
+                <div>
+                  <div style={{ fontFamily: sf, fontSize: 16, fontWeight: 800, color: '#1D1D1F' }}>Connecter Mondial Relay</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: (boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) ? '#10B981' : '#F59E0B' }}>{(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) ? 'Connecte !' : 'A configurer'}</div>
+                </div>
+              </div>
+              {(boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey) ? (
+                <div style={{ fontFamily: sf, fontSize: 13, color: '#059669', padding: '10px 14px', background: '#ECFDF5', borderRadius: 10 }}>✅ Mondial Relay connecte — Code Enseigne : <strong>{boxtalConfig.mrEnseigne}</strong></div>
+              ) : (
+                <div>
+                  <p style={{ fontFamily: sf, fontSize: 13, color: '#555', lineHeight: 1.7, marginBottom: 16 }}>Mondial Relay te permet de generer des etiquettes d'expedition en 1 clic depuis ton dashboard. Tes clientes choisissent leur point relais au checkout.</p>
+
+                  <div style={{ background: '#FFF7ED', borderRadius: 14, padding: '18px 20px', border: '1px solid #FED7AA', marginBottom: 20 }}>
+                    <div style={{ fontFamily: sf, fontSize: 14, fontWeight: 800, color: '#92400E', marginBottom: 12 }}>📦 Etape par etape :</div>
+                    <div style={{ fontFamily: sf, fontSize: 13, color: '#B45309', lineHeight: 2.2 }}>
+                      <strong>1.</strong> Va sur <span style={{ color: '#E30613', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }} onClick={function() { window.open('https://www.mondialrelay.fr/inscription/', '_blank') }}>mondialrelay.fr/inscription</span> et cree un compte PRO (gratuit)<br/>
+                      <strong>2.</strong> Connecte-toi a ton espace Mondial Relay<br/>
+                      <strong>3.</strong> Clique sur ton nom en haut a droite → <strong>"Mon profil"</strong><br/>
+                      <strong>4.</strong> Va dans l'onglet <strong>"Mes parametres de connexion"</strong><br/>
+                      <strong>5.</strong> Descends jusqu'a la section <strong>"Webservices (API, Module)"</strong><br/>
+                      <strong>6.</strong> Tu y trouves 2 infos :<br/>
+                      <div style={{ marginLeft: 24, marginTop: 4, marginBottom: 4 }}>
+                        📌 <strong>Code Enseigne</strong> — un code de 8 caracteres (ex: CC23H7CX)<br/>
+                        📌 <strong>Cle Privee</strong> — un mot de passe (ex: Diar0jh2)
+                      </div>
+                      <strong>7.</strong> Copie ces 2 infos<br/>
+                      <strong>8.</strong> Reviens ici → va dans <span style={{ color: '#007AFF', fontWeight: 700, cursor: 'pointer' }} onClick={function() { setActiveTab('settings') }}>⚙️ Parametres</span><br/>
+                      <strong>9.</strong> Colle le Code Enseigne et la Cle Privee dans les champs<br/>
+                      <strong>10.</strong> Clique <strong>"Sauvegarder"</strong> — c'est fait ! 🎉
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#F5F5F7', borderRadius: 14, padding: '16px 20px', marginBottom: 16 }}>
+                    <div style={{ fontFamily: sf, fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 8 }}>💡 Tu n'as pas de section "Webservices" ?</div>
+                    <div style={{ fontFamily: sf, fontSize: 12, color: '#999', lineHeight: 1.7 }}>
+                      Si tu ne vois pas cette section, c'est que ton compte Mondial Relay est un compte particulier et pas un compte professionnel. Il faut creer un <strong>compte PRO</strong> sur mondialrelay.fr. C'est gratuit et en 2 minutes. Ensuite la section Webservices apparait dans ton profil.
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button onClick={function() { window.open('https://www.mondialrelay.fr/inscription/', '_blank') }}
+                      style={{ padding: '12px 24px', background: '#E30613', color: '#FFF', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                      Creer mon compte Mondial Relay →
+                    </button>
+                    <button onClick={function() { setActiveTab('settings') }}
+                      style={{ padding: '12px 24px', background: '#007AFF', color: '#FFF', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                      J'ai mes codes → Parametres
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Step 4: Adresse */}
+            <div style={{ background: '#FFF', borderRadius: 20, padding: isMobile ? 20 : 28, border: (boxtalConfig.senderAddress && boxtalConfig.senderZip) ? '2px solid #10B981' : '2px solid rgba(0,0,0,.08)', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: (boxtalConfig.senderAddress && boxtalConfig.senderZip) ? '#ECFDF5' : '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{(boxtalConfig.senderAddress && boxtalConfig.senderZip) ? '✅' : '4️⃣'}</div>
+                <div>
+                  <div style={{ fontFamily: sf, fontSize: 16, fontWeight: 800, color: '#1D1D1F' }}>Remplir ton adresse expediteur</div>
+                  <div style={{ fontFamily: sf, fontSize: 12, color: (boxtalConfig.senderAddress && boxtalConfig.senderZip) ? '#10B981' : '#999' }}>{(boxtalConfig.senderAddress && boxtalConfig.senderZip) ? 'Complete !' : 'A remplir'}</div>
+                </div>
+              </div>
+              {(boxtalConfig.senderAddress && boxtalConfig.senderZip) ? (
+                <div style={{ fontFamily: sf, fontSize: 13, color: '#059669', padding: '10px 14px', background: '#ECFDF5', borderRadius: 10 }}>✅ Adresse enregistree : {boxtalConfig.senderAddress}, {boxtalConfig.senderZip} {boxtalConfig.senderCity}</div>
+              ) : (
+                <div>
+                  <p style={{ fontFamily: sf, fontSize: 13, color: '#555', lineHeight: 1.7, marginBottom: 14 }}>C'est l'adresse qui apparait sur les etiquettes. Va dans Parametres, section "Adresse expediteur" et remplis ton adresse, code postal, ville et telephone.</p>
+                  <button onClick={function() { setActiveTab('settings') }}
+                    style={{ padding: '12px 24px', background: '#007AFF', color: '#FFF', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                    Remplir dans Parametres →
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* All done */}
+            {shop?.name && stripeStatus?.chargesEnabled && boxtalConfig.mrEnseigne && boxtalConfig.mrPrivateKey && boxtalConfig.senderAddress && (
+              <div style={{ background: '#ECFDF5', borderRadius: 20, padding: '28px 24px', border: '2px solid #A7F3D0', textAlign: 'center', marginTop: 24 }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
+                <div style={{ fontFamily: sf, fontSize: 20, fontWeight: 800, color: '#059669', marginBottom: 8 }}>Tu es prete !</div>
+                <p style={{ fontFamily: sf, fontSize: 14, color: '#10B981', marginBottom: 20 }}>Tout est configure. Lance un live et commence a vendre !</p>
+                <button onClick={function() { setActiveTab('live') }}
+                  style={{ padding: '14px 32px', background: '#059669', color: '#FFF', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                  📡 Ouvrir le Live Monitor
+                </button>
+              </div>
+            )}
           </div>
         )}
 
