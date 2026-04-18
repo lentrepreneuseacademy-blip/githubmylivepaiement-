@@ -1,18 +1,41 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '../../../lib/stripe'
+import Stripe from 'stripe'
 import { createServerSupabase } from '../../../lib/supabase'
 
 export async function POST(request) {
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')
 
-  let event
+  // Deux stripe clients : plateforme + admin (compte perso)
+  const platformStripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' })
+  const adminStripe = process.env.ADMIN_STRIPE_SECRET_KEY
+    ? new Stripe(process.env.ADMIN_STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' })
+    : null
+
+  let event = null
+  let verifiedWith = null
+
+  // Essayer de verifier avec le secret de la plateforme
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET)
+    event = platformStripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET)
+    verifiedWith = 'platform'
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message)
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    // Essayer avec le secret admin
+    if (adminStripe && process.env.ADMIN_STRIPE_WEBHOOK_SECRET) {
+      try {
+        event = adminStripe.webhooks.constructEvent(body, sig, process.env.ADMIN_STRIPE_WEBHOOK_SECRET)
+        verifiedWith = 'admin'
+      } catch (err2) {
+        console.error('Webhook signature verification failed (both):', err.message, err2.message)
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+      }
+    } else {
+      console.error('Webhook signature verification failed:', err.message)
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    }
   }
+
+  console.log('[Webhook] Received event', event.type, 'verified with', verifiedWith)
 
   const supabase = createServerSupabase()
 
