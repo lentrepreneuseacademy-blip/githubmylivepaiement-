@@ -3409,8 +3409,12 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                       {stripeStatus.email && <div style={{ fontFamily: sf, fontSize: 12, color: '#10B981' }}>{stripeStatus.email}</div>}
                     </div>
                   </div>
-                  <button onClick={async function() { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.open(data.url, '_blank') }}
-                    style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #F8F7F5 0%, #F0EEEC 100%)', color: '#555', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>📊 Dashboard Stripe</button>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button onClick={async function() { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard', shopId: shop.id }) }); var data = await res.json(); if (data.url) window.open(data.url, '_blank') }}
+                      style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #F8F7F5 0%, #F0EEEC 100%)', color: '#555', border: 'none', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>📊 Dashboard Stripe</button>
+                    <button onClick={async function() { if (!confirm('Deconnecter ton compte Stripe ? Tu pourras te reconnecter a tout moment. Ton compte Stripe ne sera pas supprime, juste delie de ta boutique.')) return; setStripeLoading(true); try { var res = await fetch('/api/stripe-connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect', shopId: shop.id }) }); var data = await res.json(); if (data.success) { setStripeStatus({ connected: false }); alert('Compte Stripe deconnecte.') } else { alert(data.error || 'Erreur lors de la deconnexion') } } catch(e) { alert('Erreur') } setStripeLoading(false) }} disabled={stripeLoading}
+                      style={{ padding: '12px 24px', background: '#FFF', color: '#DC2626', border: '1px solid #FECACA', borderRadius: 12, fontFamily: sf, fontSize: 13, fontWeight: 700, cursor: stripeLoading ? 'wait' : 'pointer' }}>🔌 Deconnecter</button>
+                  </div>
                 </div>
               ) : stripeStatus?.connected ? (
                 <div>
