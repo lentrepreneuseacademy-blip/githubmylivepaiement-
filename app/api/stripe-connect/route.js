@@ -100,6 +100,31 @@ export async function POST(request) {
       return NextResponse.json({ url: loginLink.url })
     }
 
+    // ─── DISCONNECT : Déconnecter le compte Stripe de la boutique ───
+    if (action === 'disconnect') {
+      if (!shopId) return NextResponse.json({ error: 'shopId requis' }, { status: 400 })
+
+      const { data: shop } = await supabase.from('shops').select('stripe_account_id').eq('id', shopId).single()
+
+      if (!shop?.stripe_account_id) {
+        return NextResponse.json({ error: 'Aucun compte Stripe a deconnecter' }, { status: 400 })
+      }
+
+      // Soft disconnect: on enleve juste le lien dans la DB, le compte Stripe reste intact
+      const { error: updateError } = await supabase
+        .from('shops')
+        .update({ stripe_account_id: null })
+        .eq('id', shopId)
+
+      if (updateError) {
+        console.error('[Stripe Connect] Disconnect DB error:', updateError)
+        return NextResponse.json({ error: 'Erreur lors de la deconnexion' }, { status: 500 })
+      }
+
+      console.log('[Stripe Connect] Disconnected shop:', shopId, 'from account:', shop.stripe_account_id)
+      return NextResponse.json({ success: true })
+    }
+
     return NextResponse.json({ error: 'Action inconnue' }, { status: 400 })
 
   } catch (error) {
