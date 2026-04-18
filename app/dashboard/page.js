@@ -3390,6 +3390,34 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
             </div>
 
             {/* ══════ STRIPE CONNECT ══════ */}
+            {(function() {
+              const adminSlug = (process.env.NEXT_PUBLIC_ADMIN_SHOP_SLUG || '').trim().toLowerCase()
+              const currentSlug = (shop?.slug || '').trim().toLowerCase()
+              const isAdminShop = adminSlug && currentSlug && adminSlug === currentSlug
+
+              if (isAdminShop) {
+                return (
+                  <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '2px solid #10B981', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>⚡</div>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontFamily: sf, fontSize: 18, fontWeight: 800, margin: 0, color: '#1D1D1F', letterSpacing: -0.5 }}>Compte Stripe direct</h3>
+                        <p style={{ fontFamily: sf, fontSize: 12, color: '#AAA', margin: 0 }}>Paiements directs sur ton compte perso · Virements immediats</p>
+                      </div>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px rgba(16,185,129,.5)' }} />
+                    </div>
+                    <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', borderRadius: 16, padding: '20px 24px', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 12, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#FFF', fontSize: 18 }}>✓</span></div>
+                      <div>
+                        <div style={{ fontFamily: sf, fontSize: 15, fontWeight: 800, color: '#059669' }}>Mode admin actif</div>
+                        <div style={{ fontFamily: sf, fontSize: 12, color: '#10B981' }}>Les paiements de ce shop vont directement sur ton compte Stripe personnel, sans passer par Connect.</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+
+              return (
             <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: '#635BFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>💳</div>
@@ -3451,6 +3479,8 @@ input:focus,textarea:focus,select:focus{border-color:#007AFF!important;box-shado
                 </div>
               )}
             </div>
+              )
+            })()}
 
             {/* ══════ MONDIAL RELAY ══════ */}
             <div style={{ background: '#FFF', borderRadius: 20, boxShadow: '0 0.5px 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03)', border: '1px solid rgba(0,0,0,.06)', padding: isMobile ? 22 : 32, marginBottom: 24 }}>
